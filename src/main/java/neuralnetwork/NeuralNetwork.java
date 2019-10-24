@@ -70,18 +70,24 @@ public class NeuralNetwork implements Serializable {
 
 	public void trainNeuralNetwork(double[] inputs, double[] knownResults) {
 		Matrix inputMatrix = Matrix.fromArray(inputs);
+		Matrix targetMatrix = Matrix.fromArray(knownResults);
+
+		// Calculate feedforward with inputs.
+
+		// From input layer -> hidden layer.
 		Matrix hidden = this.inputHiddenWeights.multiply(inputMatrix);
 		hidden = hidden.add(this.hiddenBias);
 		hidden = this.function.applyFunctionToMatrix(hidden);
 
+		// From hidden layer -> output layer. ActivationFunction(Weighted sum (hidden) + bias).
 		Matrix outputs = this.outputHiddenWeights.multiply(hidden);
 		outputs = outputs.add(this.outputBias);
 		outputs = this.function.applyFunctionToMatrix(outputs);
 
-		Matrix targets = Matrix.fromArray(knownResults);
+		// How incorrect was this prediction?
+		Matrix outputErrors = targetMatrix.subtract(outputs);
 
-		Matrix outputErrors = targets.subtract(outputs);
-
+		// Calculate gradients, i.e. Activation derivatives of all elements.
 		Matrix gradients = this.function.applyDerivativeFunctionToMatrix(outputs);
 		gradients = gradients.hadamard(outputErrors);
 		gradients = gradients.map((e) -> e * learningRate);
