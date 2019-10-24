@@ -35,6 +35,7 @@ public class NeuralNetwork implements Serializable {
 		this.functionFactory = new ActivationFunctionFactory();
 	}
 
+	@Deprecated
 	public NeuralNetwork(int inputNodes, int outputNodes, int layers, int... numOfNodesInLayers) {
 		this.inputNodes = inputNodes;
 		this.outputNodes = outputNodes;
@@ -46,20 +47,13 @@ public class NeuralNetwork implements Serializable {
 		}
 	}
 
-	public void setDefaultValues() {
-		this.learningRate = 0.1;
-		this.function = functionFactory.getActivationFunctionByKey("SIGMOID");
-	}
 
-	public void printNeuralNetwork() {
-		System.out.println("Input nodes: " + this.inputNodes);
-		for (Entry<Integer, Matrix> entry : this.layers.entrySet()) {
-			System.out.println("Layer: " + entry.getKey());
-			entry.getValue().show();
-		}
-		System.out.println("Output nodes: " + this.outputNodes);
-	}
-
+	/**
+	 * Feeds the input forward in the neural network. Takes a double[] of size INPUT_NODES.
+	 *
+	 * @param input double[] with values to be predicted.
+	 * @return a Matrix(actually a vector, k*1 Matrix) with the predicted outputs.
+	 */
 	public Matrix predict(double[] input) {
 		Matrix inputMatrix = Matrix.fromArray(input);
 		Matrix hidden = this.inputHiddenWeights.multiply(inputMatrix);
@@ -114,6 +108,21 @@ public class NeuralNetwork implements Serializable {
 
 	public void setActivationFunction(String function) {
 		this.function = new ActivationFunctionFactory().getActivationFunctionByKey(function);
+	}
+
+
+	public void setDefaultValues() {
+		this.learningRate = 0.1;
+		this.function = functionFactory.getActivationFunctionByKey("SIGMOID");
+	}
+
+	public void printNeuralNetwork() {
+		System.out.println("Input nodes: " + this.inputNodes);
+		for (Entry<Integer, Matrix> entry : this.layers.entrySet()) {
+			System.out.println("Layer: " + entry.getKey());
+			entry.getValue().show();
+		}
+		System.out.println("Output nodes: " + this.outputNodes);
 	}
 
 	public static class NeuralNetworkOptions {
