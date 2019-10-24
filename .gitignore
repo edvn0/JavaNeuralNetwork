@@ -75,3 +75,5 @@ gradle-app.setting
 **/build/
 
 # End of https://www.gitignore.io/api/java,macos,gradle
+
+/Users/edwincarlsson/Documents/Programmering/GradleProjects/NeuralNetwork/src/test/resources
