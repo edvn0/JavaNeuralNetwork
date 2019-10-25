@@ -7,7 +7,7 @@ import math.ActivationFunction;
 import math.ActivationFunctionFactory;
 import matrix.Matrix;
 
-public class NeuralNetwork implements Serializable {
+public class SingleLayerPerceptron implements Serializable {
 
 	private static final long serialVersionUID = 1233L;
 
@@ -23,7 +23,8 @@ public class NeuralNetwork implements Serializable {
 
 	private Matrix hiddenBias, outputBias;
 
-	public NeuralNetwork(int inputNodes, int hiddenNodes, int outputNodes, double learningRate) {
+	public SingleLayerPerceptron(int inputNodes, int hiddenNodes, int outputNodes,
+		double learningRate) {
 		this.inputHiddenWeights = Matrix.random(hiddenNodes, inputNodes);
 		this.outputHiddenWeights = Matrix.random(outputNodes, hiddenNodes);
 
@@ -36,7 +37,8 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	@Deprecated
-	public NeuralNetwork(int inputNodes, int outputNodes, int layers, int... numOfNodesInLayers) {
+	public SingleLayerPerceptron(int inputNodes, int outputNodes, int layers,
+		int... numOfNodesInLayers) {
 		this.inputNodes = inputNodes;
 		this.outputNodes = outputNodes;
 		this.numOfLayers = layers;
@@ -72,7 +74,9 @@ public class NeuralNetwork implements Serializable {
 		Matrix inputMatrix = Matrix.fromArray(inputs);
 		Matrix targetMatrix = Matrix.fromArray(knownResults);
 
+		//----------
 		// Calculate feedforward with inputs.
+		//----------
 
 		// From input layer -> hidden layer.
 		Matrix hidden = this.inputHiddenWeights.multiply(inputMatrix);
