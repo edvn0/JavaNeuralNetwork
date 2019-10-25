@@ -7,7 +7,7 @@ import math.ActivationFunction;
 import math.ActivationFunctionFactory;
 import matrix.Matrix;
 
-public class SingleLayerPerceptron implements Serializable {
+public class SingleLayerPerceptron implements Serializable, Trainable {
 
 	private static final long serialVersionUID = 1233L;
 
@@ -70,7 +70,7 @@ public class SingleLayerPerceptron implements Serializable {
 		return output;
 	}
 
-	public void trainNeuralNetwork(double[] inputs, double[] knownResults) {
+	public void train(double[] inputs, double[] knownResults) {
 		Matrix inputMatrix = Matrix.fromArray(inputs);
 		Matrix targetMatrix = Matrix.fromArray(knownResults);
 
@@ -133,49 +133,5 @@ public class SingleLayerPerceptron implements Serializable {
 			entry.getValue().show();
 		}
 		System.out.println("Output nodes: " + this.outputNodes);
-	}
-
-	public static class NeuralNetworkOptions {
-
-		private double learningRate;
-		private double iterations;
-
-		public double getLearningRate() {
-			return learningRate;
-		}
-
-		public double getIterations() {
-			return iterations;
-		}
-
-		public NeuralNetworkOptions() {
-		}
-
-		private NeuralNetworkOptions(double learningRate, double iterations) {
-			this.learningRate = learningRate;
-			this.iterations = iterations;
-		}
-
-		public NeuralNetworkOptions create() {
-			return new NeuralNetworkOptions(learningRate, iterations);
-		}
-
-		public static NeuralNetworkOptions getInstance() {
-			return new NeuralNetworkOptions();
-		}
-
-		public NeuralNetworkOptions setLearningRate(double v) {
-			this.learningRate = v;
-			return this;
-		}
-
-		public NeuralNetworkOptions setTrainingIterations(int iterations) {
-			this.iterations = iterations;
-			return this;
-		}
-
-		public String toString() {
-			return "Iterations:" + this.iterations + "\nLearning Rate: " + this.learningRate;
-		}
 	}
 }

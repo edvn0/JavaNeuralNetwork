@@ -1,5 +1,6 @@
 package matrix;
 
+import java.util.InputMismatchException;
 import java.util.function.UnaryOperator;
 
 final public class Matrix {
@@ -42,13 +43,13 @@ final public class Matrix {
 	 *
 	 * @param M rows
 	 * @param N columns
-	 * @return new Matrix with i,j \in (0,1)
+	 * @return new Matrix with i,j \in (-1,1)
 	 */
 	public static Matrix random(int M, int N) {
 		Matrix A = new Matrix(M, N);
 		for (int i = 0; i < M; i++) {
 			for (int j = 0; j < N; j++) {
-				A.data[i][j] = Math.random();
+				A.data[i][j] = 2 * Math.random() - 1;
 			}
 		}
 		return A;
@@ -207,5 +208,37 @@ final public class Matrix {
 
 	public double[][] getData() {
 		return this.data;
+	}
+
+	@Override
+	public String toString() {
+		return this.M + " " + this.N;
+	}
+
+	public int getColumns() {
+		return N;
+	}
+
+	public int getRows() {
+		return M;
+	}
+
+
+	// Unfortunately mutates this object...
+	public void setData(Matrix newWeights) {
+
+		double[][] newWeightsData = newWeights.getData();
+		int rows = this.getRows();
+		int cols = this.getColumns();
+
+		if (newWeights.getRows() != this.getRows() || newWeights.getColumns() != this
+			.getColumns()) {
+			throw new InputMismatchException("Matrix dimensions do not match");
+		}
+		for (int i = 0; i < rows; i++) {
+			for (int j = 0; j < cols; j++) {
+				this.data[i][j] = newWeightsData[i][j];
+			}
+		}
 	}
 }
