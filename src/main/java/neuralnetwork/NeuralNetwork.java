@@ -6,7 +6,6 @@ import math.ActivationFunction;
 import math.SigmoidFunction;
 import matrix.Matrix;
 import neuralnetwork.layer.Connection;
-import neuralnetwork.layer.Layer;
 import neuralnetwork.layer.LayerConnectionList;
 import utilites.NeuralNetworkOptions;
 
@@ -20,10 +19,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 	private ActivationFunction function;
 
 	private LayerConnectionList layerConnections; // Maps layer 0 to 1, 1 to 2, etc. Will "store" the
-
-	private NeuralNetwork(NeuralNetworkOptions options) {
-		this.options = options;
-	}
 
 	public NeuralNetwork(int inputNodes, int hiddenLayers, int nodesInHiddenLayers,
 		int outputNodes, double learningRate) {
