@@ -1,10 +1,16 @@
-package utilites;
+package utilities;
 
 import java.util.stream.DoubleStream;
 import matrix.Matrix;
 
 public class MatrixUtilities {
 
+	/**
+	 * Return a probability distribution of the predicted values of {@link Matrix}.
+	 *
+	 * @param matrix {@link Matrix} with the predicted values
+	 * @return SoftMax(exponential probability distribution) of the prediction.
+	 */
 	public static Matrix networkOutputsSoftMax(Matrix matrix) {
 		Matrix copy = matrix;
 		double softMaxTotal = DoubleStream.of(copy.transpose().getData()[0])
@@ -19,6 +25,12 @@ public class MatrixUtilities {
 		return transposed.transpose();
 	}
 
+	/**
+	 * Output the index of the max element
+	 *
+	 * @param input Output data of the prediction network
+	 * @return index of max element
+	 */
 	public static int networkOutputsMax(Matrix input) {
 		double max = input.getData()[0][0];
 		int index = 0;
@@ -31,18 +43,4 @@ public class MatrixUtilities {
 		}
 		return index;
 	}
-
-	public static int networkOutputsMin(Matrix input) {
-		double max = input.getData()[0][0];
-		int index = 0;
-		for (int i = 0; i < input.getData().length; i++) {
-			double[][] data = input.getData();
-			if (data[i][0] < max) {
-				max = data[i][0];
-				index = i;
-			}
-		}
-		return index;
-	}
-
 }

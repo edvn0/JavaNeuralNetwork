@@ -7,14 +7,12 @@ import math.SigmoidFunction;
 import matrix.Matrix;
 import neuralnetwork.layer.Connection;
 import neuralnetwork.layer.LayerConnectionList;
-import utilites.NeuralNetworkOptions;
 
 public class NeuralNetwork implements Serializable, Trainable {
 
-	private NeuralNetworkOptions options;
+	private static final long serialVersionUID = 0L;
 
 	private double learningRate;
-	private int totalLayers;
 
 	private ActivationFunction function;
 
@@ -25,15 +23,15 @@ public class NeuralNetwork implements Serializable, Trainable {
 		this.layerConnections = new LayerConnectionList(inputNodes, hiddenLayers,
 			nodesInHiddenLayers, outputNodes);
 		this.learningRate = learningRate;
-		this.totalLayers = 1 + 1 + hiddenLayers;
 
 		this.function = new SigmoidFunction();
 	}
 
 	public NeuralNetwork(int inputNodes, int outputNodes) {
-		this.layerConnections = new LayerConnectionList(inputNodes, 1, 30, outputNodes);
+		this.layerConnections = new LayerConnectionList(inputNodes, 3, 30, outputNodes);
 		this.learningRate = 10e-2;
-		this.totalLayers = 2 + 1;
+
+		this.function = new SigmoidFunction();
 	}
 
 	@Override
@@ -49,17 +47,32 @@ public class NeuralNetwork implements Serializable, Trainable {
 		return feedForward(in);
 	}
 
-	private void backPropagate(Matrix in, Matrix correct) {
-		Matrix errors = correct.subtract(in);
+	private void backPropagate(Matrix fedForward, Matrix correct) {
+		// Calculate errors.
+		final Matrix errors = correct.subtract(fedForward);
 
-		Matrix gradients = this.function.applyDerivativeFunctionToMatrix(in);
-		gradients = gradients.hadamard(errors).map((e) -> e * learningRate);
+		final Matrix gradients = this.function.applyDerivativeFunctionToMatrix(fedForward);
+		final Matrix mappedGradients = gradients.hadamard(errors)
+			.map((e) -> (e * this.learningRate));
 
-		for (int i = this.layerConnections.amountWeightMatrices() - 1; i >= 0; i--) {
+		Matrix newOutput = fedForward;
+		for (int i = this.layerConnections.amountOfWeights() - 1; i >= 0; i--) {
+			// Weights from i to i - 1., first iteration this takes the weights from
+			// last to second to last. this weight is a Matrix(connection[i].outputNodes, outputNodes)
+			// For a FANN with hiddenNodes = 3 for the XOR problem, we get that the last
+			// weight matrix is a Matrix(3,2)
+
+			// Change all weight values of each weight matrix using the
+			// formula: weight(old) +
+			// learning rate * output error * output(neurons i) * output(neurons i+1) * ( 1 - output(neurons i+1) )
 			Matrix weights = this.layerConnections.getWeights(i);
-			Matrix deltas = gradients.multiply(weights);
-			Matrix newWeights = weights.add(deltas);
-			newWeights.show();
+			Matrix transposedWeights = weights.transpose();
+			newOutput = transposedWeights.multiply(newOutput);
+			Matrix bias = this.layerConnections.getLayer(i).getBias();
+			newOutput = newOutput.add(bias);
+			mappedGradients.show();
+			Matrix deltas = newOutput.multiply(mappedGradients.transpose());
+			Matrix newWeights = weights.add(deltas.transpose());
 			this.layerConnections.setWeights(i, newWeights);
 		}
 
@@ -73,8 +86,10 @@ public class NeuralNetwork implements Serializable, Trainable {
 		}
 
 		Matrix outputMatrix = input;
-		for (int i = 0; i < this.layerConnections.amountWeightMatrices(); i++) {
+		for (int i = 0; i < this.layerConnections.amountOfWeights(); i++) {
+			// Calculate the matrix multiplication + bias.
 			outputMatrix = this.layerConnections.calculateLayer(outputMatrix, i, i + 1);
+			// Activate the neuron.
 			outputMatrix = function.applyFunctionToMatrix(outputMatrix);
 
 		}
@@ -83,8 +98,9 @@ public class NeuralNetwork implements Serializable, Trainable {
 
 	public void displayNetwork() {
 		for (Entry<Connection, Matrix> entry : this.layerConnections.getWeightsEntries()) {
-			System.out
-				.println("From: " + entry.getKey().getFrom() + ", To: " + entry.getKey().getTo());
+			System.out.println(
+				"Connection:" + entry.getKey().getFrom().getIndexInNetwork() + " to: " + entry
+					.getKey().getTo().getIndexInNetwork());
 			entry.getValue().show();
 			System.out.println();
 		}

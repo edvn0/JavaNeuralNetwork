@@ -10,8 +10,8 @@ public class LayerConnectionList {
 	private HashMap<Connection, Matrix> weightMatrixMap;
 
 	private int inputNodes, hiddenLayers, nodesInHidden, outputNodes;
-	Connection[] connections;
-	Layer[] layers;
+	private Connection[] connections;
+	private Layer[] layers;
 
 	public LayerConnectionList() {
 		weightMatrixMap = new HashMap<>();
@@ -42,23 +42,24 @@ public class LayerConnectionList {
 				(index), true);
 		}
 		int len = this.layers.length - 1;
-		layers[len] = new Layer(this.outputNodes,
-			Matrix.random(this.outputNodes, 1),
-			len, true);
+		layers[len] = new Layer(this.outputNodes, Matrix.random(this.outputNodes, 1), len, true);
 	}
 
 	private void createConnections() {
 		for (int i = 0; i < this.layers.length - 1; i++) {
-			connections[i] = new Connection(this.layers[i], this.layers[i + 1]);
+			Layer from = this.layers[i];
+			Layer to = this.layers[i + 1];
+			connections[i] = new Connection(from, to,
+				Matrix.random(to.getNodesInLayer(), from.getNodesInLayer()));
 		}
 	}
 
 	private void initialiseWeights() {
-		for (int i = 0; i < this.connections.length; i++) {
-			int rows = this.connections[i].getTo().getNodesInLayer();
-			int cols = this.connections[i].getFrom().getNodesInLayer();
+		for (Connection connection : this.connections) {
+			int rows = connection.getTo().getNodesInLayer();
+			int cols = connection.getFrom().getNodesInLayer();
 			Matrix weights = Matrix.random(rows, cols);
-			this.weightMatrixMap.put(this.connections[i], weights);
+			this.weightMatrixMap.put(connection, weights);
 		}
 	}
 
@@ -75,13 +76,13 @@ public class LayerConnectionList {
 					+ " and the weights had: " + weights.getColumns());
 		}
 
-		Matrix output = weights.multiply(inputs);
+		Matrix layerOutput = weights.multiply(inputs);
 
 		if (hasBias) {
-			output.add(layer.getBias());
+			layerOutput.add(layer.getBias());
 		}
 
-		return output;
+		return layerOutput;
 	}
 
 
@@ -89,12 +90,8 @@ public class LayerConnectionList {
 		return this.weightMatrixMap.entrySet();
 	}
 
-	public int amountWeightMatrices() {
+	public int amountOfWeights() {
 		return this.weightMatrixMap.size();
-	}
-
-	public Matrix getWeights(int i) {
-		return this.weightMatrixMap.get(connections[i]);
 	}
 
 	public Layer getLayer(int i) {
@@ -112,4 +109,9 @@ public class LayerConnectionList {
 	public void setWeights(int i, Matrix newWeights) {
 		this.weightMatrixMap.get(connections[i]).setData(newWeights);
 	}
+
+	public Matrix getWeights(int i) {
+		return this.weightMatrixMap.get(connections[i]);
+	}
+
 }

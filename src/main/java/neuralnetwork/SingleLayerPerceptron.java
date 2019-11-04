@@ -16,10 +16,10 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 	private Matrix outputHiddenWeights;
 	private HashMap<Integer, Matrix> layers;
 
-	private ActivationFunctionFactory functionFactory;
-	private ActivationFunction function;
+	private transient ActivationFunctionFactory functionFactory;
+	private transient ActivationFunction function;
 
-	private int inputNodes, outputNodes, numOfLayers;
+	private int inputNodes, outputNodes;
 
 	private Matrix hiddenBias, outputBias;
 
@@ -41,7 +41,6 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 		int... numOfNodesInLayers) {
 		this.inputNodes = inputNodes;
 		this.outputNodes = outputNodes;
-		this.numOfLayers = layers;
 		this.layers = new HashMap<>();
 		for (int i = 0; i < layers; i++) {
 			Matrix networkLayer = new Matrix(numOfNodesInLayers[i], 1);

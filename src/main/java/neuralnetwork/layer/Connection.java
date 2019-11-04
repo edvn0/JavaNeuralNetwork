@@ -17,6 +17,15 @@ public class Connection {
 		this.to = to;
 	}
 
+	Connection(Layer from, Layer to, Matrix weights) {
+		this(from, to);
+		this.weights = weights;
+	}
+
+	public Matrix getWeights() {
+		return this.weights;
+	}
+
 	public Layer getFrom() {
 		return this.from;
 	}

@@ -129,7 +129,7 @@ final public class Matrix {
 		return C;
 	}
 
-	// does A = B exactly?
+	// does A == B exactly?
 	public boolean equals(Matrix B) {
 		Matrix A = this;
 		if (B.M != A.M || B.N != A.N) {
@@ -145,7 +145,13 @@ final public class Matrix {
 		return true;
 	}
 
-	// return C = A * B
+
+	/**
+	 * Return C = this * B
+	 *
+	 * @param B other Matrix
+	 * @return C = this * B;
+	 */
 	public Matrix multiply(Matrix B) {
 		Matrix A = this;
 		if (A.N != B.M) {
@@ -227,7 +233,6 @@ final public class Matrix {
 	// Unfortunately mutates this object...
 	public void setData(Matrix newWeights) {
 
-		double[][] newWeightsData = newWeights.getData();
 		int rows = this.getRows();
 		int cols = this.getColumns();
 
@@ -235,9 +240,10 @@ final public class Matrix {
 			.getColumns()) {
 			throw new InputMismatchException("Matrix dimensions do not match");
 		}
+
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < cols; j++) {
-				this.data[i][j] = newWeightsData[i][j];
+				this.data[i][j] = newWeights.data[i][j];
 			}
 		}
 	}

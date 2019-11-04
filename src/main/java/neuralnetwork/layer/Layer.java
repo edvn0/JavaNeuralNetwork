@@ -49,7 +49,7 @@ public class Layer {
 		return "[ " + this.nodes + " ]";
 	}
 
-	public boolean hasBias() {
+	boolean hasBias() {
 		return this.hasBias;
 	}
 }
