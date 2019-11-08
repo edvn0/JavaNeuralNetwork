@@ -7,6 +7,8 @@ public class Layer {
 	private int nodes;
 	private Matrix bias;
 
+	private double[] values;
+
 	private boolean hasBias;
 
 	private int indexInNetwork;
@@ -22,6 +24,20 @@ public class Layer {
 		this.bias = bias;
 		this.indexInNetwork = indexInNetwork;
 		this.hasBias = hiddenLayer;
+		values = new double[nodes];
+	}
+
+	Layer(int nodes, int indexInNetwork) {
+		this(nodes, null, indexInNetwork, false);
+		values = new double[nodes];
+	}
+
+	void setValue(double val, int index) {
+		this.values[index] = val;
+	}
+
+	void setValue(Matrix values) {
+		this.values = values.toArray();
 	}
 
 	void calculateBias(Matrix old) {
@@ -51,5 +67,19 @@ public class Layer {
 
 	boolean hasBias() {
 		return this.hasBias;
+	}
+
+	public Matrix getValues() {
+		double[][] newValues = new double[this.values.length][1];
+		int k = 0;
+		for (double d : this.values) {
+			newValues[k++][0] = d;
+		}
+
+		return new Matrix(newValues);
+	}
+
+	public void setBias(Matrix outputMatrix) {
+		this.bias = outputMatrix;
 	}
 }

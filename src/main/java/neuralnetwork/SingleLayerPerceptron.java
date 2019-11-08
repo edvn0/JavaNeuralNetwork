@@ -60,11 +60,11 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 		Matrix hidden = this.inputHiddenWeights.multiply(inputMatrix);
 
 		hidden = hidden.add(this.hiddenBias);
-		hidden = this.function.applyFunctionToMatrix(hidden);
+		hidden = this.function.functionToMatrix(hidden);
 
 		Matrix output = this.outputHiddenWeights.multiply(hidden);
 		output = output.add(this.outputBias);
-		output = this.function.applyFunctionToMatrix(output);
+		output = this.function.functionToMatrix(output);
 
 		return output;
 	}
@@ -80,18 +80,18 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 		// From input layer -> hidden layer.
 		Matrix hidden = this.inputHiddenWeights.multiply(inputMatrix);
 		hidden = hidden.add(this.hiddenBias);
-		hidden = this.function.applyFunctionToMatrix(hidden);
+		hidden = this.function.functionToMatrix(hidden);
 
 		// From hidden layer -> output layer. ActivationFunction(Weighted sum (hidden) + bias).
 		Matrix outputs = this.outputHiddenWeights.multiply(hidden);
 		outputs = outputs.add(this.outputBias);
-		outputs = this.function.applyFunctionToMatrix(outputs);
+		outputs = this.function.functionToMatrix(outputs);
 
 		// How incorrect was this prediction?
 		Matrix outputErrors = targetMatrix.subtract(outputs);
 
 		// Calculate gradients, i.e. Activation derivatives of all elements.
-		Matrix gradients = this.function.applyDerivativeFunctionToMatrix(outputs);
+		Matrix gradients = this.function.derivativeToMatrix(outputs);
 		gradients = gradients.hadamard(outputErrors);
 		gradients = gradients.map((e) -> e * learningRate);
 
@@ -104,7 +104,7 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 		Matrix outputHiddenWeightsTransposed = this.outputHiddenWeights.transpose();
 		Matrix hiddenErrors = outputHiddenWeightsTransposed.multiply(outputErrors);
 
-		Matrix hiddenGradient = this.function.applyDerivativeFunctionToMatrix(hidden);
+		Matrix hiddenGradient = this.function.derivativeToMatrix(hidden);
 		hiddenGradient = hiddenGradient.hadamard(hiddenErrors);
 		hiddenGradient = hiddenGradient.map((e) -> e * learningRate);
 

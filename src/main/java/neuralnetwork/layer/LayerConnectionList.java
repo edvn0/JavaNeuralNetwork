@@ -35,7 +35,7 @@ public class LayerConnectionList {
 	}
 
 	private void createLayers() {
-		layers[0] = new Layer(this.inputNodes, Matrix.random(this.inputNodes, 1), 0, false);
+		layers[0] = new Layer(this.inputNodes, 0);
 		for (int i = 0; i < hiddenLayers; i++) {
 			int index = i + 1;
 			layers[index] = new Layer(this.nodesInHidden, Matrix.random(this.nodesInHidden, 1),
@@ -44,6 +44,7 @@ public class LayerConnectionList {
 		int len = this.layers.length - 1;
 		layers[len] = new Layer(this.outputNodes, Matrix.random(this.outputNodes, 1), len, true);
 	}
+
 
 	private void createConnections() {
 		for (int i = 0; i < this.layers.length - 1; i++) {
@@ -63,11 +64,19 @@ public class LayerConnectionList {
 		}
 	}
 
-	public Matrix calculateLayer(Matrix inputs, int connection, int layerIndex) {
+	/**
+	 * Inputs, what to calculate, index:what connection
+	 */
+	public Matrix calculateLayer(Matrix inputs, int index) {
+
+		if (inputs == null) {
+			return null;
+		}
 
 		// Get weights from map, get layer to retrieve bias from (if it has bias)
-		Matrix weights = getWeights(connection);
-		Layer layer = getLayer(layerIndex);
+
+		Matrix weights = getWeight(index);
+		Layer layer = getLayer(index + 1);
 		boolean hasBias = layer.hasBias();
 
 		if (inputs.getRows() != weights.getColumns()) {
@@ -79,7 +88,7 @@ public class LayerConnectionList {
 		Matrix layerOutput = weights.multiply(inputs);
 
 		if (hasBias) {
-			layerOutput.add(layer.getBias());
+			layerOutput = layerOutput.add(layer.getBias());
 		}
 
 		return layerOutput;
@@ -106,12 +115,62 @@ public class LayerConnectionList {
 		return this.inputNodes;
 	}
 
-	public void setWeights(int i, Matrix newWeights) {
+	public void setWeight(int i, Matrix newWeights) {
 		this.weightMatrixMap.get(connections[i]).setData(newWeights);
 	}
 
-	public Matrix getWeights(int i) {
+	public Matrix[] getWeights() {
+		Matrix[] returns = new Matrix[this.amountOfWeights()];
+		for (int i = 0; i < this.amountOfWeights(); i++) {
+			returns[i] = this.weightMatrixMap.get(connections[i]);
+		}
+		return returns;
+	}
+
+	public Matrix getWeight(int i) {
 		return this.weightMatrixMap.get(connections[i]);
 	}
 
+	public void setActiveLayer(int i, Matrix outputMatrix) {
+		this.layers[i].setValue(outputMatrix);
+	}
+
+	public void setActiveLayerBias(int i, Matrix outputMatrix) {
+		this.layers[i].setBias(outputMatrix);
+	}
+
+	public Matrix getActiveLayer(int i) {
+		return this.layers[i].getValues();
+	}
+
+	public Matrix[] getLayers() {
+		Matrix[] layers = new Matrix[this.layers.length];
+		for (int i = 0; i < layers.length; i++) {
+			layers[i] = getLayer(i).getValues();
+		}
+		return layers;
+	}
+
+	public Matrix[] getBiases() {
+		Matrix[] layers = new Matrix[this.layers.length];
+		for (int i = 0; i < layers.length; i++) {
+			layers[i] = getLayer(i).getBias();
+		}
+		return layers;
+	}
+
+	public void printWeights() {
+		for (Connection w : connections) {
+			System.out
+				.println(w.getFrom().getIndexInNetwork() + " " + w.getTo().getIndexInNetwork());
+			w.getWeights().show();
+			System.out.println();
+		}
+	}
+
+	public void printLayers() {
+		for (Layer l : layers) {
+			l.getValues().show();
+		}
+	}
 }

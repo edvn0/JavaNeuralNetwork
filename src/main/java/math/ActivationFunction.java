@@ -8,9 +8,9 @@ public interface ActivationFunction {
 	String RELU = "RELU";
 	String TANH = "TANH";
 
-	Matrix applyFunctionToMatrix(Matrix input);
+	Matrix functionToMatrix(Matrix input);
 
-	Matrix applyDerivativeFunctionToMatrix(Matrix input);
+	Matrix derivativeToMatrix(Matrix input);
 
 	String getName();
 }
