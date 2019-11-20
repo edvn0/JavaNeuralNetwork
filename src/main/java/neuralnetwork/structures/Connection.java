@@ -1,4 +1,5 @@
-package neuralnetwork.layer;
+package neuralnetwork.structures;
+
 
 import matrix.Matrix;
 
@@ -36,6 +37,6 @@ public class Connection {
 
 	@Override
 	public String toString() {
-		return "[ " + this.from.toString() + " , " + this.to.toString() + " ]";
+		return "[" + this.from.toString() + "," + this.to.toString() + "]";
 	}
 }

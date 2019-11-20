@@ -1,10 +1,10 @@
 package neuralnetwork;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map.Entry;
+import java.util.List;
 import math.ActivationFunction;
-import math.ActivationFunctionFactory;
+import math.ReluFunction;
+import math.TanhFunction;
 import matrix.Matrix;
 
 public class SingleLayerPerceptron implements Serializable, Trainable {
@@ -12,12 +12,11 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 	private static final long serialVersionUID = 1233L;
 
 	private double learningRate;
-	private Matrix inputHiddenWeights;
-	private Matrix outputHiddenWeights;
-	private HashMap<Integer, Matrix> layers;
+	private Matrix inputToHiddenWeights;
+	private Matrix hiddenToOutputWeights;
 
-	private transient ActivationFunctionFactory functionFactory;
-	private transient ActivationFunction function;
+	private transient ActivationFunction firstLayerFunction;
+	private transient ActivationFunction lastLayerFunction;
 
 	private int inputNodes, outputNodes;
 
@@ -25,27 +24,16 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 
 	public SingleLayerPerceptron(int inputNodes, int hiddenNodes, int outputNodes,
 		double learningRate) {
-		this.inputHiddenWeights = Matrix.random(hiddenNodes, inputNodes);
-		this.outputHiddenWeights = Matrix.random(outputNodes, hiddenNodes);
+		this.inputToHiddenWeights = Matrix.random(hiddenNodes, inputNodes);
+		this.hiddenToOutputWeights = Matrix.random(outputNodes, hiddenNodes);
 
 		this.hiddenBias = Matrix.random(hiddenNodes, 1);
 		this.outputBias = Matrix.random(outputNodes, 1);
 
+		this.firstLayerFunction = new ReluFunction();
+		this.lastLayerFunction = new TanhFunction();
+
 		this.learningRate = learningRate;
-
-		this.functionFactory = new ActivationFunctionFactory();
-	}
-
-	@Deprecated
-	public SingleLayerPerceptron(int inputNodes, int outputNodes, int layers,
-		int... numOfNodesInLayers) {
-		this.inputNodes = inputNodes;
-		this.outputNodes = outputNodes;
-		this.layers = new HashMap<>();
-		for (int i = 0; i < layers; i++) {
-			Matrix networkLayer = new Matrix(numOfNodesInLayers[i], 1);
-			this.layers.put(i + 1, networkLayer);
-		}
 	}
 
 
@@ -55,82 +43,65 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 	 * @param input double[] with values to be predicted.
 	 * @return a Matrix(actually a vector, k*1 Matrix) with the predicted outputs.
 	 */
-	public Matrix predict(double[] input) {
-		Matrix inputMatrix = Matrix.fromArray(input);
-		Matrix hidden = this.inputHiddenWeights.multiply(inputMatrix);
+	public Matrix predict(Matrix input) {
+		Matrix inputMatrix = input;
+		Matrix hidden = this.inputToHiddenWeights.multiply(inputMatrix);
 
 		hidden = hidden.add(this.hiddenBias);
-		hidden = this.function.functionToMatrix(hidden);
+		hidden = this.firstLayerFunction.applyFunction(hidden);
 
-		Matrix output = this.outputHiddenWeights.multiply(hidden);
+		Matrix output = this.hiddenToOutputWeights.multiply(hidden);
 		output = output.add(this.outputBias);
-		output = this.function.functionToMatrix(output);
+		output = this.lastLayerFunction.applyFunction(output);
 
 		return output;
 	}
 
-	public void train(double[] inputs, double[] knownResults) {
-		Matrix inputMatrix = Matrix.fromArray(inputs);
-		Matrix targetMatrix = Matrix.fromArray(knownResults);
-
+	public void train(List<Matrix[]> testData, String method) {
 		//----------
 		// Calculate feedforward with inputs.
 		//----------
 
-		// From input layer -> hidden layer.
-		Matrix hidden = this.inputHiddenWeights.multiply(inputMatrix);
-		hidden = hidden.add(this.hiddenBias);
-		hidden = this.function.functionToMatrix(hidden);
+		for (int i = 0; i < testData.size(); i++) {
+			Matrix inputs = testData.get(i)[0];
+			Matrix knownResults = testData.get(i)[1];
+			// From input layer -> hidden layer.
+			Matrix hidden = this.inputToHiddenWeights.multiply(inputs);
+			hidden = hidden.add(this.hiddenBias);
+			hidden = this.firstLayerFunction.applyFunction(hidden);
 
-		// From hidden layer -> output layer. ActivationFunction(Weighted sum (hidden) + bias).
-		Matrix outputs = this.outputHiddenWeights.multiply(hidden);
-		outputs = outputs.add(this.outputBias);
-		outputs = this.function.functionToMatrix(outputs);
+			// From hidden layer -> output layer. ActivationFunction(Weighted sum (hidden) + bias).
+			Matrix outputs = this.hiddenToOutputWeights.multiply(hidden);
+			outputs = outputs.add(this.outputBias);
+			outputs = this.lastLayerFunction.applyFunction(outputs);
 
-		// How incorrect was this prediction?
-		Matrix outputErrors = targetMatrix.subtract(outputs);
+			// How incorrect was this prediction?
+			Matrix outputErrors = knownResults.subtract(outputs);
 
-		// Calculate gradients, i.e. Activation derivatives of all elements.
-		Matrix gradients = this.function.derivativeToMatrix(outputs);
-		gradients = gradients.hadamard(outputErrors);
-		gradients = gradients.map((e) -> e * learningRate);
+			// Calculate gradients, i.e. Activation derivatives of all elements.
+			// FIXME: This was changed from softmax, might change back
+			Matrix gradients = this.lastLayerFunction.applyDerivative(outputs);
+			gradients = gradients.hadamard(outputErrors);
+			gradients = gradients.map((e) -> e * learningRate);
 
-		Matrix hiddenTransposed = hidden.transpose();
-		Matrix hiddenOutputDeltas = gradients.multiply(hiddenTransposed);
+			Matrix hiddenTransposed = hidden.transpose();
+			Matrix hiddenOutputDeltas = gradients.multiply(hiddenTransposed);
 
-		this.outputHiddenWeights = this.outputHiddenWeights.add(hiddenOutputDeltas);
-		this.outputBias = this.outputBias.add(gradients);
+			this.hiddenToOutputWeights = this.hiddenToOutputWeights.add(hiddenOutputDeltas);
+			this.outputBias = this.outputBias.add(gradients);
 
-		Matrix outputHiddenWeightsTransposed = this.outputHiddenWeights.transpose();
-		Matrix hiddenErrors = outputHiddenWeightsTransposed.multiply(outputErrors);
+			Matrix outputHiddenWeightsTransposed = this.hiddenToOutputWeights.transpose();
+			Matrix hiddenErrors = outputHiddenWeightsTransposed.multiply(outputErrors);
 
-		Matrix hiddenGradient = this.function.derivativeToMatrix(hidden);
-		hiddenGradient = hiddenGradient.hadamard(hiddenErrors);
-		hiddenGradient = hiddenGradient.map((e) -> e * learningRate);
+			Matrix hiddenGradient = this.firstLayerFunction.applyDerivative(hidden);
+			hiddenGradient = hiddenGradient.hadamard(hiddenErrors);
+			hiddenGradient = hiddenGradient.map((e) -> e * learningRate);
 
-		Matrix inputsTransposed = inputMatrix.transpose();
-		Matrix inputHiddenWeightDeltas = hiddenGradient.multiply(inputsTransposed);
+			Matrix inputsTransposed = inputs.transpose();
+			Matrix inputHiddenWeightDeltas = hiddenGradient.multiply(inputsTransposed);
 
-		this.inputHiddenWeights = this.inputHiddenWeights.add(inputHiddenWeightDeltas);
-		this.hiddenBias = this.hiddenBias.add(hiddenGradient);
-	}
-
-	public void setActivationFunction(String function) {
-		this.function = new ActivationFunctionFactory().getActivationFunctionByKey(function);
-	}
-
-
-	public void setDefaultValues() {
-		this.learningRate = 0.1;
-		this.function = functionFactory.getActivationFunctionByKey("SIGMOID");
-	}
-
-	public void printNeuralNetwork() {
-		System.out.println("Input nodes: " + this.inputNodes);
-		for (Entry<Integer, Matrix> entry : this.layers.entrySet()) {
-			System.out.println("Layer: " + entry.getKey());
-			entry.getValue().show();
+			this.inputToHiddenWeights = this.inputToHiddenWeights.add(inputHiddenWeightDeltas);
+			this.hiddenBias = this.hiddenBias.add(hiddenGradient);
 		}
-		System.out.println("Output nodes: " + this.outputNodes);
 	}
 }

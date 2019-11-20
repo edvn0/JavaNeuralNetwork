@@ -10,19 +10,19 @@ public class SigmoidFunction implements ActivationFunction {
 		return 1 / (1 + Math.exp(-in));
 	}
 
-	private Double sigmoidDerivative(Double a) {
+	private double sigmoidDerivative(double a) {
 		return a * (1 - a);
 	}
 
 	@Override
-	public Matrix functionToMatrix(Matrix input) {
+	public Matrix applyFunction(Matrix input) {
 		Matrix returnMatrix = input;
 		returnMatrix = returnMatrix.map(this::sigmoid);
 		return returnMatrix;
 	}
 
 	@Override
-	public Matrix derivativeToMatrix(Matrix input) {
+	public Matrix applyDerivative(Matrix input) {
 		Matrix returnMatrix = input;
 		returnMatrix = returnMatrix.map(this::sigmoidDerivative);
 		return returnMatrix;
@@ -31,5 +31,13 @@ public class SigmoidFunction implements ActivationFunction {
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder("SigmoidFunction{");
+		sb.append("name='").append(getName()).append('\'');
+		sb.append('}');
+		return sb.toString();
 	}
 }

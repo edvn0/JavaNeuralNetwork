@@ -15,14 +15,14 @@ public class TanhFunction implements ActivationFunction {
 	}
 
 	@Override
-	public Matrix functionToMatrix(Matrix input) {
+	public Matrix applyFunction(Matrix input) {
 		Matrix returnMatrix = input;
 		returnMatrix = returnMatrix.map(this::tanh);
 		return returnMatrix;
 	}
 
 	@Override
-	public Matrix derivativeToMatrix(Matrix input) {
+	public Matrix applyDerivative(Matrix input) {
 		Matrix returnMatrix = input;
 		returnMatrix = returnMatrix.map(this::tanhDerivative);
 		return returnMatrix;
@@ -30,6 +30,14 @@ public class TanhFunction implements ActivationFunction {
 
 	@Override
 	public String getName() {
-		return null;
+		return NAME;
+	}
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder("TanhFunction{");
+		sb.append("name='").append(getName()).append('\'');
+		sb.append('}');
+		return sb.toString();
 	}
 }

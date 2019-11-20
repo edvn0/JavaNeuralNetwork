@@ -7,10 +7,13 @@ public interface ActivationFunction {
 	String SIGMOID = "SIGMOID";
 	String RELU = "RELU";
 	String TANH = "TANH";
+	String LIN = "LIN";
 
-	Matrix functionToMatrix(Matrix input);
+	Matrix applyFunction(Matrix input);
 
-	Matrix derivativeToMatrix(Matrix input);
+	Matrix applyDerivative(Matrix input);
 
 	String getName();
+
+	String toString();
 }

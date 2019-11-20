@@ -32,6 +32,7 @@ public class MatrixUtilities {
 	 * @return index of max element
 	 */
 	public static int networkOutputsMax(Matrix input) {
+		input = networkOutputsSoftMax(input);
 		double max = input.getData()[0][0];
 		int index = 0;
 		for (int i = 0; i < input.getData().length; i++) {
