@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.stream.DoubleStream;
 import matrix.Matrix;
 
-public class SoftmaxFunction implements ActivationFunction {
+public class SoftMaxErrorFunction implements ActivationFunction, ErrorFunction {
 
 	private Matrix softMax(Matrix input) {
 		if (input.getColumns() != 1) {
@@ -45,19 +45,40 @@ public class SoftmaxFunction implements ActivationFunction {
 	 */
 	@Override
 	public Matrix applyDerivative(Matrix input) {
-		return input.map((e) -> e * (1d - e));
+		for (int i = 0; i < input.getRows(); i++) {
+
+		}
+		return null;
+	}
+
+	private int kroneckerDelta(int i, int j) {
+		return (i == j) ? 1 : 0;
 	}
 
 	@Override
 	public String getName() {
-		return "SOFTMAX";
+		return null;
 	}
 
+	/**
+	 * Returns the derivative of the error function.
+	 */
 	@Override
-	public String toString() {
-		final StringBuilder sb = new StringBuilder("SoftmaxFunction{");
-		sb.append("name='").append(getName()).append('\'');
-		sb.append('}');
-		return sb.toString();
+	public Matrix applyErrorFunction(Matrix input, Matrix target) {
+		Matrix errors = input.subtract(target);
+
+		int size = errors.getRows();
+
+		double[] deltaAj = new double[size];
+		for (int j = 0; j < size; j++) {
+			double sum = 0;
+			for (int i = 0; i < size; i++) {
+				double x1 = kroneckerDelta(j, i) - input.getElement(j, 0);
+				double x2 = input.getElement(i, 0);
+				sum += errors.getElement(i, 0) * x1 * x2;
+			}
+			deltaAj[j] = sum;
+		}
+		return Matrix.fromArray(deltaAj);
 	}
 }
