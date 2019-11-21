@@ -1,4 +1,4 @@
-package math;
+package math.errors;
 
 import matrix.Matrix;
 

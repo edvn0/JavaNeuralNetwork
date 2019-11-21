@@ -3,11 +3,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import math.ActivationFunction;
-import math.ErrorFunction;
-import math.SoftMaxErrorFunction;
-import math.SoftmaxFunction;
-import math.TanhFunction;
+import math.activations.ActivationFunction;
+import math.activations.TanhFunction;
+import math.errors.ErrorFunction;
+import math.errors.MeanSquaredErrorFunction;
 import matrix.Matrix;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.SingleLayerPerceptron;
@@ -21,12 +20,12 @@ public class NNTester {
 		functions[0] = new TanhFunction();
 		functions[1] = new TanhFunction();
 		functions[2] = new TanhFunction();
-		functions[3] = new SoftmaxFunction();
-		ErrorFunction function = new SoftMaxErrorFunction();
+		functions[3] = new TanhFunction();
+		ErrorFunction function = new MeanSquaredErrorFunction();
 
-		SingleLayerPerceptron perceptron = new SingleLayerPerceptron(2, 5, 1, 0.1);
-		NeuralNetwork network = new NeuralNetwork(0.00005, functions, function,
-			new int[]{2, 2, 2, 1});
+		SingleLayerPerceptron perceptron = new SingleLayerPerceptron(2, 5, 1, 0.001);
+		NeuralNetwork network = new NeuralNetwork(0.001, functions, function,
+			new int[]{2, 5, 5, 1});
 
 		Trainable[] trainable = new Trainable[2];
 		trainable[0] = network;
@@ -63,8 +62,11 @@ public class NNTester {
 			if (t != null) {
 				if (t instanceof NeuralNetwork) {
 					((NeuralNetwork) t).stochasticGradientDescent(trainingData, testData, 100, 32);
+				} else {
+					for (Matrix[] testDatum : testData) {
+						t.train(testDatum[0], testDatum[1]);
+					}
 				}
-				t.train(testData, "SGD");
 			}
 		}
 

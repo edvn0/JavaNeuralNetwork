@@ -1,8 +1,8 @@
 package neuralnetwork.structures;
 
 import java.util.Arrays;
-import math.ActivationFunction;
-import math.TanhFunction;
+import math.activations.ActivationFunction;
+import math.activations.TanhFunction;
 import matrix.Matrix;
 
 public class Layer {

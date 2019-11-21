@@ -1,7 +1,7 @@
 package neuralnetwork.structures;
 
-import math.ActivationFunction;
-import math.TanhFunction;
+import math.activations.ActivationFunction;
+import math.activations.TanhFunction;
 import matrix.Matrix;
 
 public class LayerConnectionList {
@@ -89,9 +89,9 @@ public class LayerConnectionList {
 	}
 
 	public Matrix[] getBiases() {
-		Matrix[] biases = new Matrix[getTotalLayers()];
+		Matrix[] biases = new Matrix[getTotalLayers() - 1];
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
-			biases[i] = getLayer(i).getBias();
+			biases[i] = getBias(i);
 		}
 		return biases;
 	}

@@ -1,11 +1,14 @@
 package neuralnetwork;
 
+import errors.BackpropagationError;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import math.ActivationFunction;
-import math.ErrorFunction;
+import math.activations.ActivationFunction;
+import math.activations.SoftmaxFunction;
+import math.errors.CrossEntropyErrorFunction;
+import math.errors.ErrorFunction;
 import matrix.Matrix;
 import neuralnetwork.structures.LayerConnectionList;
 import org.jetbrains.annotations.NotNull;
@@ -39,14 +42,24 @@ public class NeuralNetwork implements Serializable, Trainable {
 		this.layerConnections = new LayerConnectionList(functions, sizes);
 		this.errorFunction = function;
 		this.totalLayers = this.layerConnections.getTotalLayers();
+
+		if ((!(functions[functions.length - 1] instanceof SoftmaxFunction)
+			&& function instanceof CrossEntropyErrorFunction)) {
+			throw new BackpropagationError(
+				"To properly function, back-propagation needs the activation function of the last "
+					+ "layer to be differentiable with respect to the error function.");
+		}
+
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void train(List<Matrix[]> training, String method) {
-
+	public void train(Matrix training, Matrix correct) {
+		List<Matrix[]> values = new ArrayList<>();
+		values.add(new Matrix[]{training, correct});
+		calculateMiniBatch(values);
 	}
 
 	/**
@@ -178,9 +191,12 @@ public class NeuralNetwork implements Serializable, Trainable {
 		// End feedforward
 
 		// Calculate error signal for last layer
-		Matrix error = errorFunction
+		Matrix error;
+		Matrix deltaError;
+
+		error = errorFunction
 			.applyErrorFunction(activations.get(activations.size() - 1), correct);
-		Matrix deltaError = error
+		deltaError = error
 			.hadamard(functions[activations.size() - 1]
 				.applyDerivative(xVector.get(xVector.size() - 1)));
 

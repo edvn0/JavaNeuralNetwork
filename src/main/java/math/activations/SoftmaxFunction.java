@@ -1,4 +1,4 @@
-package math;
+package math.activations;
 
 import java.util.Arrays;
 import java.util.stream.DoubleStream;
@@ -40,9 +40,6 @@ public class SoftmaxFunction implements ActivationFunction {
 		return this.softMax(input);
 	}
 
-	/**
-	 * Will not be used, returns null.
-	 */
 	@Override
 	public Matrix applyDerivative(Matrix input) {
 		return input.map((e) -> e * (1d - e));

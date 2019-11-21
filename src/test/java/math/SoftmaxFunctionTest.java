@@ -1,5 +1,7 @@
 package math;
 
+import math.activations.ActivationFunction;
+import math.activations.SoftmaxFunction;
 import matrix.Matrix;
 import org.junit.After;
 import org.junit.Before;
@@ -21,12 +23,16 @@ public class SoftmaxFunctionTest {
 	@Test
 	public void applyFunctionTest() {
 		ActivationFunction function = new SoftmaxFunction();
-		Matrix output =function.applyFunction(a);
+		Matrix output = function.applyFunction(a);
 		System.out.println(output);
 	}
 
 	@Test
 	public void applyDerivative() {
+		ActivationFunction function = new SoftmaxFunction();
+		Matrix output = function.applyFunction(a);
+		output = function.applyDerivative(output);
+		System.out.println(output);
 	}
 
 	@Test

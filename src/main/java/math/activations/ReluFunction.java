@@ -1,5 +1,6 @@
-package math;
+package math.activations;
 
+import math.activations.ActivationFunction;
 import matrix.Matrix;
 
 public class ReluFunction implements ActivationFunction {

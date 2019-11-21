@@ -1,30 +1,31 @@
-package math;
+package math.activations;
 
+import math.activations.ActivationFunction;
 import matrix.Matrix;
 
-public class SigmoidFunction implements ActivationFunction {
+public class TanhFunction implements ActivationFunction {
 
-	private static final String NAME = "SIGMOID";
+	private static final String NAME = "TANH";
 
-	private double sigmoid(double in) {
-		return 1 / (1 + Math.exp(-in));
+	private double tanh(double a) {
+		return Math.tanh(a);
 	}
 
-	private double sigmoidDerivative(double a) {
-		return a * (1 - a);
+	private double tanhDerivative(double a) {
+		return 1 - (a * a);
 	}
 
 	@Override
 	public Matrix applyFunction(Matrix input) {
 		Matrix returnMatrix = input;
-		returnMatrix = returnMatrix.map(this::sigmoid);
+		returnMatrix = returnMatrix.map(this::tanh);
 		return returnMatrix;
 	}
 
 	@Override
 	public Matrix applyDerivative(Matrix input) {
 		Matrix returnMatrix = input;
-		returnMatrix = returnMatrix.map(this::sigmoidDerivative);
+		returnMatrix = returnMatrix.map(this::tanhDerivative);
 		return returnMatrix;
 	}
 
@@ -35,7 +36,7 @@ public class SigmoidFunction implements ActivationFunction {
 
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder("SigmoidFunction{");
+		final StringBuilder sb = new StringBuilder("TanhFunction{");
 		sb.append("name='").append(getName()).append('\'');
 		sb.append('}');
 		return sb.toString();

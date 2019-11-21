@@ -1,4 +1,4 @@
-package math;
+package math.activations;
 
 import matrix.Matrix;
 

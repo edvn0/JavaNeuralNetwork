@@ -3,11 +3,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import math.ActivationFunction;
-import math.ErrorFunction;
-import math.SoftMaxErrorFunction;
-import math.SoftmaxFunction;
-import math.TanhFunction;
+import math.activations.ActivationFunction;
+import math.activations.SoftmaxFunction;
+import math.activations.TanhFunction;
+import math.errors.CrossEntropyErrorFunction;
+import math.errors.ErrorFunction;
 import matrix.Matrix;
 import neuralnetwork.NeuralNetwork;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +22,7 @@ public class MNISTTester {
 		functions[0] = new TanhFunction();
 		functions[1] = new TanhFunction();
 		functions[2] = new SoftmaxFunction();
-		ErrorFunction function = new SoftMaxErrorFunction();
+		ErrorFunction function = new CrossEntropyErrorFunction();
 		NeuralNetwork network = new NeuralNetwork(5e-3, functions, function,
 			new int[]{784, 10, 10});
 
