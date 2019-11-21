@@ -1,6 +1,5 @@
 package math.evaluation;
 
-import java.util.Arrays;
 import java.util.List;
 import matrix.Matrix;
 
@@ -12,10 +11,10 @@ public class MnistEvaluationFunction implements EvaluationFunction {
 		for (int i = 0; i < toEvaluate.size(); i++) {
 			// data[i] = {data, correctLabels}
 			Matrix data = toEvaluate.get(i)[0];
-			Matrix correctLabels = toEvaluate.get(i)[1];
+			int correctLabels = this.getLabel(toEvaluate.get(i)[1]);
 
 			int val = this.maxLabel(data);
-			if (correctLabels.getElement(0, 0) == val) {
+			if (correctLabels == val) {
 				correct++;
 			}
 
@@ -23,9 +22,20 @@ public class MnistEvaluationFunction implements EvaluationFunction {
 		return Matrix.fromArray(new double[]{correct});
 	}
 
-	private int maxLabel(Matrix fedForward) {
+	public int getLabel(Matrix matrix) {
+		int i = 0;
+		for (double[] d : matrix.getData()) {
+			int val = (int) d[0];
+			if (val == 1) {
+				return i;
+			}
+			i++;
+		}
+		return -1;
+	}
+
+	public int maxLabel(Matrix fedForward) {
 		double[] data = fedForward.toArray();
-		System.out.println(Arrays.toString(data));
 		int index = 0;
 		double max = data[0];
 		for (int i = 1; i < data.length; i++) {

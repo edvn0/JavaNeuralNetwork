@@ -4,8 +4,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import math.activations.ActivationFunction;
+import math.activations.SigmoidFunction;
 import math.activations.SoftmaxFunction;
-import math.activations.TanhFunction;
 import math.errors.CrossEntropyErrorFunction;
 import math.errors.ErrorFunction;
 import math.evaluation.EvaluationFunction;
@@ -21,13 +21,13 @@ public class MNISTTester {
 
 	public static void main(String[] args) throws IOException {
 		ActivationFunction[] functions = new ActivationFunction[3];
-		functions[0] = new TanhFunction();
-		functions[1] = new TanhFunction();
+		functions[0] = new SigmoidFunction();
+		functions[1] = new SigmoidFunction();
 		functions[2] = new SoftmaxFunction();
 		ErrorFunction function = new CrossEntropyErrorFunction();
 		EvaluationFunction eval = new MnistEvaluationFunction();
 		NeuralNetwork network = new NeuralNetwork(5e-3, functions, function, eval,
-			new int[]{784, 10, 10});
+			new int[]{784, 100, 10});
 
 		imagesTrain = generateDataFromCSV(
 			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv");
@@ -51,7 +51,7 @@ public class MNISTTester {
 	private static double[][] normalizeData(String[] split) {
 		double[][] d = new double[1 + 28 * 28][1];
 		for (int i = 1; i < split.length; i++) {
-			d[i][0] = Double.parseDouble(split[i]);
+			d[i][0] = Double.parseDouble(split[i]) / 255d;
 		}
 		d[0][0] = Integer.parseInt(split[0]);
 		return d;
@@ -74,34 +74,34 @@ public class MNISTTester {
 		String newNum = num.substring(0, 1);
 		switch (Integer.parseInt(newNum)) {
 			case 0:
-				corr[0][0] = 0;
+				corr[0][0] = 1;
 				break;
 			case 1:
-				corr[1][0] = 1 / 10d;
+				corr[1][0] = 1;
 				break;
 			case 2:
-				corr[2][0] = 2 / 10d;
+				corr[2][0] = 1;
 				break;
 			case 3:
-				corr[3][0] = 3 / 10d;
+				corr[3][0] = 1;
 				break;
 			case 4:
-				corr[4][0] = 4 / 10d;
+				corr[4][0] = 1;
 				break;
 			case 5:
-				corr[5][0] = 5 / 10d;
+				corr[5][0] = 1;
 				break;
 			case 6:
-				corr[6][0] = 6 / 10d;
+				corr[6][0] = 1;
 				break;
 			case 7:
-				corr[7][0] = 7 / 10d;
+				corr[7][0] = 1;
 				break;
 			case 8:
-				corr[8][0] = 8 / 10d;
+				corr[8][0] = 1;
 				break;
 			case 9:
-				corr[9][0] = 9 / 10d;
+				corr[9][0] = 1;
 				break;
 			default:
 				break;
