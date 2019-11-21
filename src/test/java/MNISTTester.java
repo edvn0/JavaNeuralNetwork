@@ -8,6 +8,8 @@ import math.activations.SoftmaxFunction;
 import math.activations.TanhFunction;
 import math.errors.CrossEntropyErrorFunction;
 import math.errors.ErrorFunction;
+import math.evaluation.EvaluationFunction;
+import math.evaluation.MnistEvaluationFunction;
 import matrix.Matrix;
 import neuralnetwork.NeuralNetwork;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +25,8 @@ public class MNISTTester {
 		functions[1] = new TanhFunction();
 		functions[2] = new SoftmaxFunction();
 		ErrorFunction function = new CrossEntropyErrorFunction();
-		NeuralNetwork network = new NeuralNetwork(5e-3, functions, function,
+		EvaluationFunction eval = new MnistEvaluationFunction();
+		NeuralNetwork network = new NeuralNetwork(5e-3, functions, function, eval,
 			new int[]{784, 10, 10});
 
 		imagesTrain = generateDataFromCSV(

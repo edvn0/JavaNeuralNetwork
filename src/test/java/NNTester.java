@@ -7,6 +7,8 @@ import math.activations.ActivationFunction;
 import math.activations.TanhFunction;
 import math.errors.ErrorFunction;
 import math.errors.MeanSquaredErrorFunction;
+import math.evaluation.EvaluationFunction;
+import math.evaluation.XOREvaluationFunction;
 import matrix.Matrix;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.SingleLayerPerceptron;
@@ -22,9 +24,10 @@ public class NNTester {
 		functions[2] = new TanhFunction();
 		functions[3] = new TanhFunction();
 		ErrorFunction function = new MeanSquaredErrorFunction();
+		EvaluationFunction eval = new XOREvaluationFunction();
 
 		SingleLayerPerceptron perceptron = new SingleLayerPerceptron(2, 5, 1, 0.001);
-		NeuralNetwork network = new NeuralNetwork(0.001, functions, function,
+		NeuralNetwork network = new NeuralNetwork(0.001, functions, function, eval,
 			new int[]{2, 5, 5, 1});
 
 		Trainable[] trainable = new Trainable[2];
@@ -58,21 +61,16 @@ public class NNTester {
 
 		Collections.shuffle(testData);
 
-		for (Trainable t : trainable) {
-			if (t != null) {
-				if (t instanceof NeuralNetwork) {
-					((NeuralNetwork) t).stochasticGradientDescent(trainingData, testData, 100, 32);
-				} else {
-					for (Matrix[] testDatum : testData) {
-						t.train(testDatum[0], testDatum[1]);
-					}
-				}
-			}
+		for (Matrix[] testDatum : testData) {
+			perceptron.train(testDatum[0], testDatum[1]);
 		}
+
+		network.stochasticGradientDescent(trainingData, testData, 100, 2);
 
 		System.out.println();
 		System.out.println();
-		for (Trainable t : trainable) {
+		for (
+			Trainable t : trainable) {
 			if (t != null) {
 				System.out.println(t.getClass());
 				for (int i = 0; i < training.length; i++) {

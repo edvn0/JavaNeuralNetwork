@@ -9,6 +9,7 @@ import math.activations.ActivationFunction;
 import math.activations.SoftmaxFunction;
 import math.errors.CrossEntropyErrorFunction;
 import math.errors.ErrorFunction;
+import math.evaluation.EvaluationFunction;
 import matrix.Matrix;
 import neuralnetwork.structures.LayerConnectionList;
 import org.jetbrains.annotations.NotNull;
@@ -30,18 +31,23 @@ public class NeuralNetwork implements Serializable, Trainable {
 	// The error function to minimize.
 	private ErrorFunction errorFunction;
 
+	// The function to evaluate the data set.
+	private EvaluationFunction evaluationFunction;
+
 	// The structure that holds everything.
 	private LayerConnectionList layerConnections; // Maps layer 0 to 1, 1 to 2, etc. Will "store" the
 
 	private int totalLayers;
 
 	public NeuralNetwork(double learning, ActivationFunction[] functions, ErrorFunction function,
+		EvaluationFunction eval,
 		int[] sizes) {
 		this.learningRate = learning;
 		this.functions = functions;
 		this.layerConnections = new LayerConnectionList(functions, sizes);
 		this.errorFunction = function;
 		this.totalLayers = this.layerConnections.getTotalLayers();
+		this.evaluationFunction = eval;
 
 		if ((!(functions[functions.length - 1] instanceof SoftmaxFunction)
 			&& function instanceof CrossEntropyErrorFunction)) {
@@ -83,39 +89,21 @@ public class NeuralNetwork implements Serializable, Trainable {
 			for (int j = 0; j < trDataSize - batchSize; j += batchSize) {
 				calculateMiniBatch(training.subList(j, j + batchSize));
 			}
-			int correct = evaluateTestData(test);
+			List<Matrix[]> feedForwardData = this.feedForwardData(test);
+			int correct = (int) this.evaluationFunction.evaluatePrediction(feedForwardData)
+				.getElement(0, 0);
 			System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + teDataSize);
 		}
 	}
 
-	private int evaluateTestData(List<Matrix[]> test) {
-		int correct = 0;
+	private List<Matrix[]> feedForwardData(List<Matrix[]> test) {
+		List<Matrix[]> copy = new ArrayList<>();
 		for (int i = 0; i < test.size(); i++) {
-			// data[i] = {data, correctLabels}
-			Matrix data = test.get(i)[0];
-			Matrix correctLabels = test.get(i)[1];
-
-			Matrix fedForward = predict(data);
-			int val = this.maxLabel(fedForward);
-			if (correctLabels.getElement(0, 0) == val) {
-				correct++;
-			}
-
+			Matrix out = this.feedForward(test.get(i)[0]);
+			Matrix[] newOut = new Matrix[]{out, test.get(i)[1]};
+			copy.add(newOut);
 		}
-		return correct;
-	}
-
-	private int maxLabel(Matrix fedForward) {
-		double[] data = fedForward.toArray();
-		int index = 0;
-		double max = data[0];
-		for (int i = 1; i < data.length; i++) {
-			if (data[i] > max) {
-				max = data[i];
-				index = i;
-			}
-		}
-		return index;
+		return copy;
 	}
 
 	private void calculateMiniBatch(List<Matrix[]> subList) {
@@ -187,6 +175,8 @@ public class NeuralNetwork implements Serializable, Trainable {
 		// Perform Feed Forward here...
 		List<Matrix> activations = new ArrayList<>();
 		List<Matrix> xVector = new ArrayList<>();
+
+		// Alters all arrays and lists.
 		this.backPropFeedForward(toPredict, activations, xVector, weights, biases);
 		// End feedforward
 
