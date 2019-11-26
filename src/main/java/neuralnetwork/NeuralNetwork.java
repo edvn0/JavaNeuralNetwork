@@ -13,7 +13,6 @@ import math.errors.ErrorFunction;
 import math.evaluation.EvaluationFunction;
 import matrix.Matrix;
 import org.jetbrains.annotations.NotNull;
-import utilities.Layer;
 
 /**
  * A multi layer perceptron network.
@@ -39,7 +38,7 @@ public class NeuralNetwork implements Serializable, Trainable {
 	private Matrix[] weights;
 
 	// 0 based layering, i.e. index 0 in layers is layer 0.
-	private Layer[] layers;
+	private Matrix[] biases;
 
 	private int totalLayers;
 
@@ -62,7 +61,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 					+ "layer to be differentiable with respect to the error function.");
 		}
 
-		System.out.println(Arrays.toString(layers));
 		System.out.println(Arrays.toString(weights));
 		System.out.println(Arrays.toString(functions));
 	}
@@ -75,9 +73,9 @@ public class NeuralNetwork implements Serializable, Trainable {
 	}
 
 	private void createLayers(int[] sizes) {
-		this.layers = new Layer[getTotalLayers() - 1];
+		this.biases = new Matrix[getTotalLayers() - 1];
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
-			this.layers[i] = new Layer(sizes[i + 1], Matrix.random(sizes[i + 1], 1), functions[i]);
+			this.biases[i] = new Matrix(sizes[i + 1], 1);
 		}
 	}
 
@@ -227,11 +225,11 @@ public class NeuralNetwork implements Serializable, Trainable {
 	}
 
 	private Matrix getBias(int i) {
-		return this.layers[i].getBias();
+		return this.biases[i];
 	}
 
 	private void setLayerBias(int i, Matrix outputMatrix) {
-		this.layers[i].setBias(outputMatrix);
+		this.biases[i] = outputMatrix;
 	}
 
 	@Override
