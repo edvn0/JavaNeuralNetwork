@@ -1,4 +1,4 @@
-package neuralnetwork.structures;
+package utilities;
 
 import java.util.Arrays;
 import math.activations.ActivationFunction;

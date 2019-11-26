@@ -3,6 +3,7 @@ package neuralnetwork;
 import errors.BackpropagationError;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import math.activations.ActivationFunction;
@@ -11,8 +12,8 @@ import math.errors.CrossEntropyErrorFunction;
 import math.errors.ErrorFunction;
 import math.evaluation.EvaluationFunction;
 import matrix.Matrix;
-import neuralnetwork.structures.LayerConnectionList;
 import org.jetbrains.annotations.NotNull;
+import utilities.Layer;
 
 /**
  * A multi layer perceptron network.
@@ -34,8 +35,11 @@ public class NeuralNetwork implements Serializable, Trainable {
 	// The function to evaluate the data set.
 	private EvaluationFunction evaluationFunction;
 
-	// The structure that holds everything.
-	private LayerConnectionList layerConnections; // Maps layer 0 to 1, 1 to 2, etc. Will "store" the
+	// 0 based connections, i.e., connection 0 is from Layer 0 to Layer 1.
+	private Matrix[] weights;
+
+	// 0 based layering, i.e. index 0 in layers is layer 0.
+	private Layer[] layers;
 
 	private int totalLayers;
 
@@ -44,10 +48,12 @@ public class NeuralNetwork implements Serializable, Trainable {
 		int[] sizes) {
 		this.learningRate = learning;
 		this.functions = functions;
-		this.layerConnections = new LayerConnectionList(functions, sizes);
 		this.errorFunction = function;
-		this.totalLayers = this.layerConnections.getTotalLayers();
+		this.totalLayers = sizes.length;
 		this.evaluationFunction = eval;
+
+		createLayers(sizes);
+		initialiseWeights(sizes);
 
 		if ((!(functions[functions.length - 1] instanceof SoftmaxFunction)
 			&& function instanceof CrossEntropyErrorFunction)) {
@@ -56,6 +62,27 @@ public class NeuralNetwork implements Serializable, Trainable {
 					+ "layer to be differentiable with respect to the error function.");
 		}
 
+		System.out.println(Arrays.toString(layers));
+		System.out.println(Arrays.toString(weights));
+		System.out.println(Arrays.toString(functions));
+	}
+
+	private void initialiseWeights(int[] sizes) {
+		this.weights = new Matrix[getTotalLayers() - 1];
+		for (int i = 0; i < getTotalLayers() - 1; i++) {
+			this.weights[i] = Matrix.random(sizes[i + 1], sizes[i]);
+		}
+	}
+
+	private void createLayers(int[] sizes) {
+		this.layers = new Layer[getTotalLayers() - 1];
+		for (int i = 0; i < getTotalLayers() - 1; i++) {
+			this.layers[i] = new Layer(sizes[i + 1], Matrix.random(sizes[i + 1], 1), functions[i]);
+		}
+	}
+
+	private int getTotalLayers() {
+		return this.totalLayers;
 	}
 
 	/**
@@ -63,62 +90,25 @@ public class NeuralNetwork implements Serializable, Trainable {
 	 */
 	@Override
 	public void train(Matrix training, Matrix correct) {
-		List<Matrix[]> values = new ArrayList<>();
-		values.add(new Matrix[]{training, correct});
-		calculateMiniBatch(values);
+		calculateMiniBatch(Collections.singletonList(new NetworkInput(training, correct)));
 	}
 
-	/**
-	 * Provides an implementation of SGD for this neural network.
-	 *
-	 * @param training a Collections object with Matrix[] objects, Matrix[0] is the data, Matrix[1]
-	 * is the label.
-	 * @param test a Collections object with Matrix[] objects, Matrix[0] is the data, Matrix[1] is
-	 * the label.
-	 * @param epochs how many iterations are we doing SGD for
-	 * @param batchSize how big is the batch size, typically 32.
-	 */
-	public void stochasticGradientDescent(@NotNull List<Matrix[]> training,
-		@NotNull List<Matrix[]> test, int epochs,
-		int batchSize) {
-		int trDataSize = training.size();
-		int teDataSize = test.size();
-		for (int i = 0; i < epochs; i++) {
-			Collections.shuffle(training);
-			System.out.println("Calculating epoch: " + (i + 1) + ".");
-			for (int j = 0; j < trDataSize - batchSize; j += batchSize) {
-				calculateMiniBatch(training.subList(j, j + batchSize));
-			}
-			List<Matrix[]> feedForwardData = this.feedForwardData(test);
-			int correct = (int) this.evaluationFunction.evaluatePrediction(feedForwardData)
-				.getElement(0, 0);
-			System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + teDataSize);
-		}
-	}
-
-	private List<Matrix[]> feedForwardData(List<Matrix[]> test) {
-		List<Matrix[]> copy = new ArrayList<>();
-		for (int i = 0; i < test.size(); i++) {
-			Matrix out = this.feedForward(test.get(i)[0]);
-			Matrix[] newOut = new Matrix[]{out, test.get(i)[1]};
-			copy.add(newOut);
-		}
-		return copy;
-	}
-
-	private void calculateMiniBatch(List<Matrix[]> subList) {
+	private void calculateMiniBatch(List<NetworkInput> subList) {
 		int size = subList.size();
 		Matrix[] dB = new Matrix[this.totalLayers - 1];
 		Matrix[] dW = new Matrix[this.totalLayers - 1];
 		for (int i = 0; i < this.totalLayers - 1; i++) {
-			Matrix bias = this.layerConnections.getBias(i);
-			Matrix weight = this.layerConnections.getWeight(i);
+			Matrix bias = getBias(i);
+			Matrix weight = getWeight(i);
 			dB[i] = new Matrix(bias.getRows(), bias.getColumns());
 			dW[i] = new Matrix(weight.getRows(), weight.getColumns());
 		}
 
 		for (int i = 0; i < size; i++) {
-			List<Matrix[]> deltas = backPropagate(subList.get(i)[0], subList.get(i)[1]);
+			NetworkInput data = subList.get(i);
+			Matrix dataIn = data.getData();
+			Matrix label = data.getLabel();
+			List<Matrix[]> deltas = backPropagate(dataIn, label);
 			Matrix[] deltaB = deltas.get(0);
 			Matrix[] deltaW = deltas.get(1);
 
@@ -129,48 +119,25 @@ public class NeuralNetwork implements Serializable, Trainable {
 		}
 
 		for (int i = 0; i < this.totalLayers - 1; i++) {
-			Matrix cW = this.layerConnections.getWeight(i);
-			Matrix cB = this.layerConnections.getBias(i);
+			Matrix cW = getWeight(i);
+			Matrix cB = getBias(i);
 
 			Matrix scaledDeltaB = dB[i].map((e) -> e * (this.learningRate / size));
 			Matrix scaledDeltaW = dW[i].map((e) -> e * (this.learningRate / size));
 
-			this.layerConnections.setWeight(i, cW.subtract(scaledDeltaW));
-			this.layerConnections.setLayerBias(i, cB.subtract(scaledDeltaB));
-		}
-	}
-
-	private Matrix[] getDeltas(Matrix[] toCopyFrom) {
-		Matrix[] deltas = new Matrix[toCopyFrom.length];
-		for (int i = 0; i < deltas.length; i++) {
-			int rows = toCopyFrom[i].getRows();
-			int cols = toCopyFrom[i].getColumns();
-			deltas[i] = new Matrix(rows, cols);
-		}
-		return deltas;
-	}
-
-	private void backPropFeedForward(Matrix starter, List<Matrix> actives, List<Matrix> vectors,
-		Matrix[] weights, Matrix[] biases) {
-		Matrix toPredict = starter;
-		actives.add(toPredict);
-		for (int i = 0; i < this.totalLayers - 1; i++) {
-			Matrix x = weights[i].multiply(toPredict).add(biases[i]);
-			vectors.add(x);
-
-			toPredict = this.functions[i].applyFunction(x);
-			actives.add(toPredict);
+			setWeight(i, cW.subtract(scaledDeltaW));
+			setLayerBias(i, cB.subtract(scaledDeltaB));
 		}
 	}
 
 	private List<Matrix[]> backPropagate(Matrix toPredict, Matrix correct) {
 		List<Matrix[]> totalDeltas = new ArrayList<>();
 
-		Matrix[] weights = this.layerConnections.getWeights();
-		Matrix[] biases = this.layerConnections.getBiases();
+		Matrix[] weights = getWeights();
+		Matrix[] biases = getBiasesAsMatrices();
 
-		Matrix[] deltaBiases = this.getDeltas(biases);
-		Matrix[] deltaWeights = this.getDeltas(weights);
+		Matrix[] deltaBiases = this.initializeDeltas(biases);
+		Matrix[] deltaWeights = this.initializeDeltas(weights);
 
 		// Perform Feed Forward here...
 		List<Matrix> activations = new ArrayList<>();
@@ -212,6 +179,61 @@ public class NeuralNetwork implements Serializable, Trainable {
 		return totalDeltas;
 	}
 
+	private Matrix[] initializeDeltas(Matrix[] toCopyFrom) {
+		Matrix[] deltas = new Matrix[toCopyFrom.length];
+		for (int i = 0; i < deltas.length; i++) {
+			int rows = toCopyFrom[i].getRows();
+			int cols = toCopyFrom[i].getColumns();
+			deltas[i] = new Matrix(rows, cols);
+		}
+		return deltas;
+	}
+
+	private void backPropFeedForward(Matrix starter, List<Matrix> actives, List<Matrix> vectors,
+		Matrix[] weights, Matrix[] biases) {
+		Matrix toPredict = starter;
+		actives.add(toPredict);
+		for (int i = 0; i < getTotalLayers() - 1; i++) {
+			Matrix x = weights[i].multiply(toPredict).add(biases[i]);
+			vectors.add(x);
+
+			toPredict = this.functions[i].applyFunction(x);
+			actives.add(toPredict);
+		}
+	}
+
+	private Matrix[] getWeights() {
+		return this.weights;
+	}
+
+	private Matrix[] getBiasesAsMatrices() {
+		Matrix[] biases = new Matrix[getTotalLayers() - 1];
+		for (int i = 0; i < getTotalLayers() - 1; i++) {
+			biases[i] = getBias(i);
+		}
+		return biases;
+	}
+
+	private void setWeight(int i, Matrix newWeights) {
+		this.weights[i].setData(newWeights);
+	}
+
+	//-------------------------
+	// Mutators
+	//-------------------------
+
+	private Matrix getWeight(int i) {
+		return this.weights[i];
+	}
+
+	private Matrix getBias(int i) {
+		return this.layers[i].getBias();
+	}
+
+	private void setLayerBias(int i, Matrix outputMatrix) {
+		this.layers[i].setBias(outputMatrix);
+	}
+
 	@Override
 	public Matrix predict(Matrix in) {
 		return feedForward(in);
@@ -221,13 +243,14 @@ public class NeuralNetwork implements Serializable, Trainable {
 	 * Feed the input through the network for classification.
 	 *
 	 * @param in values to predict
+	 *
 	 * @return classified values.
 	 */
 	private Matrix feedForward(Matrix in) {
 		// Make input into matrix.
 		Matrix input = in;
-		Matrix[] weights = this.layerConnections.getWeights();
-		Matrix[] biases = this.layerConnections.getBiases();
+		Matrix[] weights = getWeights();
+		Matrix[] biases = getBiasesAsMatrices();
 		for (int i = 0; i < this.totalLayers - 1; i++) {
 			input = functions[i].applyFunction(weights[i].multiply(input).add(biases[i]));
 		}
@@ -235,12 +258,41 @@ public class NeuralNetwork implements Serializable, Trainable {
 		return input;
 	}
 
-	public void displayWeights() {
-		int i = 0;
-		for (Matrix w : this.layerConnections.getWeights()) {
-			System.out.println("Weight from " + i + " to " + (i + 1));
-			System.out.println(w);
-			i++;
+	/**
+	 * Provides an implementation of SGD for this neural network.
+	 *
+	 * @param training  a Collections object with Matrix[] objects, Matrix[0] is the data, Matrix[1]
+	 *                  is the label.
+	 * @param test      a Collections object with Matrix[] objects, Matrix[0] is the data, Matrix[1]
+	 *                  is the label.
+	 * @param epochs    how many iterations are we doing SGD for
+	 * @param batchSize how big is the batch size, typically 32.
+	 */
+	public void stochasticGradientDescent(@NotNull List<NetworkInput> training,
+		@NotNull List<NetworkInput> test, int epochs,
+		int batchSize) {
+		int trDataSize = training.size();
+		int teDataSize = test.size();
+		for (int i = 0; i < epochs; i++) {
+			Collections.shuffle(training);
+			System.out.println("Calculating epoch: " + (i + 1) + ".");
+			for (int j = 0; j < trDataSize - batchSize; j += batchSize) {
+				calculateMiniBatch(training.subList(j, j + batchSize));
+			}
+			List<NetworkInput> feedForwardData = this.feedForwardData(test);
+			int correct = (int) this.evaluationFunction.evaluatePrediction(feedForwardData)
+				.getElement(0, 0);
+			System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + teDataSize);
 		}
+	}
+
+	private List<NetworkInput> feedForwardData(List<NetworkInput> test) {
+		List<NetworkInput> copy = new ArrayList<>();
+		for (int i = 0; i < test.size(); i++) {
+			Matrix out = this.feedForward(test.get(i).getData());
+			NetworkInput newOut = new NetworkInput(out, test.get(i).getLabel());
+			copy.add(newOut);
+		}
+		return copy;
 	}
 }

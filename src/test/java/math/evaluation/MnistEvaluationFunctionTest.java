@@ -3,6 +3,7 @@ package math.evaluation;
 import java.util.ArrayList;
 import java.util.List;
 import matrix.Matrix;
+import neuralnetwork.NetworkInput;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -16,9 +17,9 @@ public class MnistEvaluationFunctionTest {
 			.fromArray(new double[]{0.001, 0.003, 0.13, 1, 0.15, 0.01, 0.0001, 0.022, 0.18});
 		Matrix correct = Matrix.fromArray(new double[]{0, 0, 0, 1, 0, 0, 0, 0, 0});
 		Matrix incorrect = Matrix.fromArray(new double[]{0, 0, 0, 0, 0, 0, 0, 1, 0});
-		Matrix[] c = new Matrix[]{output, correct};
-		Matrix[] c2 = new Matrix[]{output, incorrect};
-		List<Matrix[]> preds = new ArrayList<>();
+		NetworkInput c = new NetworkInput(output, correct);
+		NetworkInput c2 = new NetworkInput(output, incorrect);
+		List<NetworkInput> preds = new ArrayList<>();
 		preds.add(c);
 		preds.add(c2);
 		int corrects = (int) f.evaluatePrediction(preds).getElement(0, 0);

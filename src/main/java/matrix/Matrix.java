@@ -1,5 +1,6 @@
 package matrix;
 
+import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.UnaryOperator;
@@ -15,7 +16,7 @@ final public class Matrix {
 	 * Create Matrix, M rows by N columns.
 	 *
 	 * @param rows rows
-	 * @param N columns
+	 * @param N    columns
 	 */
 	public Matrix(int rows, int N) {
 		this.rows = rows;
@@ -44,6 +45,7 @@ final public class Matrix {
 	 *
 	 * @param M rows
 	 * @param N columns
+	 *
 	 * @return new Matrix with i,j \in (-1,1)
 	 */
 	public static Matrix random(int M, int N) {
@@ -61,6 +63,7 @@ final public class Matrix {
 	 *
 	 * @param M rows
 	 * @param N columns
+	 *
 	 * @return new Matrix with i,j \in (-1,1)
 	 */
 	public static Matrix randomFromRange(int M, int N, double a, double b) {
@@ -78,6 +81,7 @@ final public class Matrix {
 	 * Returns the identity NxN matrix.
 	 *
 	 * @param N size of the matrix.
+	 *
 	 * @return The identity NxN matrix.
 	 */
 	public static Matrix identity(int N) {
@@ -92,6 +96,7 @@ final public class Matrix {
 	 * Creates a vector (Mx1 Matrix) from double array
 	 *
 	 * @param input double array
+	 *
 	 * @return Matrix of size (input length x 1)
 	 */
 	public static Matrix fromArray(double[] input) {
@@ -147,6 +152,7 @@ final public class Matrix {
 	 * Return C = this * B
 	 *
 	 * @param B other Matrix
+	 *
 	 * @return C = this * B;
 	 */
 	public Matrix multiply(Matrix B) {
@@ -191,7 +197,7 @@ final public class Matrix {
 	 *
 	 * @return Matrix as a string
 	 */
-	public String toString() {
+	public String stringRepresentation() {
 		StringBuilder output = new StringBuilder();
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < columns; j++) {
@@ -202,10 +208,21 @@ final public class Matrix {
 		return output.toString();
 	}
 
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder("Matrix{");
+		sb.append("columns=").append(columns);
+		sb.append(", rows=").append(rows);
+		sb.append(", data=").append(Arrays.deepToString(data));
+		sb.append('}');
+		return sb.toString();
+	}
+
 	/**
 	 * Applies a function {@link UnaryOperator} to each element
 	 *
 	 * @param function function to be applied
+	 *
 	 * @return Matrix with mapped values
 	 */
 	public Matrix map(UnaryOperator<Double> function) {
@@ -218,29 +235,6 @@ final public class Matrix {
 			}
 		}
 		return a;
-	}
-
-	public int correctMatchings(Matrix correct) {
-		double[][] data_out = this.data;
-		double[][] data_correct = correct.getData();
-
-		int width = data_out.length;
-		int height = data_out[0].length;
-
-		if (width != data_correct.length || height != data_correct[0].length) {
-			throw new IllegalArgumentException("Arguments do not match.");
-		}
-
-		int corrClasses = 0;
-		for (int i = 0; i < data_out.length; i++) {
-			for (int j = 0; j < data_out[0].length; j++) {
-				if (Double.compare(data_out[i][j], data_correct[i][j]) == 0) {
-					corrClasses++;
-				}
-			}
-		}
-
-		return corrClasses;
 	}
 
 	/**
@@ -269,6 +263,15 @@ final public class Matrix {
 
 	public int getRows() {
 		return rows;
+	}
+
+	/**
+	 * Helper method to return a value if it is a 1x1 Matrix.
+	 *
+	 * @return double representing a scalar. data[0][0]
+	 */
+	public double getSingleValue() {
+		return this.data[0][0];
 	}
 
 

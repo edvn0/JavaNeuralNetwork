@@ -2,16 +2,17 @@ package math.evaluation;
 
 import java.util.List;
 import matrix.Matrix;
+import neuralnetwork.NetworkInput;
 
 public class MnistEvaluationFunction implements EvaluationFunction {
 
 	@Override
-	public Matrix evaluatePrediction(List<Matrix[]> toEvaluate) {
+	public Matrix evaluatePrediction(List<NetworkInput> toEvaluate) {
 		int correct = 0;
 		for (int i = 0; i < toEvaluate.size(); i++) {
 			// data[i] = {data, correctLabels}
-			Matrix data = toEvaluate.get(i)[0];
-			int correctLabels = this.getLabel(toEvaluate.get(i)[1]);
+			Matrix data = toEvaluate.get(i).getData();
+			int correctLabels = this.getLabel(toEvaluate.get(i).getLabel());
 
 			int val = this.maxLabel(data);
 			if (correctLabels == val) {

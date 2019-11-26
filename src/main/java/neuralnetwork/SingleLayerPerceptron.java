@@ -53,6 +53,7 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 	 * Feeds the input forward in the neural network. Takes a double[] of size INPUT_NODES.
 	 *
 	 * @param input double[] with values to be predicted.
+	 *
 	 * @return a Matrix(actually a vector, k*1 Matrix) with the predicted outputs.
 	 */
 	public Matrix predict(Matrix input) {
@@ -68,6 +69,12 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 		return output;
 	}
 
+	/**
+	 * Train the network with given inputs testData and a correct label.
+	 *
+	 * @param testData a {@link Matrix} object
+	 * @param correct  labels for the data.
+	 */
 	public void train(Matrix testData, Matrix correct) {
 		//----------
 		// Calculate feedforward with inputs.

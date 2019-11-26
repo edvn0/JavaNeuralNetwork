@@ -1,3 +1,5 @@
+package neuralnetwork;
+
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,6 +12,7 @@ import math.errors.MeanSquaredErrorFunction;
 import math.evaluation.EvaluationFunction;
 import math.evaluation.XOREvaluationFunction;
 import matrix.Matrix;
+import neuralnetwork.NetworkInput;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.SingleLayerPerceptron;
 import neuralnetwork.Trainable;
@@ -18,17 +21,23 @@ public class NNTester {
 
 	public static void main(String[] args) {
 
-		ActivationFunction[] functions = new ActivationFunction[4];
+		ActivationFunction[] functions = new ActivationFunction[10];
 		functions[0] = new TanhFunction();
 		functions[1] = new TanhFunction();
 		functions[2] = new TanhFunction();
 		functions[3] = new TanhFunction();
+		functions[4] = new TanhFunction();
+		functions[5] = new TanhFunction();
+		functions[6] = new TanhFunction();
+		functions[7] = new TanhFunction();
+		functions[8] = new TanhFunction();
+		functions[9] = new TanhFunction();
 		ErrorFunction function = new MeanSquaredErrorFunction();
 		EvaluationFunction eval = new XOREvaluationFunction();
 
-		SingleLayerPerceptron perceptron = new SingleLayerPerceptron(2, 5, 1, 0.001);
+		SingleLayerPerceptron perceptron = new SingleLayerPerceptron(2, 5, 1, 0.01);
 		NeuralNetwork network = new NeuralNetwork(0.001, functions, function, eval,
-			new int[]{2, 5, 5, 1});
+			new int[]{2, 3, 3, 3, 3, 3, 3, 3, 3, 1});
 
 		Trainable[] trainable = new Trainable[2];
 		trainable[0] = network;
@@ -50,19 +59,21 @@ public class NNTester {
 		int size = correct.length;
 		SecureRandom rs = new SecureRandom();
 
-		List<Matrix[]> trainingData = new ArrayList<>();
-		List<Matrix[]> testData = new ArrayList<>();
+		List<NetworkInput> trainingData = new ArrayList<>();
+		List<NetworkInput> testData = new ArrayList<>();
 		for (int i = 0; i < 10000; i++) {
 			int random = rs.nextInt(size);
-			Matrix[] input = new Matrix[]{training[random], correct[random]};
+			NetworkInput input = new NetworkInput(training[random], correct[random]);
 			trainingData.add(input);
 			testData.add(input);
 		}
 
 		Collections.shuffle(testData);
 
-		for (Matrix[] testDatum : testData) {
-			perceptron.train(testDatum[0], testDatum[1]);
+		for (int i = 0; i < 100; i++) {
+			for (NetworkInput testDatum : testData) {
+				perceptron.train(testDatum.getData(), testDatum.getLabel());
+			}
 		}
 
 		network.stochasticGradientDescent(trainingData, testData, 100, 2);
