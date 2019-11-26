@@ -15,6 +15,8 @@ public class ReluFunction implements ActivationFunction {
 		return a > 0 ? 1 : 0;
 	}
 
+	public ReluFunction() {}
+
 	@Override
 	public Matrix applyFunction(Matrix input) {
 		Matrix returnMatrix = input;

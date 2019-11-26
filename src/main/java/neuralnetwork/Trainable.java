@@ -1,9 +1,10 @@
 package neuralnetwork;
 
+import java.io.Serializable;
 import math.activations.ActivationFunction;
 import matrix.Matrix;
 
-public interface Trainable {
+public interface Trainable extends Serializable {
 
 	/**
 	 * Takes some values to classify, and compares to the correct classification. This method only
@@ -15,7 +16,7 @@ public interface Trainable {
 	 * method: "SGD" for the XOR problem.
 	 *
 	 * @param toFeedForward Matrix to feed forward.
-	 * @param correct labels for the data.
+	 * @param correct       labels for the data.
 	 */
 	void train(Matrix toFeedForward, Matrix correct);
 
@@ -27,6 +28,7 @@ public interface Trainable {
 	 * Example usage: double[]{0,1} becomes double[]{0.971} for the XOR problem.
 	 *
 	 * @param in values to be predicted.
+	 *
 	 * @return A classification of input values.
 	 */
 	Matrix predict(Matrix in);

@@ -6,6 +6,9 @@ import neuralnetwork.NetworkInput;
 
 public class MnistEvaluationFunction implements EvaluationFunction {
 
+
+	public MnistEvaluationFunction() {}
+
 	@Override
 	public Matrix evaluatePrediction(List<NetworkInput> toEvaluate) {
 		int correct = 0;

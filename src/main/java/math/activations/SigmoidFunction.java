@@ -15,6 +15,10 @@ public class SigmoidFunction implements ActivationFunction {
 		return a * (1 - a);
 	}
 
+	public SigmoidFunction() {
+
+	}
+
 	@Override
 	public Matrix applyFunction(Matrix input) {
 		Matrix returnMatrix = input;

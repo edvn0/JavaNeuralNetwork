@@ -1,10 +1,19 @@
 package neuralnetwork;
 
 import errors.BackpropagationError;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import math.activations.ActivationFunction;
 import math.activations.SoftmaxFunction;
@@ -40,8 +49,39 @@ public class NeuralNetwork implements Serializable, Trainable {
 	// 0 based layering, i.e. index 0 in layers is layer 0.
 	private Matrix[] biases;
 
+	// Helper field to hold the total amount of layers
 	private int totalLayers;
 
+	// Current best score for this network, used for serialisation
+	private double score;
+
+	/**
+	 * This is a wrapper constructor to facilitate the serialization concept of score.
+	 *
+	 * @param score a double representing the networks score
+	 */
+	public NeuralNetwork(double learning, ActivationFunction[] functions, ErrorFunction function,
+		EvaluationFunction eval,
+		int[] sizes, double score) {
+		this(learning, functions, function, eval, sizes);
+		this.score = score;
+
+	}
+
+	/**
+	 * Create a Neural Network with a learning rate, all the activation functions for all layers,
+	 * the error function and the function to evaluate the network, and also the sizes of the
+	 * layers, for example:
+	 *
+	 * int[] sizes = {3,4,4,1} is a 4-layered fully connected network with 3 input nodes, 1 output
+	 * nodes, 2 hidden layers with 4 nodes in each of them.
+	 *
+	 * @param learning  a double representing step size in back propagation.
+	 * @param functions the activation functions for all layers
+	 * @param function  the error function to calculate error of last layers
+	 * @param eval      the evaluation function to compare the network to the data's labels
+	 * @param sizes     the table to initialize layers and weights.
+	 */
 	public NeuralNetwork(double learning, ActivationFunction[] functions, ErrorFunction function,
 		EvaluationFunction eval,
 		int[] sizes) {
@@ -50,6 +90,7 @@ public class NeuralNetwork implements Serializable, Trainable {
 		this.errorFunction = function;
 		this.totalLayers = sizes.length;
 		this.evaluationFunction = eval;
+		this.score = 0;
 
 		createLayers(sizes);
 		initialiseWeights(sizes);
@@ -60,9 +101,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 				"To properly function, back-propagation needs the activation function of the last "
 					+ "layer to be differentiable with respect to the error function.");
 		}
-
-		System.out.println(Arrays.toString(weights));
-		System.out.println(Arrays.toString(functions));
 	}
 
 	private void initialiseWeights(int[] sizes) {
@@ -81,6 +119,31 @@ public class NeuralNetwork implements Serializable, Trainable {
 
 	private int getTotalLayers() {
 		return this.totalLayers;
+	}
+
+	public static NeuralNetwork readObject(String path) throws IOException {
+		NeuralNetwork network = null;
+		File file;
+		path = (path.endsWith(".ser") ? path : path + ".ser");
+
+		try {
+			FileInputStream fs = new FileInputStream(file = new File(path));
+			ObjectInputStream os = new ObjectInputStream(fs);
+
+			network = (NeuralNetwork) os.readObject();
+
+			os.close();
+			fs.close();
+
+			System.out.println("Completed deserialization, see file: " + file.getPath());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		if (null != network) {
+			return network;
+		} else {
+			throw new IOException("Something bad happened during deserialization.");
+		}
 	}
 
 	/**
@@ -200,6 +263,9 @@ public class NeuralNetwork implements Serializable, Trainable {
 		}
 	}
 
+	//-------------------------
+	// Mutators
+	//-------------------------
 	private Matrix[] getWeights() {
 		return this.weights;
 	}
@@ -215,10 +281,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 	private void setWeight(int i, Matrix newWeights) {
 		this.weights[i].setData(newWeights);
 	}
-
-	//-------------------------
-	// Mutators
-	//-------------------------
 
 	private Matrix getWeight(int i) {
 		return this.weights[i];
@@ -278,8 +340,12 @@ public class NeuralNetwork implements Serializable, Trainable {
 				calculateMiniBatch(training.subList(j, j + batchSize));
 			}
 			List<NetworkInput> feedForwardData = this.feedForwardData(test);
-			int correct = (int) this.evaluationFunction.evaluatePrediction(feedForwardData)
-				.getElement(0, 0);
+
+			int correct = (int)
+				this.evaluationFunction.evaluatePrediction(feedForwardData)
+					.getElement(0, 0);
+
+			this.score = (correct + 0.00001d) / teDataSize;
 			System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + teDataSize);
 		}
 	}
@@ -293,4 +359,31 @@ public class NeuralNetwork implements Serializable, Trainable {
 		}
 		return copy;
 	}
+	// END MUTATORS
+
+	public double getScore() {
+		return this.score;
+	}
+
+	public void writeObject(String path) {
+		File file;
+		path = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+		Date date = Calendar.getInstance().getTime();
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd");
+		String strDate = dateFormat.format(date).replace("-", "_");
+		try {
+			FileOutputStream fs = new FileOutputStream(
+				file = new File(path + "/NeuralNetwork_" + strDate + ".ser"));
+			ObjectOutputStream os = new ObjectOutputStream(fs);
+			os.writeObject(this);
+
+			os.close();
+			fs.close();
+
+			System.out.println("Completed serialisation, see file: " + file.getPath());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 }

@@ -15,6 +15,10 @@ public class TanhFunction implements ActivationFunction {
 		return 1 - (a * a);
 	}
 
+	public TanhFunction() {
+
+	}
+
 	@Override
 	public Matrix applyFunction(Matrix input) {
 		Matrix returnMatrix = input;

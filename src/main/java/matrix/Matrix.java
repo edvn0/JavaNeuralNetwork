@@ -1,11 +1,12 @@
 package matrix;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.UnaryOperator;
 
-final public class Matrix {
+final public class Matrix implements Serializable {
 
 	private final int rows;             // number of rows
 	private final int columns;             // number of columns

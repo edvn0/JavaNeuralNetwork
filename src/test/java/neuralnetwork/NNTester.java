@@ -1,5 +1,6 @@
 package neuralnetwork;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,14 +13,10 @@ import math.errors.MeanSquaredErrorFunction;
 import math.evaluation.EvaluationFunction;
 import math.evaluation.XOREvaluationFunction;
 import matrix.Matrix;
-import neuralnetwork.NetworkInput;
-import neuralnetwork.NeuralNetwork;
-import neuralnetwork.SingleLayerPerceptron;
-import neuralnetwork.Trainable;
 
 public class NNTester {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 		ActivationFunction[] functions = new ActivationFunction[10];
 		functions[0] = new TanhFunction();
@@ -36,8 +33,14 @@ public class NNTester {
 		EvaluationFunction eval = new XOREvaluationFunction();
 
 		SingleLayerPerceptron perceptron = new SingleLayerPerceptron(2, 5, 1, 0.01);
-		NeuralNetwork network = new NeuralNetwork(0.001, functions, function, eval,
-			new int[]{2, 3, 3, 3, 3, 3, 3, 3, 3, 1});
+		/*NeuralNetwork network = new NeuralNetwork(0.001, functions, function, eval,
+			new int[]{2, 3, 3, 3, 3, 3, 3, 3, 3, 1});*/
+
+		NeuralNetwork network = NeuralNetwork.readObject(
+			"/Users/edwincarlsson/Documents/Programmering/Java/NeuralNetwork/src/test/resources/NeuralNetwork_2019_02_26");
+
+		double score = network.getScore();
+		System.out.println(score);
 
 		Trainable[] trainable = new Trainable[2];
 		trainable[0] = network;
@@ -91,6 +94,12 @@ public class NNTester {
 				}
 			}
 			System.out.println();
+		}
+
+		double newScore = network.getScore();
+		if (newScore > score) {
+			network.writeObject(
+				"/Users/edwincarlsson/Documents/Programmering/Java/NeuralNetwork/src/test/resources");
 		}
 	}
 

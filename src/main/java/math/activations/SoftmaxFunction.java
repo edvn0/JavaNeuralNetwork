@@ -45,6 +45,10 @@ public class SoftmaxFunction implements ActivationFunction {
 		return input.map((e) -> e * (1d - e));
 	}
 
+	public SoftmaxFunction() {
+
+	}
+
 	@Override
 	public String getName() {
 		return "SOFTMAX";

@@ -1,8 +1,9 @@
 package math.activations;
 
+import java.io.Serializable;
 import matrix.Matrix;
 
-public interface ActivationFunction {
+public interface ActivationFunction extends Serializable {
 
 	String SIGMOID = "SIGMOID";
 	String RELU = "RELU";

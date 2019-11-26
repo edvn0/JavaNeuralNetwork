@@ -13,6 +13,10 @@ public class LinearFunction implements ActivationFunction {
 		return 1;
 	}
 
+	public LinearFunction() {
+
+	}
+
 
 	@Override
 	public Matrix applyFunction(Matrix input) {

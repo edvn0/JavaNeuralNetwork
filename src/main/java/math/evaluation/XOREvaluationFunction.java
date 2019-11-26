@@ -6,6 +6,9 @@ import neuralnetwork.NetworkInput;
 
 public class XOREvaluationFunction implements EvaluationFunction {
 
+	public XOREvaluationFunction() {
+	}
+
 	@Override
 	public Matrix evaluatePrediction(List<NetworkInput> toEvaluate) {
 		int correct = 0;
