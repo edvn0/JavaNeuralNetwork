@@ -1,13 +1,10 @@
 package neuralnetwork;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import math.activations.ActivationFunction;
 import math.activations.SigmoidFunction;
 import math.activations.SoftmaxFunction;
@@ -32,44 +29,22 @@ public class MNISTTester {
 		functions[4] = new SoftmaxFunction();
 		ErrorFunction function = new CrossEntropyErrorFunction();
 		EvaluationFunction eval = new MnistEvaluationFunction();
-		NeuralNetwork network = new NeuralNetwork(5e-3, functions, function, eval,
+		NeuralNetwork network = new NeuralNetwork(0.3, functions, function, eval,
 			new int[]{784, 30, 30, 30, 10});
 
-		System.out.println("Starting bGD");
+		/*System.out.println("Starting bGD");
 		batchGradientDescentKindOf(
-			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv", 10000 / 10, network);
-		System.out.println("Ending sGD.");
+			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv", 10000, network);
+		System.out.println("Ending sGD.");*/
 
-		/*imagesTrain = generateDataFromCSV(
+		imagesTrain = generateDataFromCSV(
 			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv");
 		imagesTest = generateDataFromCSV(
 			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_test.csv");
 
 		System.out.println("Starting SGD...");
 		network.stochasticGradientDescent(imagesTrain, imagesTest, 30, 32);
-		System.out.println("Finished SGD!");*/
-	}
-
-	private static void batchGradientDescentKindOf(String s, int i, NeuralNetwork neuralNetwork) {
-		List<NetworkInput> temp = new ArrayList<>();
-
-		int k = 0;
-		try (Scanner n = new Scanner(new File(s))) {
-			while (n.hasNextLine()) {
-				String[] line = n.nextLine().split(",");
-				temp.add(getTrainData(new Matrix(normalizeData(line))));
-				k++;
-
-				if (k % i == 0) {
-					neuralNetwork.stochasticGradientDescent(temp, temp, 10, 32);
-					temp.clear();
-				}
-			}
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-
+		System.out.println("Finished SGD!");
 	}
 
 	private static List<NetworkInput> generateDataFromCSV(String path) throws IOException {

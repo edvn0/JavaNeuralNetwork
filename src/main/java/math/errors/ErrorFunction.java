@@ -11,6 +11,6 @@ public interface ErrorFunction extends Serializable {
 
 	Matrix applyErrorFunction(Matrix in, Matrix correct);
 
-	Matrix applyErrorFunctionGradient(Matrix in, Matrix applied);
+	Matrix applyErrorFunctionGradient(Matrix in, Matrix label);
 
 }

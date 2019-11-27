@@ -33,7 +33,7 @@ public class NNTester {
 		EvaluationFunction eval = new XOREvaluationFunction();
 
 		SingleLayerPerceptron perceptron = new SingleLayerPerceptron(2, 5, 1, 0.01);
-		NeuralNetwork network = new NeuralNetwork(0.001, functions, function, eval,
+		NeuralNetwork network = new NeuralNetwork(1, functions, function, eval,
 			new int[]{2, 3, 3, 3, 3, 3, 3, 3, 3, 1});
 
 		double score = network.getScore();
@@ -76,7 +76,7 @@ public class NNTester {
 			}
 		}
 
-		network.stochasticGradientDescent(trainingData, testData, 100, 2);
+		network.stochasticGradientDescent(trainingData, testData, 100, 32);
 
 		System.out.println();
 		System.out.println();

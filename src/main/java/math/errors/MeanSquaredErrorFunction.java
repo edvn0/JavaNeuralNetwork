@@ -11,9 +11,17 @@ public class MeanSquaredErrorFunction implements ErrorFunction {
 
 	@Override
 	public double calculateCostFunction(final List<NetworkInput> tData) {
-		double[] sum = {0};
-		tData.forEach((e) -> sum[0] += e.getLabel().subtract(e.getData()).magnitude() / 2);
-		return sum[0];
+		double sum = 0;
+
+		for (NetworkInput networkInput : tData) {
+			Matrix inner = networkInput.getLabel().subtract(networkInput.getData());
+			inner = inner.map((e) -> e * e).map(e -> e / 2);
+			sum += inner.getElement(0, 0);
+		}
+
+		sum /= tData.size();
+
+		return sum;
 	}
 
 	@Override
@@ -22,8 +30,8 @@ public class MeanSquaredErrorFunction implements ErrorFunction {
 	}
 
 	@Override
-	public Matrix applyErrorFunctionGradient(final Matrix in, final Matrix applied) {
-		return null;
+	public Matrix applyErrorFunctionGradient(final Matrix in, final Matrix label) {
+		return in.subtract(label);
 	}
 
 }

@@ -106,14 +106,20 @@ public class NeuralNetwork implements Serializable, Trainable {
 	private void initialiseWeights(int[] sizes) {
 		this.weights = new Matrix[getTotalLayers() - 1];
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
-			this.weights[i] = Matrix.random(sizes[i + 1], sizes[i]);
+			final int prevLayerSize = sizes[i];
+			this.weights[i] = Matrix
+				.randomFromRange(sizes[i + 1], sizes[i], -Math.sqrt(2.0 / prevLayerSize),
+					Math.sqrt(2.0 / prevLayerSize));
 		}
 	}
 
 	private void createLayers(int[] sizes) {
 		this.biases = new Matrix[getTotalLayers() - 1];
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
-			this.biases[i] = new Matrix(sizes[i + 1], 1);
+			int prevLayerSize = sizes[i];
+			this.biases[i] = Matrix
+				.randomFromRange(sizes[i + 1], 1, -Math.sqrt(2.0 / prevLayerSize),
+					Math.sqrt(2.0 / prevLayerSize));
 		}
 	}
 
@@ -213,12 +219,14 @@ public class NeuralNetwork implements Serializable, Trainable {
 
 		// Applies the error function to the last layer, create
 		error = errorFunction
-			.applyErrorFunctionGradient(correct, xVector.get(xVector.size() - 1));
+			.applyErrorFunctionGradient(activations.get(activations.size() - 1), correct);
 
 		/*deltaError = error
 			.hadamard(functions[activations.size() - 1]
 				.applyDerivative(xVector.get(xVector.size() - 1), null));*/
-		deltaError = error.hadamard(xVector.get(xVector.size() - 1));
+
+		//deltaError = error.hadamard(xVector.get(xVector.size() - 1));
+		deltaError = this.functions[this.functions.length - 1].applyDerivative(error, null);
 
 		// Set the deltas to the error signals of bias and weight.
 		deltaBiases[deltaBiases.length - 1] = deltaError;
@@ -314,7 +322,7 @@ public class NeuralNetwork implements Serializable, Trainable {
 		Matrix[] weights = getWeights();
 		Matrix[] biases = getBiasesAsMatrices();
 		for (int i = 0; i < this.totalLayers - 1; i++) {
-			input = functions[i].applyFunction(weights[i].multiply(input).add(biases[i]), null);
+			input = functions[i + 1].applyFunction(weights[i].multiply(input).add(biases[i]), null);
 		}
 
 		return input;
@@ -331,16 +339,23 @@ public class NeuralNetwork implements Serializable, Trainable {
 	 * @param batchSize how big is the batch size, typically 32.
 	 */
 	public void stochasticGradientDescent(@NotNull List<NetworkInput> training,
-		@NotNull List<NetworkInput> test, int epochs,
+		@NotNull List<NetworkInput> test,
+		int epochs,
 		int batchSize) {
+
 		int trDataSize = training.size();
 		int teDataSize = test.size();
+
 		for (int i = 0; i < epochs; i++) {
+
 			Collections.shuffle(training);
+
 			System.out.println("Calculating epoch: " + (i + 1) + ".");
+
 			for (int j = 0; j < trDataSize - batchSize; j += batchSize) {
 				calculateMiniBatch(training.subList(j, j + batchSize));
 			}
+
 			List<NetworkInput> feedForwardData = this.feedForwardData(test);
 
 			int correct = (int)

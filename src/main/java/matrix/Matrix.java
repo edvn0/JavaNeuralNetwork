@@ -187,9 +187,13 @@ final public class Matrix implements Serializable {
 		if (this.getRows() != B.getRows() || !(this.getColumns() == 1 && B.getColumns() == 1)) {
 			throw new IllegalArgumentException("Matrices are not vectors.");
 		}
-		Matrix copy = this;
-		Matrix out = copy.hadamard(B);
-		return out.matrixSum();
+
+		double sum = 0;
+		for (int i = 0; i < B.data.length; i++) {
+			sum += this.data[i][0] * B.data[i][0];
+		}
+
+		return sum;
 	}
 
 	public Matrix hadamard(Matrix B) {

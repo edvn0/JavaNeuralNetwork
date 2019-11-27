@@ -12,21 +12,17 @@ public class MatrixUtilities {
 	 * @return SoftMax(exponential probability distribution) of the prediction.
 	 */
 	public static Matrix networkOutputsSoftMax(Matrix matrix) {
-		Matrix copy = matrix;
 
 		Matrix mapped = matrix.map(Math::exp);
 		double softMaxTotal = mapped.matrixSum();
 		System.out.println(softMaxTotal);
 
-		double[] newMatrix = new double[copy.getRows()];
+		double[] newMatrix = new double[matrix.getRows()];
 
 		for (int i = 0; i < matrix.getRows(); i++) {
-			double inMatrix = matrix.getElement(i, 0);
-			System.out.println("inMatrix: " + inMatrix);
-			double value = Math.exp(matrix.getElement(i, 0));
-			System.out.println("value: " + value);
+			double inValue = matrix.getElement(i, 0);
+			double value = Math.exp(inValue);
 			newMatrix[i] = value / softMaxTotal;
-			System.out.println("matrix value: " + newMatrix[i]);
 		}
 
 		return Matrix.fromArray(newMatrix);

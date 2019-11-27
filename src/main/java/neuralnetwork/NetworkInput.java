@@ -19,4 +19,13 @@ public class NetworkInput {
 	public Matrix getLabel() {
 		return label;
 	}
+
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder("NetworkInput{");
+		sb.append("data=").append(data);
+		sb.append(", label=").append(label);
+		sb.append('}');
+		return sb.toString();
+	}
 }
