@@ -36,12 +36,12 @@ public class SoftmaxFunction implements ActivationFunction {
 	}
 
 	@Override
-	public Matrix applyFunction(Matrix input) {
+	public Matrix applyFunction(Matrix input, Matrix corr) {
 		return this.softMax(input);
 	}
 
 	@Override
-	public Matrix applyDerivative(Matrix input) {
+	public Matrix applyDerivative(Matrix input, Matrix corr) {
 		return input.map((e) -> e * (1d - e));
 	}
 

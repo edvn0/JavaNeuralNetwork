@@ -18,14 +18,14 @@ public class ReluFunction implements ActivationFunction {
 	public ReluFunction() {}
 
 	@Override
-	public Matrix applyFunction(Matrix input) {
+	public Matrix applyFunction(Matrix input, Matrix corr) {
 		Matrix returnMatrix = input;
 		returnMatrix = returnMatrix.map(this::relu);
 		return returnMatrix;
 	}
 
 	@Override
-	public Matrix applyDerivative(Matrix input) {
+	public Matrix applyDerivative(Matrix input, Matrix corr) {
 		Matrix returnMatrix = input;
 		returnMatrix = returnMatrix.map(this::reluDerivative);
 		return returnMatrix;

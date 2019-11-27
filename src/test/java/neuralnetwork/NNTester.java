@@ -33,11 +33,8 @@ public class NNTester {
 		EvaluationFunction eval = new XOREvaluationFunction();
 
 		SingleLayerPerceptron perceptron = new SingleLayerPerceptron(2, 5, 1, 0.01);
-		/*NeuralNetwork network = new NeuralNetwork(0.001, functions, function, eval,
-			new int[]{2, 3, 3, 3, 3, 3, 3, 3, 3, 1});*/
-
-		NeuralNetwork network = NeuralNetwork.readObject(
-			"/Users/edwincarlsson/Documents/Programmering/Java/NeuralNetwork/src/test/resources/NeuralNetwork_2019_02_26");
+		NeuralNetwork network = new NeuralNetwork(0.001, functions, function, eval,
+			new int[]{2, 3, 3, 3, 3, 3, 3, 3, 3, 1});
 
 		double score = network.getScore();
 		System.out.println(score);

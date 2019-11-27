@@ -1,6 +1,5 @@
 package math.activations;
 
-import math.activations.ActivationFunction;
 import matrix.Matrix;
 
 public class LinearFunction implements ActivationFunction {
@@ -19,12 +18,12 @@ public class LinearFunction implements ActivationFunction {
 
 
 	@Override
-	public Matrix applyFunction(Matrix input) {
+	public Matrix applyFunction(Matrix input, Matrix corr) {
 		return input.map(this::linear);
 	}
 
 	@Override
-	public Matrix applyDerivative(Matrix input) {
+	public Matrix applyDerivative(Matrix input, Matrix corr) {
 		return input.map(this::linearDerivative);
 	}
 

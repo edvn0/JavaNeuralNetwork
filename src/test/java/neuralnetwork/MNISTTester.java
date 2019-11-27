@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import math.activations.ActivationFunction;
+import math.activations.SigmoidFunction;
 import math.activations.SoftmaxFunction;
 import math.activations.TanhFunction;
 import math.errors.CrossEntropyErrorFunction;
@@ -16,8 +17,6 @@ import math.errors.ErrorFunction;
 import math.evaluation.EvaluationFunction;
 import math.evaluation.MnistEvaluationFunction;
 import matrix.Matrix;
-import neuralnetwork.NetworkInput;
-import neuralnetwork.NeuralNetwork;
 
 public class MNISTTester {
 
@@ -26,14 +25,14 @@ public class MNISTTester {
 
 	public static void main(String[] args) throws IOException {
 		ActivationFunction[] functions = new ActivationFunction[5];
-		functions[0] = new TanhFunction();
-		functions[1] = new TanhFunction();
-		functions[2] = new TanhFunction();
+		functions[0] = new SigmoidFunction();
+		functions[1] = new SigmoidFunction();
+		functions[2] = new SigmoidFunction();
 		functions[3] = new TanhFunction();
 		functions[4] = new SoftmaxFunction();
 		ErrorFunction function = new CrossEntropyErrorFunction();
 		EvaluationFunction eval = new MnistEvaluationFunction();
-		NeuralNetwork network = new NeuralNetwork(5e-2, functions, function, eval,
+		NeuralNetwork network = new NeuralNetwork(5e-3, functions, function, eval,
 			new int[]{784, 30, 30, 30, 10});
 
 		System.out.println("Starting bGD");

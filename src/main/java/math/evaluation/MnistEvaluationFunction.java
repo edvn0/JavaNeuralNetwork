@@ -7,15 +7,16 @@ import neuralnetwork.NetworkInput;
 public class MnistEvaluationFunction implements EvaluationFunction {
 
 
-	public MnistEvaluationFunction() {}
+	public MnistEvaluationFunction() {
+	}
 
 	@Override
 	public Matrix evaluatePrediction(List<NetworkInput> toEvaluate) {
 		int correct = 0;
-		for (int i = 0; i < toEvaluate.size(); i++) {
+		for (NetworkInput networkInput : toEvaluate) {
 			// data[i] = {data, correctLabels}
-			Matrix data = toEvaluate.get(i).getData();
-			int correctLabels = this.getLabel(toEvaluate.get(i).getLabel());
+			Matrix data = networkInput.getData();
+			int correctLabels = this.getLabel(networkInput.getLabel());
 
 			int val = this.maxLabel(data);
 			if (correctLabels == val) {
@@ -26,7 +27,7 @@ public class MnistEvaluationFunction implements EvaluationFunction {
 		return Matrix.fromArray(new double[]{correct});
 	}
 
-	public int getLabel(Matrix matrix) {
+	private int getLabel(Matrix matrix) {
 		int i = 0;
 		for (double[] d : matrix.getData()) {
 			int val = (int) d[0];
@@ -38,7 +39,7 @@ public class MnistEvaluationFunction implements EvaluationFunction {
 		return -1;
 	}
 
-	public int maxLabel(Matrix fedForward) {
+	private int maxLabel(Matrix fedForward) {
 		double[] data = fedForward.toArray();
 		int index = 0;
 		double max = data[0];

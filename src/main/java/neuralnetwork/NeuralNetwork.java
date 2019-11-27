@@ -165,8 +165,7 @@ public class NeuralNetwork implements Serializable, Trainable {
 			dW[i] = new Matrix(weight.getRows(), weight.getColumns());
 		}
 
-		for (int i = 0; i < size; i++) {
-			NetworkInput data = subList.get(i);
+		for (NetworkInput data : subList) {
 			Matrix dataIn = data.getData();
 			Matrix label = data.getLabel();
 			List<Matrix[]> deltas = backPropagate(dataIn, label);
@@ -212,11 +211,14 @@ public class NeuralNetwork implements Serializable, Trainable {
 		Matrix error;
 		Matrix deltaError;
 
+		// Applies the error function to the last layer, create
 		error = errorFunction
-			.applyErrorFunction(activations.get(activations.size() - 1), correct);
-		deltaError = error
+			.applyErrorFunctionGradient(correct, xVector.get(xVector.size() - 1));
+
+		/*deltaError = error
 			.hadamard(functions[activations.size() - 1]
-				.applyDerivative(xVector.get(xVector.size() - 1)));
+				.applyDerivative(xVector.get(xVector.size() - 1), null));*/
+		deltaError = error.hadamard(xVector.get(xVector.size() - 1));
 
 		// Set the deltas to the error signals of bias and weight.
 		deltaBiases[deltaBiases.length - 1] = deltaError;
@@ -226,7 +228,7 @@ public class NeuralNetwork implements Serializable, Trainable {
 		// Now iteratively apply the rule
 		for (int k = deltaBiases.length - 2; k >= 0; k--) {
 			Matrix z = xVector.get(k);
-			Matrix differentiate = functions[k].applyDerivative(z);
+			Matrix differentiate = functions[k + 1].applyDerivative(z, null);
 
 			deltaError = weights[k + 1].transpose().multiply(deltaError)
 				.hadamard(differentiate);
@@ -258,7 +260,7 @@ public class NeuralNetwork implements Serializable, Trainable {
 			Matrix x = weights[i].multiply(toPredict).add(biases[i]);
 			vectors.add(x);
 
-			toPredict = this.functions[i].applyFunction(x);
+			toPredict = this.functions[i + 1].applyFunction(x, null);
 			actives.add(toPredict);
 		}
 	}
@@ -312,7 +314,7 @@ public class NeuralNetwork implements Serializable, Trainable {
 		Matrix[] weights = getWeights();
 		Matrix[] biases = getBiasesAsMatrices();
 		for (int i = 0; i < this.totalLayers - 1; i++) {
-			input = functions[i].applyFunction(weights[i].multiply(input).add(biases[i]));
+			input = functions[i].applyFunction(weights[i].multiply(input).add(biases[i]), null);
 		}
 
 		return input;
@@ -345,6 +347,8 @@ public class NeuralNetwork implements Serializable, Trainable {
 				this.evaluationFunction.evaluatePrediction(feedForwardData)
 					.getElement(0, 0);
 
+			System.out.println("Loss: " + errorFunction.calculateCostFunction(feedForwardData));
+
 			this.score = (correct + 0.00001d) / teDataSize;
 			System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + teDataSize);
 		}
@@ -352,9 +356,9 @@ public class NeuralNetwork implements Serializable, Trainable {
 
 	private List<NetworkInput> feedForwardData(List<NetworkInput> test) {
 		List<NetworkInput> copy = new ArrayList<>();
-		for (int i = 0; i < test.size(); i++) {
-			Matrix out = this.feedForward(test.get(i).getData());
-			NetworkInput newOut = new NetworkInput(out, test.get(i).getLabel());
+		for (NetworkInput networkInput : test) {
+			Matrix out = this.feedForward(networkInput.getData());
+			NetworkInput newOut = new NetworkInput(out, networkInput.getLabel());
 			copy.add(newOut);
 		}
 		return copy;

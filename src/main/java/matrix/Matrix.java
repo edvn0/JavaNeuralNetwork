@@ -119,6 +119,17 @@ final public class Matrix implements Serializable {
 		return A;
 	}
 
+	public double matrixSum() {
+		double[][] data = this.data;
+		double k = 0;
+		for (double[] datum : data) {
+			for (double d : datum) {
+				k += d;
+			}
+		}
+		return k;
+	}
+
 	// return C = A + B
 	public Matrix add(Matrix B) {
 		Matrix A = this;
@@ -172,6 +183,15 @@ final public class Matrix implements Serializable {
 		return C;
 	}
 
+	public double dotProduct(Matrix B) {
+		if (this.getRows() != B.getRows() || !(this.getColumns() == 1 && B.getColumns() == 1)) {
+			throw new IllegalArgumentException("Matrices are not vectors.");
+		}
+		Matrix copy = this;
+		Matrix out = copy.hadamard(B);
+		return out.matrixSum();
+	}
+
 	public Matrix hadamard(Matrix B) {
 		Matrix A = this;
 		Matrix C = new Matrix(A.rows, B.columns);
@@ -212,8 +232,8 @@ final public class Matrix implements Serializable {
 	@Override
 	public String toString() {
 		final StringBuilder sb = new StringBuilder("Matrix{");
-		sb.append("columns=").append(columns);
-		sb.append(", rows=").append(rows);
+		sb.append("rows=").append(rows);
+		sb.append(", columns=").append(columns);
 		sb.append(", data=").append(Arrays.deepToString(data));
 		sb.append('}');
 		return sb.toString();

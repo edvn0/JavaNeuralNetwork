@@ -20,14 +20,14 @@ public class SigmoidFunction implements ActivationFunction {
 	}
 
 	@Override
-	public Matrix applyFunction(Matrix input) {
+	public Matrix applyFunction(Matrix input, Matrix corr) {
 		Matrix returnMatrix = input;
 		returnMatrix = returnMatrix.map(this::sigmoid);
 		return returnMatrix;
 	}
 
 	@Override
-	public Matrix applyDerivative(Matrix input) {
+	public Matrix applyDerivative(Matrix input, Matrix corr) {
 		Matrix returnMatrix = input;
 		returnMatrix = returnMatrix.map(this::sigmoidDerivative);
 		return returnMatrix;

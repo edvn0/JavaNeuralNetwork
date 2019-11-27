@@ -1,6 +1,5 @@
 package math.activations;
 
-import math.activations.ActivationFunction;
 import matrix.Matrix;
 
 public class TanhFunction implements ActivationFunction {
@@ -20,14 +19,14 @@ public class TanhFunction implements ActivationFunction {
 	}
 
 	@Override
-	public Matrix applyFunction(Matrix input) {
+	public Matrix applyFunction(Matrix input, Matrix corr) {
 		Matrix returnMatrix = input;
 		returnMatrix = returnMatrix.map(this::tanh);
 		return returnMatrix;
 	}
 
 	@Override
-	public Matrix applyDerivative(Matrix input) {
+	public Matrix applyDerivative(Matrix input, Matrix corr) {
 		Matrix returnMatrix = input;
 		returnMatrix = returnMatrix.map(this::tanhDerivative);
 		return returnMatrix;

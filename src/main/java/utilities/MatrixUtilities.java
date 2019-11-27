@@ -1,6 +1,5 @@
 package utilities;
 
-import java.util.stream.DoubleStream;
 import matrix.Matrix;
 
 public class MatrixUtilities {
@@ -9,26 +8,35 @@ public class MatrixUtilities {
 	 * Return a probability distribution of the predicted values of {@link Matrix}.
 	 *
 	 * @param matrix {@link Matrix} with the predicted values
+	 *
 	 * @return SoftMax(exponential probability distribution) of the prediction.
 	 */
 	public static Matrix networkOutputsSoftMax(Matrix matrix) {
 		Matrix copy = matrix;
-		double softMaxTotal = DoubleStream.of(copy.transpose().getData()[0])
-			.map(Math::exp).sum();
-		Matrix transposed = copy.transpose();
 
-		for (int i = 0; i < transposed.getData().length; i++) {
-			double value = Math.exp(transposed.getData()[i][0]);
-			transposed.getData()[i][0] = value / softMaxTotal;
+		Matrix mapped = matrix.map(Math::exp);
+		double softMaxTotal = mapped.matrixSum();
+		System.out.println(softMaxTotal);
+
+		double[] newMatrix = new double[copy.getRows()];
+
+		for (int i = 0; i < matrix.getRows(); i++) {
+			double inMatrix = matrix.getElement(i, 0);
+			System.out.println("inMatrix: " + inMatrix);
+			double value = Math.exp(matrix.getElement(i, 0));
+			System.out.println("value: " + value);
+			newMatrix[i] = value / softMaxTotal;
+			System.out.println("matrix value: " + newMatrix[i]);
 		}
 
-		return transposed.transpose();
+		return Matrix.fromArray(newMatrix);
 	}
 
 	/**
 	 * Output the index of the max element
 	 *
 	 * @param input Output data of the prediction network
+	 *
 	 * @return index of max element
 	 */
 	public static int networkOutputsMax(Matrix input) {

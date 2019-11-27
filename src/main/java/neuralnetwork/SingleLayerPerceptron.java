@@ -60,11 +60,11 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 		Matrix hidden = this.inputToHiddenWeights.multiply(input);
 
 		hidden = hidden.add(this.hiddenBias);
-		hidden = this.firstLayerFunction.applyFunction(hidden);
+		hidden = this.firstLayerFunction.applyFunction(hidden, null);
 
 		Matrix output = this.hiddenToOutputWeights.multiply(hidden);
 		output = output.add(this.outputBias);
-		output = this.lastLayerFunction.applyFunction(output);
+		output = this.lastLayerFunction.applyFunction(output, null);
 
 		return output;
 	}
@@ -82,19 +82,19 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 		// From input layer -> hidden layer.
 		Matrix hidden = this.inputToHiddenWeights.multiply(testData);
 		hidden = hidden.add(this.hiddenBias);
-		hidden = this.firstLayerFunction.applyFunction(hidden);
+		hidden = this.firstLayerFunction.applyFunction(hidden, null);
 
 		// From hidden layer -> output layer. ActivationFunction(Weighted sum (hidden) + bias).
 		Matrix outputs = this.hiddenToOutputWeights.multiply(hidden);
 		outputs = outputs.add(this.outputBias);
-		outputs = this.lastLayerFunction.applyFunction(outputs);
+		outputs = this.lastLayerFunction.applyFunction(outputs, null);
 
 		// How incorrect was this prediction?
 		Matrix outputErrors = err.applyErrorFunction(outputs, correct);
 
 		// Calculate gradients, i.e. Activation derivatives of all elements.
 		// FIXME: This was changed from softmax, might change back
-		Matrix gradients = this.lastLayerFunction.applyDerivative(outputs);
+		Matrix gradients = this.lastLayerFunction.applyDerivative(outputs, null);
 		gradients = gradients.hadamard(outputErrors);
 		gradients = gradients.map((e) -> e * learningRate);
 
@@ -107,7 +107,7 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 		Matrix outputHiddenWeightsTransposed = this.hiddenToOutputWeights.transpose();
 		Matrix hiddenErrors = outputHiddenWeightsTransposed.multiply(outputErrors);
 
-		Matrix hiddenGradient = this.firstLayerFunction.applyDerivative(hidden);
+		Matrix hiddenGradient = this.firstLayerFunction.applyDerivative(hidden, null);
 		hiddenGradient = hiddenGradient.hadamard(hiddenErrors);
 		hiddenGradient = hiddenGradient.map((e) -> e * learningRate);
 
