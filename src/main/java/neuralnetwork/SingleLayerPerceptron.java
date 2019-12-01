@@ -20,12 +20,10 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 	private DenseMatrix inputToHiddenWeights;
 	private DenseMatrix hiddenToOutputWeights;
 
-	private transient ActivationFunction firstLayerFunction;
-	private transient ActivationFunction lastLayerFunction;
+	private ActivationFunction firstLayerFunction;
+	private ActivationFunction lastLayerFunction;
 
-	private transient ErrorFunction err;
-
-	private int inputNodes, outputNodes;
+	private ErrorFunction err;
 
 	private DenseMatrix hiddenBias, outputBias;
 

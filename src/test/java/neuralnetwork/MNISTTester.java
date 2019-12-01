@@ -49,14 +49,17 @@ public class MNISTTester {
 			network = NeuralNetwork.readObject(f.getAbsolutePath());
 		} else {
 			System.out.println("Initialized network.");
-			ActivationFunction[] functions = new ActivationFunction[3];
+			ActivationFunction[] functions = new ActivationFunction[6];
 			functions[0] = new ReluFunction();
 			functions[1] = new ReluFunction();
-			functions[2] = new SoftmaxFunction();
+			functions[2] = new ReluFunction();
+			functions[3] = new ReluFunction();
+			functions[4] = new ReluFunction();
+			functions[5] = new SoftmaxFunction();
 			ErrorFunction function = new CrossEntropyErrorFunction();
 			EvaluationFunction eval = new MnistEvaluationFunction();
-			network = new NeuralNetwork(0.001, functions, function, eval,
-				new int[]{784, 25, 10});
+			network = new NeuralNetwork(0.041, functions, function, eval,
+				new int[]{784, 2000, 1500, 1000, 500, 10});
 		}
 
 		/*System.out.println("Starting bGD");
@@ -70,7 +73,7 @@ public class MNISTTester {
 			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_test.csv");
 
 		System.out.println("Starting SGD...");
-		network.stochasticGradientDescent(imagesTrain, imagesTest, 100, 32);
+		network.stochasticGradientDescent(imagesTrain, imagesTest, 10, 64);
 		System.out.println("Finished SGD!");
 		network.outputChart("/Users/edwincarlsson/Desktop");
 		network.writeObject("/Users/edwincarlsson/Desktop");

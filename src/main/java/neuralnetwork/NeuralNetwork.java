@@ -9,7 +9,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -59,6 +58,9 @@ public class NeuralNetwork implements Serializable, Trainable {
 	// Current best score for this network, used for serialisation
 	private double score;
 
+	// Checker for functional initialisation of the NN.
+	private boolean activate;
+
 	private static transient final ArrayList<Double> xValues = new ArrayList<>();
 	private static transient final ArrayList<Double> lossValues = new ArrayList<>();
 	private static transient final ArrayList<Double> correctValues = new ArrayList<>();
@@ -73,7 +75,7 @@ public class NeuralNetwork implements Serializable, Trainable {
 		int[] sizes, double score) {
 		this(learning, functions, function, eval, sizes);
 		this.score = score;
-
+		this.activate = true;
 	}
 
 	/**
@@ -99,6 +101,7 @@ public class NeuralNetwork implements Serializable, Trainable {
 		this.totalLayers = sizes.length;
 		this.evaluationFunction = eval;
 		this.score = 0;
+		this.activate = true;
 
 		createLayers(sizes);
 		initialiseWeights(sizes);
@@ -227,7 +230,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 		// End feedforward
 
 		// Calculate error signal for last layer
-		DenseMatrix error;
 		DenseMatrix deltaError;
 
 		// Applies the error function to the last layer, create
@@ -255,14 +257,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 		totalDeltas.add(deltaWeights);
 
 		return totalDeltas;
-	}
-
-	private double averageSum(final DenseMatrix[] in) {
-		double sum = 0;
-		for (DenseMatrix m : in) {
-			sum += m.getValueSum();
-		}
-		return sum;
 	}
 
 	private DenseMatrix[] initializeDeltas(DenseMatrix[] toCopyFrom) {
@@ -347,31 +341,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 	}
 
 	/**
-	 * Feed the input through the network for classification.
-	 *
-	 * @param in values to predict
-	 *
-	 * @return classified values.
-	 */
-	private DenseMatrix feedForwardVerbose(DenseMatrix in) {
-		// Make input into matrix.
-		DenseMatrix input = in;
-
-		System.out.println("Input matrix: " + Arrays.deepToString(in.toDoubleArray()));
-
-		DenseMatrix[] weights = getWeights();
-		DenseMatrix[] biases = getBiasesAsMatrices();
-		for (int i = 0; i < this.totalLayers - 1; i++) {
-			input = functions[i + 1]
-				.applyFunction((DenseMatrix) weights[i].mtimes(input).plus(biases[i]));
-			System.out.println("Feed forward for layer: " + i + " with value " + Arrays
-				.deepToString(input.toDoubleArray()));
-		}
-
-		return input;
-	}
-
-	/**
 	 * Provides an implementation of SGD for this neural network.
 	 *
 	 * @param training  a Collections object with Matrix[] objects, Matrix[0] is the data, Matrix[1]
@@ -417,6 +386,8 @@ public class NeuralNetwork implements Serializable, Trainable {
 	 * Prints the networks performance in terms of loss and correct identification to a path.
 	 * Example usage: "Users/{name}/Programming/DeepLearning/NN/Output/".
 	 *
+	 * Uses {@link ThreadLocalRandom#current} to generate a random long for ID.
+	 *
 	 * @param basePath base path to image root.
 	 *
 	 * @return successful
@@ -429,11 +400,13 @@ public class NeuralNetwork implements Serializable, Trainable {
 
 		// TODO: Fix with suffix / and change to loss/corr instead.
 		String use = basePath.endsWith("/") ? basePath : basePath + "/";
+		String loss = use + "LossToEpochPlot_";
+		String correct = use + "CorrectToEpochPlot_";
 
 		try {
-			BitmapEncoder.saveBitmapWithDPI(lossToEpoch, use + ThreadLocalRandom.current()
+			BitmapEncoder.saveBitmapWithDPI(lossToEpoch, loss + ThreadLocalRandom.current()
 				.nextLong() + "_.jpg", BitmapFormat.PNG, 300);
-			BitmapEncoder.saveBitmapWithDPI(correctToEpoch, use + ThreadLocalRandom
+			BitmapEncoder.saveBitmapWithDPI(correctToEpoch, correct + ThreadLocalRandom
 				.current().nextLong() + "_.jpg", BitmapFormat.PNG, 300);
 			return true;
 		} catch (IOException e) {
@@ -454,7 +427,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 
 		return copy;
 	}
-	// END MUTATORS
 
 	public double getScore() {
 		return this.score;
