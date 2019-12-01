@@ -1,8 +1,9 @@
 package math.errors;
 
 import java.util.List;
-import matrix.Matrix;
 import neuralnetwork.NetworkInput;
+import org.ujmp.core.DenseMatrix;
+import utilities.MatrixUtilities;
 
 public class MeanSquaredErrorFunction implements ErrorFunction {
 
@@ -14,9 +15,9 @@ public class MeanSquaredErrorFunction implements ErrorFunction {
 		double sum = 0;
 
 		for (NetworkInput networkInput : tData) {
-			Matrix inner = networkInput.getLabel().subtract(networkInput.getData());
-			inner = inner.map((e) -> e * e).map(e -> e / 2);
-			sum += inner.getElement(0, 0);
+			DenseMatrix inner = (DenseMatrix) networkInput.getLabel().minus(networkInput.getData());
+			inner = MatrixUtilities.map(inner, e -> e * e / 2);
+			sum += inner.getValueSum();
 		}
 
 		sum /= tData.size();
@@ -25,13 +26,13 @@ public class MeanSquaredErrorFunction implements ErrorFunction {
 	}
 
 	@Override
-	public Matrix applyErrorFunction(final Matrix input, final Matrix target) {
-		return input.subtract(target);
+	public DenseMatrix applyErrorFunction(final DenseMatrix input, final DenseMatrix target) {
+		return (DenseMatrix) input.minus(target);
 	}
 
 	@Override
-	public Matrix applyErrorFunctionGradient(final Matrix in, final Matrix label) {
-		return in.subtract(label);
+	public DenseMatrix applyErrorFunctionGradient(final DenseMatrix in, final DenseMatrix label) {
+		return (DenseMatrix) in.minus(label);
 	}
 
 }

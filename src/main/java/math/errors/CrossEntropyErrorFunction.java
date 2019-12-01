@@ -2,8 +2,9 @@ package math.errors;
 
 import java.util.Arrays;
 import java.util.List;
-import matrix.Matrix;
 import neuralnetwork.NetworkInput;
+import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 
 public class CrossEntropyErrorFunction implements ErrorFunction {
 
@@ -16,16 +17,23 @@ public class CrossEntropyErrorFunction implements ErrorFunction {
 	public double calculateCostFunction(final List<NetworkInput> tData) {
 		double sum = 0;
 
-		double[] stable = new double[tData.get(0).getData().getRows()];
+		double[] stable = new double[(int) tData.get(0).getData().getRowCount()];
 		Arrays.fill(stable, 1e-6);
 
-		Matrix stability = Matrix.fromArray(stable);
+		DenseMatrix stability = (DenseMatrix) Matrix.Factory.importFromArray(stable).transpose();
 
 		for (NetworkInput input : tData) {
-			Matrix label = input.getLabel();
-			Matrix data = input.getData().add(stability);
-			Matrix logged = data.map(this::log2);
-			double dot = label.dotProduct(logged);
+			double[][] label = input.getLabel().toDoubleArray();
+			double[][] data = input.getData().plus(stability).toDoubleArray();
+
+			double dot = 0;
+			for (int i = 0; i < data.length; i++) {
+				for (int j = 0; j < data[0].length; j++) {
+					double logged = Math.log(data[i][j]) / Math.log(2);
+					dot += label[i][j] * logged;
+				}
+			}
+
 			sum += dot;
 		}
 
@@ -37,13 +45,14 @@ public class CrossEntropyErrorFunction implements ErrorFunction {
 	}
 
 	@Override
-	public Matrix applyErrorFunction(final Matrix in, final Matrix correct) {
+	public DenseMatrix applyErrorFunction(final DenseMatrix in, final DenseMatrix correct) {
 		return null;
 	}
 
 	@Override
-	public Matrix applyErrorFunctionGradient(final Matrix input, final Matrix label) {
-		return input.subtract(label);
+	public DenseMatrix applyErrorFunctionGradient(final DenseMatrix input,
+		final DenseMatrix label) {
+		return (DenseMatrix) input.minus(label);
 	}
 
 }

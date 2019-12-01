@@ -1,24 +1,12 @@
 package neuralnetwork;
 
 import java.io.IOException;
-import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import math.activations.ActivationFunction;
-import math.activations.TanhFunction;
-import math.errors.ErrorFunction;
-import math.errors.MeanSquaredErrorFunction;
-import math.evaluation.EvaluationFunction;
-import math.evaluation.XOREvaluationFunction;
-import matrix.Matrix;
 
 public class NNTester {
 
 	public static void main(String[] args) throws IOException {
 
-		ActivationFunction[] functions = new ActivationFunction[10];
+		/*ActivationFunction[] functions = new ActivationFunction[10];
 		functions[0] = new TanhFunction();
 		functions[1] = new TanhFunction();
 		functions[2] = new TanhFunction();
@@ -97,7 +85,7 @@ public class NNTester {
 		if (newScore > score) {
 			network.writeObject(
 				"/Users/edwincarlsson/Documents/Programmering/Java/NeuralNetwork/src/test/resources");
-		}
+		}*/
 	}
 
 }

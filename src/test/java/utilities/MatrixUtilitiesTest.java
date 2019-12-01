@@ -1,61 +1,40 @@
 package utilities;
 
-import matrix.Matrix;
-import org.junit.After;
-import org.junit.Before;
+import static org.junit.Assert.assertEquals;
+
+import math.activations.ActivationFunction;
+import math.activations.TanhFunction;
 import org.junit.Test;
+import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 
 public class MatrixUtilitiesTest {
 
-	private static int size = 10;
+	ActivationFunction f = new TanhFunction();
 
-	Matrix[] randomMatrices = new Matrix[size];
-	Matrix[] testMatrices = new Matrix[size / 2];
+	@Test
+	public void map() {
 
-	@Before
-	public void setUp() throws Exception {
-		for (int i = 0; i < size; i++) {
-			randomMatrices[i] = Matrix.randomFromRange(3, 1, -3, 3);
-		}
+		DenseMatrix matrix = Matrix.Factory.randn(7, 1);
+		matrix.Matrix a = new matrix.Matrix(matrix);
 
-		testMatrices[0] = Matrix.fromArray(new double[]{0.1, 0.2, 0.91});
-		testMatrices[1] = Matrix.fromArray(new double[]{-0.1, -0.2, -0.91});
-		testMatrices[2] = Matrix.fromArray(new double[]{1, 2, 10});
-		testMatrices[3] = Matrix.fromArray(new double[]{-2, -5, -10});
-		testMatrices[4] = Matrix.fromArray(new double[]{0.11111, 0.11111, 0.11111});
+		DenseMatrix mapped = MatrixUtilities.map(matrix, Math::tanh);
+		matrix.Matrix mappedMatrix = a.map(Math::tanh);
 
+		DenseMatrix derivative = f.applyDerivative(mappedMatrix);
+		System.out.println(derivative);
 
-	}
-
-	@After
-	public void tearDown() throws Exception {
+		assertEquals(mapped.getValueSum(), mappedMatrix.getValueSum(), 10e-8);
 	}
 
 	@Test
-	public void networkOutputsSoftMax() {
-		Matrix[] out = new Matrix[size + (size / 2)];
+	public void argMax() {
 
-		int k = 0;
-		for (Matrix m : randomMatrices) {
-			System.out.println("Matrix index: " + k);
-			out[k++] = MatrixUtilities.networkOutputsSoftMax(m);
-			System.out.println();
-		}
+		DenseMatrix matrix = Matrix.Factory
+			.importFromArray(new double[][]{{-0.11}, {0}, {-1110}, {2.312321312}});
+		System.out.println(matrix);
 
-		for (Matrix m : testMatrices) {
-			System.out.println("Matrix index: " + k);
-			out[k++] = MatrixUtilities.networkOutputsSoftMax(m);
-			System.out.println();
-		}
-
-		for (Matrix o : out) {
-			System.out.println(o);
-		}
-
-
-	}
-
-	@Test
-	public void networkOutputsMax() {
+		int out = MatrixUtilities.argMax(matrix);
+		System.out.println(out);
 	}
 }

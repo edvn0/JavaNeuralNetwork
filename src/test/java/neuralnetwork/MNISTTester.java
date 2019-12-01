@@ -1,19 +1,22 @@
 package neuralnetwork;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileSystemView;
 import math.activations.ActivationFunction;
-import math.activations.SigmoidFunction;
+import math.activations.ReluFunction;
 import math.activations.SoftmaxFunction;
-import math.activations.TanhFunction;
 import math.errors.CrossEntropyErrorFunction;
 import math.errors.ErrorFunction;
 import math.evaluation.EvaluationFunction;
 import math.evaluation.MnistEvaluationFunction;
-import matrix.Matrix;
+import org.ujmp.core.Matrix;
 
 public class MNISTTester {
 
@@ -21,16 +24,40 @@ public class MNISTTester {
 	private static List<NetworkInput> imagesTest;
 
 	public static void main(String[] args) throws IOException {
-		ActivationFunction[] functions = new ActivationFunction[5];
-		functions[0] = new SigmoidFunction();
-		functions[1] = new SigmoidFunction();
-		functions[2] = new SigmoidFunction();
-		functions[3] = new TanhFunction();
-		functions[4] = new SoftmaxFunction();
-		ErrorFunction function = new CrossEntropyErrorFunction();
-		EvaluationFunction eval = new MnistEvaluationFunction();
-		NeuralNetwork network = new NeuralNetwork(0.3, functions, function, eval,
-			new int[]{784, 30, 30, 30, 10});
+		NeuralNetwork network;
+
+		JFileChooser file = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+		file.setDialogTitle("Choose the serialisation file for you network.");
+		file.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		file.setFileFilter(new FileFilter() {
+			@Override
+			public boolean accept(final File f) {
+				return f.getAbsoluteFile().toString().endsWith(".ser");
+			}
+
+			@Override
+			public String getDescription() {
+				return null;
+			}
+		});
+
+		int ret = file.showOpenDialog(null);
+
+		if (ret == JFileChooser.APPROVE_OPTION) {
+			System.out.println("Read network.");
+			File f = file.getSelectedFile();
+			network = NeuralNetwork.readObject(f.getAbsolutePath());
+		} else {
+			System.out.println("Initialized network.");
+			ActivationFunction[] functions = new ActivationFunction[3];
+			functions[0] = new ReluFunction();
+			functions[1] = new ReluFunction();
+			functions[2] = new SoftmaxFunction();
+			ErrorFunction function = new CrossEntropyErrorFunction();
+			EvaluationFunction eval = new MnistEvaluationFunction();
+			network = new NeuralNetwork(0.001, functions, function, eval,
+				new int[]{784, 25, 10});
+		}
 
 		/*System.out.println("Starting bGD");
 		batchGradientDescentKindOf(
@@ -43,15 +70,17 @@ public class MNISTTester {
 			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_test.csv");
 
 		System.out.println("Starting SGD...");
-		network.stochasticGradientDescent(imagesTrain, imagesTest, 30, 32);
+		network.stochasticGradientDescent(imagesTrain, imagesTest, 100, 32);
 		System.out.println("Finished SGD!");
+		network.outputChart("")
+		network.writeObject("/Users/edwincarlsson/Desktop");
 	}
 
 	private static List<NetworkInput> generateDataFromCSV(String path) throws IOException {
 		List<NetworkInput> things = new ArrayList<>();
 
 		Files.readAllLines(Paths.get(path))
-			.forEach((e) -> things.add(getTrainData(new Matrix(normalizeData(e.split(","))))));
+			.forEach((e) -> things.add(getTrainData(normalizeData(e.split(",")))));
 
 		return things;
 	}
@@ -59,15 +88,19 @@ public class MNISTTester {
 	private static double[][] normalizeData(String[] split) {
 		double[][] d = new double[1 + 28 * 28][1];
 		for (int i = 1; i < split.length; i++) {
-			d[i][0] = Double.parseDouble(split[i]) / 255d;
+			if (Double.parseDouble(split[i]) > 1) {
+				d[i][0] = 0;
+			} else {
+				d[i][0] = 1;
+			}
 		}
 		d[0][0] = Integer.parseInt(split[0]);
 		return d;
 	}
 
-	private static NetworkInput getTrainData(Matrix m) {
+	private static NetworkInput getTrainData(double[][] in) {
 		double[][] corr = new double[10][1];
-		String num = m.getSingleValue() + "";
+		String num = String.valueOf(in[0][0]);
 		String newNum = num.substring(0, 1);
 		switch (Integer.parseInt(newNum)) {
 			case 0:
@@ -108,9 +141,10 @@ public class MNISTTester {
 
 		int dataSize = data.length;
 		for (int j = 1; j < dataSize; j++) {
-			data[j - 1][0] = m.getData()[j][0];
+			data[j - 1][0] = in[j][0];
 		}
-		return new NetworkInput(new Matrix(data), new Matrix(corr));
+		return new NetworkInput(Matrix.Factory.importFromArray(data),
+			Matrix.Factory.importFromArray(corr));
 	}
 
 }

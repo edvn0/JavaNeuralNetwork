@@ -1,7 +1,7 @@
 package math.activations;
 
 import java.io.Serializable;
-import matrix.Matrix;
+import org.ujmp.core.DenseMatrix;
 
 public interface ActivationFunction extends Serializable {
 
@@ -10,9 +10,9 @@ public interface ActivationFunction extends Serializable {
 	String TANH = "TANH";
 	String LIN = "LIN";
 
-	Matrix applyFunction(Matrix input, Matrix corr);
+	DenseMatrix applyFunction(DenseMatrix input);
 
-	Matrix applyDerivative(Matrix input, Matrix correct);
+	DenseMatrix applyDerivative(DenseMatrix input);
 
 	String getName();
 

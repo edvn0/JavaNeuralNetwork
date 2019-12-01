@@ -9,14 +9,16 @@ import math.errors.CrossEntropyErrorFunction;
 import math.errors.ErrorFunction;
 import math.errors.MeanSquaredErrorFunction;
 import matrix.Matrix;
+import org.ujmp.core.DenseMatrix;
+import utilities.MatrixUtilities;
 
 public class SingleLayerPerceptron implements Serializable, Trainable {
 
 	private static final long serialVersionUID = 1233L;
 
 	private double learningRate;
-	private Matrix inputToHiddenWeights;
-	private Matrix hiddenToOutputWeights;
+	private DenseMatrix inputToHiddenWeights;
+	private DenseMatrix hiddenToOutputWeights;
 
 	private transient ActivationFunction firstLayerFunction;
 	private transient ActivationFunction lastLayerFunction;
@@ -25,15 +27,15 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 
 	private int inputNodes, outputNodes;
 
-	private Matrix hiddenBias, outputBias;
+	private DenseMatrix hiddenBias, outputBias;
 
 	public SingleLayerPerceptron(int inputNodes, int hiddenNodes, int outputNodes,
 		double learningRate) {
-		this.inputToHiddenWeights = Matrix.random(hiddenNodes, inputNodes);
-		this.hiddenToOutputWeights = Matrix.random(outputNodes, hiddenNodes);
+		this.inputToHiddenWeights = org.ujmp.core.Matrix.Factory.randn(hiddenNodes, inputNodes);
+		this.hiddenToOutputWeights = org.ujmp.core.Matrix.Factory.randn(outputNodes, hiddenNodes);
 
-		this.hiddenBias = Matrix.random(hiddenNodes, 1);
-		this.outputBias = Matrix.random(outputNodes, 1);
+		this.hiddenBias = org.ujmp.core.Matrix.Factory.randn(hiddenNodes, 1);
+		this.outputBias = org.ujmp.core.Matrix.Factory.randn(outputNodes, 1);
 
 		this.firstLayerFunction = new ReluFunction();
 
@@ -56,15 +58,15 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 	 *
 	 * @return a Matrix(actually a vector, k*1 Matrix) with the predicted outputs.
 	 */
-	public Matrix predict(Matrix input) {
-		Matrix hidden = this.inputToHiddenWeights.multiply(input);
+	public DenseMatrix predict(DenseMatrix input) {
+		DenseMatrix hidden = (DenseMatrix) this.inputToHiddenWeights.mtimes(input);
 
-		hidden = hidden.add(this.hiddenBias);
-		hidden = this.firstLayerFunction.applyFunction(hidden, null);
+		hidden = (DenseMatrix) hidden.plus(this.hiddenBias);
+		hidden = this.firstLayerFunction.applyFunction(hidden);
 
-		Matrix output = this.hiddenToOutputWeights.multiply(hidden);
-		output = output.add(this.outputBias);
-		output = this.lastLayerFunction.applyFunction(output, null);
+		DenseMatrix output = (DenseMatrix) this.hiddenToOutputWeights.mtimes(hidden);
+		output = (DenseMatrix) output.plus(this.outputBias);
+		output = this.lastLayerFunction.applyFunction(output);
 
 		return output;
 	}
@@ -75,47 +77,50 @@ public class SingleLayerPerceptron implements Serializable, Trainable {
 	 * @param testData a {@link Matrix} object
 	 * @param correct  labels for the data.
 	 */
-	public void train(Matrix testData, Matrix correct) {
+	public void train(DenseMatrix testData, DenseMatrix correct) {
 		//----------
 		// Calculate feedforward with inputs.
 		//----------
 		// From input layer -> hidden layer.
-		Matrix hidden = this.inputToHiddenWeights.multiply(testData);
-		hidden = hidden.add(this.hiddenBias);
-		hidden = this.firstLayerFunction.applyFunction(hidden, null);
+		DenseMatrix hidden = (DenseMatrix) this.inputToHiddenWeights.mtimes(testData);
+		hidden = (DenseMatrix) hidden.plus(this.hiddenBias);
+		hidden = this.firstLayerFunction.applyFunction(hidden);
 
 		// From hidden layer -> output layer. ActivationFunction(Weighted sum (hidden) + bias).
-		Matrix outputs = this.hiddenToOutputWeights.multiply(hidden);
-		outputs = outputs.add(this.outputBias);
-		outputs = this.lastLayerFunction.applyFunction(outputs, null);
+		DenseMatrix outputs = (DenseMatrix) this.hiddenToOutputWeights.mtimes(hidden);
+		outputs = (DenseMatrix) outputs.plus(this.outputBias);
+		outputs = this.lastLayerFunction.applyFunction(outputs);
 
 		// How incorrect was this prediction?
-		Matrix outputErrors = err.applyErrorFunction(outputs, correct);
+		DenseMatrix outputErrors = err.applyErrorFunction(outputs, correct);
 
 		// Calculate gradients, i.e. Activation derivatives of all elements.
 		// FIXME: This was changed from softmax, might change back
-		Matrix gradients = this.lastLayerFunction.applyDerivative(outputs, null);
-		gradients = gradients.hadamard(outputErrors);
-		gradients = gradients.map((e) -> e * learningRate);
+		DenseMatrix gradients = this.lastLayerFunction.applyDerivative(outputs);
+		gradients = (DenseMatrix) gradients.times(outputErrors);
+		gradients = MatrixUtilities.map(gradients, (e) -> e * this.learningRate);
 
-		Matrix hiddenTransposed = hidden.transpose();
-		Matrix hiddenOutputDeltas = gradients.multiply(hiddenTransposed);
+		DenseMatrix hiddenTransposed = (DenseMatrix) hidden.transpose();
+		DenseMatrix hiddenOutputDeltas = (DenseMatrix) gradients.mtimes(hiddenTransposed);
 
-		this.hiddenToOutputWeights = this.hiddenToOutputWeights.add(hiddenOutputDeltas);
-		this.outputBias = this.outputBias.add(gradients);
+		this.hiddenToOutputWeights = (DenseMatrix) this.hiddenToOutputWeights
+			.plus(hiddenOutputDeltas);
+		this.outputBias = (DenseMatrix) this.outputBias.plus(gradients);
 
-		Matrix outputHiddenWeightsTransposed = this.hiddenToOutputWeights.transpose();
-		Matrix hiddenErrors = outputHiddenWeightsTransposed.multiply(outputErrors);
+		DenseMatrix outputHiddenWeightsTransposed = (DenseMatrix) this.hiddenToOutputWeights
+			.transpose();
+		DenseMatrix hiddenErrors = (DenseMatrix) outputHiddenWeightsTransposed.mtimes(outputErrors);
 
-		Matrix hiddenGradient = this.firstLayerFunction.applyDerivative(hidden, null);
-		hiddenGradient = hiddenGradient.hadamard(hiddenErrors);
-		hiddenGradient = hiddenGradient.map((e) -> e * learningRate);
+		DenseMatrix hiddenGradient = this.firstLayerFunction.applyDerivative(hidden);
+		hiddenGradient = (DenseMatrix) hiddenGradient.times(hiddenErrors);
+		hiddenGradient = MatrixUtilities.map(hiddenGradient, (e) -> e * learningRate);
 
-		Matrix inputsTransposed = testData.transpose();
-		Matrix inputHiddenWeightDeltas = hiddenGradient.multiply(inputsTransposed);
+		DenseMatrix inputsTransposed = (DenseMatrix) testData.transpose();
+		DenseMatrix inputHiddenWeightDeltas = (DenseMatrix) hiddenGradient.mtimes(inputsTransposed);
 
-		this.inputToHiddenWeights = this.inputToHiddenWeights.add(inputHiddenWeightDeltas);
-		this.hiddenBias = this.hiddenBias.add(hiddenGradient);
+		this.inputToHiddenWeights = (DenseMatrix) this.inputToHiddenWeights
+			.plus(inputHiddenWeightDeltas);
+		this.hiddenBias = (DenseMatrix) this.hiddenBias.plus(hiddenGradient);
 
 	}
 }

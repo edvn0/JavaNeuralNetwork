@@ -1,12 +1,12 @@
 package matrix;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.InputMismatchException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.UnaryOperator;
+import org.ujmp.core.doublematrix.impl.DefaultDenseDoubleMatrix2D;
 
-final public class Matrix implements Serializable {
+final public class Matrix extends DefaultDenseDoubleMatrix2D {
 
 	private final int rows;             // number of rows
 	private final int columns;             // number of columns
@@ -20,6 +20,7 @@ final public class Matrix implements Serializable {
 	 * @param N    columns
 	 */
 	public Matrix(int rows, int N) {
+		super(rows, N);
 		this.rows = rows;
 		this.columns = N;
 		data = new double[this.rows][this.columns];
@@ -31,14 +32,17 @@ final public class Matrix implements Serializable {
 	 * @param data double[][] array to create matrix from.
 	 */
 	public Matrix(double[][] data) {
+		super(org.ujmp.core.Matrix.Factory.importFromArray(data));
 		rows = data.length;
 		columns = data[0].length;
-		this.data = new double[rows][columns];
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < columns; j++) {
-				this.data[i][j] = data[i][j];
-			}
-		}
+		this.data = data;
+	}
+
+	public Matrix(org.ujmp.core.Matrix a) {
+		super(a);
+		this.rows = (int) super.getRowCount();
+		this.columns = (int) super.getColumnCount();
+		this.data = super.toDoubleArray();
 	}
 
 	/**
@@ -120,14 +124,7 @@ final public class Matrix implements Serializable {
 	}
 
 	public double matrixSum() {
-		double[][] data = this.data;
-		double k = 0;
-		for (double[] datum : data) {
-			for (double d : datum) {
-				k += d;
-			}
-		}
-		return k;
+		return super.getValueSum();
 	}
 
 	// return C = A + B
@@ -251,15 +248,15 @@ final public class Matrix implements Serializable {
 	 * @return Matrix with mapped values
 	 */
 	public Matrix map(UnaryOperator<Double> function) {
-		Matrix a = this;
+		Matrix copy = this;
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < columns; j++) {
 				double val = this.data[i][j];
 				double after = function.apply(val);
-				a.data[i][j] = after;
+				copy.data[i][j] = after;
 			}
 		}
-		return a;
+		return copy;
 	}
 
 	/**

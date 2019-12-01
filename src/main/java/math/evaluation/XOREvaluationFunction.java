@@ -1,8 +1,9 @@
 package math.evaluation;
 
 import java.util.List;
-import matrix.Matrix;
 import neuralnetwork.NetworkInput;
+import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 
 public class XOREvaluationFunction implements EvaluationFunction {
 
@@ -10,20 +11,20 @@ public class XOREvaluationFunction implements EvaluationFunction {
 	}
 
 	@Override
-	public Matrix evaluatePrediction(List<NetworkInput> toEvaluate) {
+	public DenseMatrix evaluatePrediction(List<NetworkInput> toEvaluate) {
 		int correct = 0;
 		for (NetworkInput matrices : toEvaluate) {
-			Matrix fed = matrices.getData();
-			Matrix corr = matrices.getLabel();
+			DenseMatrix fed = matrices.getData();
+			DenseMatrix corr = matrices.getLabel();
 
-			double fedEl = fed.getElement(0, 0);
-			double corrEl = corr.getElement(0, 0);
+			double fedEl = fed.getValueSum();
+			double corrEl = corr.getValueSum();
 
 			// TODO: Might need some tweaking..
 			if (Math.abs(fedEl - corrEl) < 0.05) {
 				correct++;
 			}
 		}
-		return Matrix.fromArray(new double[]{correct});
+		return Matrix.Factory.importFromArray(new double[]{correct});
 	}
 }

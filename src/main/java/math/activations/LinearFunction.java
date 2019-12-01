@@ -1,6 +1,7 @@
 package math.activations;
 
-import matrix.Matrix;
+import org.ujmp.core.DenseMatrix;
+import utilities.MatrixUtilities;
 
 public class LinearFunction implements ActivationFunction {
 
@@ -18,13 +19,13 @@ public class LinearFunction implements ActivationFunction {
 
 
 	@Override
-	public Matrix applyFunction(Matrix input, Matrix corr) {
-		return input.map(this::linear);
+	public DenseMatrix applyFunction(DenseMatrix input) {
+		return MatrixUtilities.map(input, this::linear);// input.map(this::linear);
 	}
 
 	@Override
-	public Matrix applyDerivative(Matrix input, Matrix corr) {
-		return input.map(this::linearDerivative);
+	public DenseMatrix applyDerivative(DenseMatrix input) {
+		return MatrixUtilities.map(input, this::linearDerivative);
 	}
 
 	@Override

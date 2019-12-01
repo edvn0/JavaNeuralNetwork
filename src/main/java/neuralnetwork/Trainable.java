@@ -3,6 +3,7 @@ package neuralnetwork;
 import java.io.Serializable;
 import math.activations.ActivationFunction;
 import matrix.Matrix;
+import org.ujmp.core.DenseMatrix;
 
 public interface Trainable extends Serializable {
 
@@ -18,7 +19,7 @@ public interface Trainable extends Serializable {
 	 * @param toFeedForward Matrix to feed forward.
 	 * @param correct       labels for the data.
 	 */
-	void train(Matrix toFeedForward, Matrix correct);
+	void train(DenseMatrix toFeedForward, DenseMatrix correct);
 
 	/**
 	 * Predicts a classification from a double[] input.
@@ -31,7 +32,7 @@ public interface Trainable extends Serializable {
 	 *
 	 * @return A classification of input values.
 	 */
-	Matrix predict(Matrix in);
+	DenseMatrix predict(DenseMatrix in);
 
 	String toString();
 

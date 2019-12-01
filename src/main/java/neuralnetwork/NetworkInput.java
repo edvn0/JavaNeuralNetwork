@@ -1,22 +1,22 @@
 package neuralnetwork;
 
-import matrix.Matrix;
+import org.ujmp.core.DenseMatrix;
 
 public class NetworkInput {
 
-	private Matrix data;
-	private Matrix label;
+	private DenseMatrix data;
+	private DenseMatrix label;
 
-	public NetworkInput(Matrix data, Matrix label) {
+	public NetworkInput(DenseMatrix data, DenseMatrix label) {
 		this.data = data;
 		this.label = label;
 	}
 
-	public Matrix getData() {
+	public DenseMatrix getData() {
 		return data;
 	}
 
-	public Matrix getLabel() {
+	public DenseMatrix getLabel() {
 		return label;
 	}
 

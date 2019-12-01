@@ -2,15 +2,15 @@ package math.errors;
 
 import java.io.Serializable;
 import java.util.List;
-import matrix.Matrix;
 import neuralnetwork.NetworkInput;
+import org.ujmp.core.DenseMatrix;
 
 public interface ErrorFunction extends Serializable {
 
 	double calculateCostFunction(List<NetworkInput> tData);
 
-	Matrix applyErrorFunction(Matrix in, Matrix correct);
+	DenseMatrix applyErrorFunction(DenseMatrix in, DenseMatrix correct);
 
-	Matrix applyErrorFunctionGradient(Matrix in, Matrix label);
+	DenseMatrix applyErrorFunctionGradient(DenseMatrix in, DenseMatrix label);
 
 }

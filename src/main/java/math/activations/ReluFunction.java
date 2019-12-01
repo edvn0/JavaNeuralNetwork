@@ -1,7 +1,7 @@
 package math.activations;
 
-import math.activations.ActivationFunction;
-import matrix.Matrix;
+import org.ujmp.core.DenseMatrix;
+import utilities.MatrixUtilities;
 
 public class ReluFunction implements ActivationFunction {
 
@@ -15,19 +15,20 @@ public class ReluFunction implements ActivationFunction {
 		return a > 0 ? 1 : 0;
 	}
 
-	public ReluFunction() {}
+	public ReluFunction() {
+	}
 
 	@Override
-	public Matrix applyFunction(Matrix input, Matrix corr) {
-		Matrix returnMatrix = input;
-		returnMatrix = returnMatrix.map(this::relu);
+	public DenseMatrix applyFunction(DenseMatrix input) {
+		DenseMatrix returnMatrix = input;
+		returnMatrix = MatrixUtilities.map(returnMatrix, this::relu);
 		return returnMatrix;
 	}
 
 	@Override
-	public Matrix applyDerivative(Matrix input, Matrix corr) {
-		Matrix returnMatrix = input;
-		returnMatrix = returnMatrix.map(this::reluDerivative);
+	public DenseMatrix applyDerivative(DenseMatrix input) {
+		DenseMatrix returnMatrix = input;
+		returnMatrix = MatrixUtilities.map(returnMatrix, this::reluDerivative);
 		return returnMatrix;
 	}
 

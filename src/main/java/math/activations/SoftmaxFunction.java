@@ -2,47 +2,57 @@ package math.activations;
 
 import java.util.Arrays;
 import java.util.stream.DoubleStream;
-import matrix.Matrix;
+import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
+import utilities.MatrixUtilities;
 
 public class SoftmaxFunction implements ActivationFunction {
 
-	private Matrix softMax(Matrix input) {
-		if (input.getColumns() != 1) {
+	/**
+	 * Takes as input a vector of size NX1 and returns a SoftMax Vector of that input.
+	 *
+	 * @param input input vector.
+	 *
+	 * @return softmax vector.
+	 */
+	private DenseMatrix softMax(DenseMatrix input) {
+		if (input.getColumnCount() != 1) {
 			throw new IllegalArgumentException("You can only perform SoftMax on a vector.");
 		}
 
-		Matrix max = this.max(input);
-		Matrix z = input.subtract(max);
-		double sum = DoubleStream.of(z.toArray()).map(Math::exp).sum();
+		DenseMatrix max = this.max(input);
+		DenseMatrix z = (DenseMatrix) input.minus(max);
+		double sum = DoubleStream.of(MatrixUtilities.toArray(z)).map(Math::exp).sum();
 
-		return z.map((e) -> Math.exp(e) / sum);
+		return MatrixUtilities.map(z, (e) -> Math.exp(e) / sum);
 	}
 
-	private Matrix max(Matrix input) {
-		double[] inputs = input.toArray();
+	private DenseMatrix max(DenseMatrix input) {
+		double[][] inputs = input.toDoubleArray();
+		double[] out = new double[inputs.length];
 		double max = this.max(inputs);
-		Arrays.fill(inputs, max);
-		return Matrix.fromArray(inputs);
+		Arrays.fill(out, max);
+		return (DenseMatrix) Matrix.Factory.importFromArray(out).transpose();
 	}
 
-	private double max(double[] data) {
-		double max = data[0];
+	private double max(double[][] data) {
+		double max = data[0][0];
 		for (int i = 1; i < data.length; i++) {
-			if (data[i] > max) {
-				max = data[i];
+			if (data[i][0] > max) {
+				max = data[i][0];
 			}
 		}
 		return max;
 	}
 
 	@Override
-	public Matrix applyFunction(Matrix input, Matrix corr) {
+	public DenseMatrix applyFunction(DenseMatrix input) {
 		return this.softMax(input);
 	}
 
 	@Override
-	public Matrix applyDerivative(Matrix input, Matrix corr) {
-		return input.map((e) -> e * (1d - e));
+	public DenseMatrix applyDerivative(DenseMatrix input) {
+		return MatrixUtilities.map(input, (e) -> (e * (1d - e)));
 	}
 
 	public SoftmaxFunction() {

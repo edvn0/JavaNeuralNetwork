@@ -1,7 +1,7 @@
 package math.activations;
 
-import math.activations.ActivationFunction;
-import matrix.Matrix;
+import org.ujmp.core.DenseMatrix;
+import utilities.MatrixUtilities;
 
 public class SigmoidFunction implements ActivationFunction {
 
@@ -20,17 +20,17 @@ public class SigmoidFunction implements ActivationFunction {
 	}
 
 	@Override
-	public Matrix applyFunction(Matrix input, Matrix corr) {
-		Matrix returnMatrix = input;
-		returnMatrix = returnMatrix.map(this::sigmoid);
-		return returnMatrix;
+	public DenseMatrix applyFunction(DenseMatrix input) {
+		DenseMatrix returnDenseMatrix = input;
+		returnDenseMatrix = MatrixUtilities.map(returnDenseMatrix, this::sigmoid);
+		return returnDenseMatrix;
 	}
 
 	@Override
-	public Matrix applyDerivative(Matrix input, Matrix corr) {
-		Matrix returnMatrix = input;
-		returnMatrix = returnMatrix.map(this::sigmoidDerivative);
-		return returnMatrix;
+	public DenseMatrix applyDerivative(DenseMatrix input) {
+		DenseMatrix returnDenseMatrix = input;
+		returnDenseMatrix = MatrixUtilities.map(returnDenseMatrix, this::sigmoidDerivative);
+		return returnDenseMatrix;
 	}
 
 	@Override

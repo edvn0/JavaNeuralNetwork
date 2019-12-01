@@ -1,6 +1,7 @@
 package math.activations;
 
-import matrix.Matrix;
+import org.ujmp.core.DenseMatrix;
+import utilities.MatrixUtilities;
 
 public class TanhFunction implements ActivationFunction {
 
@@ -19,17 +20,17 @@ public class TanhFunction implements ActivationFunction {
 	}
 
 	@Override
-	public Matrix applyFunction(Matrix input, Matrix corr) {
-		Matrix returnMatrix = input;
-		returnMatrix = returnMatrix.map(this::tanh);
-		return returnMatrix;
+	public DenseMatrix applyFunction(DenseMatrix input) {
+		DenseMatrix returnDenseMatrix = input;
+		returnDenseMatrix = MatrixUtilities.map(returnDenseMatrix, this::tanh);
+		return returnDenseMatrix;
 	}
 
 	@Override
-	public Matrix applyDerivative(Matrix input, Matrix corr) {
-		Matrix returnMatrix = input;
-		returnMatrix = returnMatrix.map(this::tanhDerivative);
-		return returnMatrix;
+	public DenseMatrix applyDerivative(DenseMatrix input) {
+		DenseMatrix returnDenseMatrix = input;
+		returnDenseMatrix = MatrixUtilities.map(returnDenseMatrix, this::tanhDerivative);
+		return returnDenseMatrix;
 	}
 
 	@Override

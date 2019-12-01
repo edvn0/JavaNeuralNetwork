@@ -1,28 +1,32 @@
 package math.activations;
 
-import java.util.Arrays;
-import matrix.Matrix;
 import org.junit.Before;
 import org.junit.Test;
+import org.ujmp.core.DenseMatrix;
 
 public class SoftmaxFunctionTest {
 
 	private static int size = 10;
 
-	Matrix[] randomMatrices = new Matrix[size];
-	Matrix[] testMatrices = new Matrix[size / 2];
+	DenseMatrix[] randomMatrices = new DenseMatrix[size];
+	DenseMatrix[] testMatrices = new DenseMatrix[size / 2];
 
 	@Before
 	public void setUp() throws Exception {
 		for (int i = 0; i < size; i++) {
-			randomMatrices[i] = Matrix.randomFromRange(3, 1, -3, 3);
+			randomMatrices[i] = org.ujmp.core.Matrix.Factory.randn(3, 1);
 		}
 
-		testMatrices[0] = Matrix.fromArray(new double[]{0.1, 0.2, 0.91});
-		testMatrices[1] = Matrix.fromArray(new double[]{-0.1, -0.2, -0.91});
-		testMatrices[2] = Matrix.fromArray(new double[]{1, 2, 10});
-		testMatrices[3] = Matrix.fromArray(new double[]{-2, -5, -10});
-		testMatrices[4] = Matrix.fromArray(new double[]{0.11111, 0.11111, 0.11111});
+		testMatrices[0] = org.ujmp.core.Matrix.Factory
+			.importFromArray(new double[][]{{0.1}, {0.2}, {0.91}});
+		testMatrices[1] = org.ujmp.core.Matrix.Factory
+			.importFromArray(new double[][]{{-0.1}, {-0.2}, {-0.91}});
+		testMatrices[2] = org.ujmp.core.Matrix.Factory
+			.importFromArray(new double[][]{{1}, {2}, {10}});
+		testMatrices[3] = org.ujmp.core.Matrix.Factory
+			.importFromArray(new double[][]{{-2}, {-5}, {-10}});
+		testMatrices[4] = org.ujmp.core.Matrix.Factory
+			.importFromArray(new double[][]{{0.11111}, {0.11111}, {0.11111}});
 
 
 	}
@@ -30,18 +34,16 @@ public class SoftmaxFunctionTest {
 
 	@Test
 	public void applyFunction() {
-		Matrix[] output = new Matrix[size + (size / 2)];
+		DenseMatrix[] output = new DenseMatrix[size + (size / 2)];
 		SoftmaxFunction function = new SoftmaxFunction();
 		int i = 0;
 
-		for (Matrix m : randomMatrices) {
-			output[i++] = function.applyFunction(m, null);
+		for (DenseMatrix m : randomMatrices) {
+			output[i++] = function.applyFunction(m);
 		}
-		for (Matrix m : testMatrices) {
-			output[i++] = function.applyFunction(m, null);
+		for (DenseMatrix m : testMatrices) {
+			output[i++] = function.applyFunction(m);
 		}
-
-		System.out.println(Arrays.toString(output));
 
 	}
 
