@@ -390,7 +390,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 		int teDataSize = test.size();
 
 		for (int i = 0; i < epochs; i++) {
-
 			Collections.shuffle(training);
 
 			System.out.println("Calculating epoch: " + (i + 1) + ".");
@@ -422,18 +421,19 @@ public class NeuralNetwork implements Serializable, Trainable {
 	 *
 	 * @return successful
 	 */
-	public boolean outputChart(String basePath) {
+	public boolean outputChart(final String basePath) {
 		XYChart lossToEpoch = QuickChart
 			.getChart("Loss plot", "Epoch", "Loss", "loss(x)", xValues, lossValues);
 		XYChart correctToEpoch = QuickChart
 			.getChart("Correct plot", "Epoch", "Correct", "corr(x)", xValues, correctValues);
 
 		// TODO: Fix with suffix / and change to loss/corr instead.
+		String use = basePath.endsWith("/") ? basePath : basePath + "/";
 
 		try {
-			BitmapEncoder.saveBitmapWithDPI(lossToEpoch, basePath + ThreadLocalRandom.current()
+			BitmapEncoder.saveBitmapWithDPI(lossToEpoch, use + ThreadLocalRandom.current()
 				.nextLong() + "_.jpg", BitmapFormat.PNG, 300);
-			BitmapEncoder.saveBitmapWithDPI(correctToEpoch, basePath + ThreadLocalRandom
+			BitmapEncoder.saveBitmapWithDPI(correctToEpoch, use + ThreadLocalRandom
 				.current().nextLong() + "_.jpg", BitmapFormat.PNG, 300);
 			return true;
 		} catch (IOException e) {

@@ -72,7 +72,7 @@ public class MNISTTester {
 		System.out.println("Starting SGD...");
 		network.stochasticGradientDescent(imagesTrain, imagesTest, 100, 32);
 		System.out.println("Finished SGD!");
-		network.outputChart("")
+		network.outputChart("/Users/edwincarlsson/Desktop");
 		network.writeObject("/Users/edwincarlsson/Desktop");
 	}
 
