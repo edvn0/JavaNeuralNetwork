@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 import math.activations.ActivationFunction;
 import math.activations.SoftmaxFunction;
 import math.errors.CrossEntropyErrorFunction;
@@ -25,6 +27,7 @@ import org.knowm.xchart.XYChart;
 import org.ujmp.core.DenseMatrix;
 import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
+import utilities.NetworkUtilities;
 
 /**
  * A multi layer perceptron network.
@@ -154,6 +157,23 @@ public class NeuralNetwork implements Serializable, Trainable {
 		}
 		if (null != network) {
 			return network;
+		} else {
+			throw new IOException("Something bad happened during deserialization.");
+		}
+	}
+
+	public static NeuralNetwork readObject(File file) throws IOException {
+		NeuralNetwork neuralNetwork = null;
+		try (FileInputStream fs = new FileInputStream(
+			file); ObjectInputStream stream = new ObjectInputStream(fs)) {
+			neuralNetwork = (NeuralNetwork) stream.readObject();
+
+			System.out.println("Completed deserialization, see file: " + file.getAbsolutePath());
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		if (null != neuralNetwork) {
+			return neuralNetwork;
 		} else {
 			throw new IOException("Something bad happened during deserialization.");
 		}
@@ -380,6 +400,48 @@ public class NeuralNetwork implements Serializable, Trainable {
 			System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + teDataSize);
 		}
 
+	}
+
+	public void streamedSGD(Supplier<Stream<String>> trainingStream,
+		Supplier<Stream<String>> testStream,
+		int batch,
+		int epochs) throws IOException {
+		// Read {batch} items from trainingStream,
+
+		int trains = (int) trainingStream.get().count();
+		int tests = (int) testStream.get().count();
+		int its = trains;
+		for (int i = 0; i < epochs; i++) {
+			int batchIndex = 0;
+
+			while (its >= 0) {
+				Stream<String> copyTrain = trainingStream.get();
+				Stream<String> copyTest = testStream.get();
+
+				List<NetworkInput> it = NetworkUtilities
+					.importFromInputStream(copyTrain, batch, batchIndex);
+
+				Collections.shuffle(it);
+				calculateMiniBatch(it);
+
+				List<NetworkInput> toFeed = NetworkUtilities.importFromInputStream(copyTest, tests);
+				List<NetworkInput> feedForwardData = this.feedForwardData(toFeed);
+				int correct = this.evaluationFunction.evaluatePrediction(feedForwardData)
+					.intValue();
+				double loss = errorFunction.calculateCostFunction(feedForwardData);
+
+				xValues.add((double) i);
+				lossValues.add(loss);
+				correctValues.add((double) correct);
+
+				System.out.println("Loss: " + loss);
+
+				System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + tests);
+				batchIndex += batch;
+				its -= batch;
+			}
+			its = trains;
+		}
 	}
 
 	/**

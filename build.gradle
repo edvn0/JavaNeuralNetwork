@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'com.edwin.neural'
-version '2.1.1'
+version '4.0'
 
 sourceCompatibility = 1.8
 
@@ -20,5 +20,18 @@ dependencies {
     compile 'org.jetbrains:annotations:18.0.0'
     compile 'org.ujmp:ujmp-core:0.3.0'
     compile 'org.knowm.xchart:xchart:3.6.0'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'
+}
+
+jar {
+    doFirst {
+        manifest {
+            if (!configurations.compile.isEmpty()) {
+                attributes(
+                        'Class-Path': configurations.compile.collect { it.toURI().toString() }.join(' '),
+                        'Main-Class': 'neuralnetwork.MNISTTester')
+            }
+        }
+    }
 }
 

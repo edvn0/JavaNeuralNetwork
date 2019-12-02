@@ -73,15 +73,4 @@ public class MatrixUtilities {
 		return argMax.intValue();
 
 	}
-
-	public static void isNan(final DenseMatrix x) {
-		double[][] data = x.toDoubleArray();
-		for (double[] ds : data) {
-			for (double d : ds) {
-				if (Double.isNaN(d)) {
-					throw new RuntimeException("Matrix is NaN");
-				}
-			}
-		}
-	}
 }
