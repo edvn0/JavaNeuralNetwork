@@ -21,18 +21,22 @@ public class MNISTTester {
 
 	public static void main(String[] args) throws IOException {
 
-		System.out.println("Initialized network.");
-		ActivationFunction[] functions = new ActivationFunction[6];
+		ActivationFunction[] functions = new ActivationFunction[4];
 		functions[0] = new ReluFunction();
 		functions[1] = new ReluFunction();
 		functions[2] = new ReluFunction();
-		functions[3] = new ReluFunction();
-		functions[4] = new ReluFunction();
-		functions[5] = new SoftmaxFunction();
+		functions[3] = new SoftmaxFunction();
 		ErrorFunction function = new CrossEntropyErrorFunction();
 		EvaluationFunction eval = new MnistEvaluationFunction();
-		NeuralNetwork network = new NeuralNetwork(0.0015, functions, function, eval,
-			new int[]{784, 2000, 1500, 1000, 500, 10});
+		NeuralNetwork network = new NeuralNetwork(0.015, functions, function, eval,
+			new int[]{784, 100, 30, 10});
+		System.out.println("Initialized network.");
+		System.out.println("Difference: " +
+			((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) * (9.357E-7))
+			+ "Mb\nTotal: "
+			+ (Runtime.getRuntime().totalMemory() * (9.357E-7)) + "Mb\nFree: " + (
+			Runtime.getRuntime()
+				.freeMemory() * (9.357E-7)) + "Mb");
 
 
 		/*System.out.println("Starting bGD");
@@ -41,25 +45,38 @@ public class MNISTTester {
 		System.out.println("Ending sGD.");*/
 
 		boolean existsMac = Files.exists(Paths.get(
-			"/Users/edwincarlsson/Programmering/Java/NeuralNetwork/mnist-in-csv/mnist_train.csv"));
+			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv"));
 		boolean existsVM = Files
 			.exists(Paths.get("/home/edwin98carlsson/mnist-in-csv/mnist_train.csv"));
 
-		String path = null;
+		String base = "";
+		String pathTrain = null;
+		String pathTest = null;
 		if (existsMac && !existsVM) {
-			path = "/Users/edwincarlsson/Programmering/Java/NeuralNetwork/mnist-in-csv/mnist_train.csv";
+			pathTrain = "/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv";
+			pathTest = "/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_test.csv";
+			base = "/Users/edwincarlsson/Downloads";
 		} else if (!existsMac && existsVM) {
-			path = "/home/edwin98carlsson/mnist-in-csv/mnist_train.csv";
+			pathTrain = "/home/edwin98carlsson/mnist-in-csv/mnist_train.csv";
+			pathTest = "/home/edwin98carlsson/mnist-in-csv/mnist_test.csv";
+			base = "/home/edwin98carlsson/";
 		}
 
-		imagesTrain = generateDataFromCSV(path);
-		imagesTest = generateDataFromCSV(path);
+		imagesTrain = generateDataFromCSV(pathTrain);
+		imagesTest = generateDataFromCSV(pathTest);
+		System.out.println("Difference: " +
+			((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) * (9.357E-7))
+			+ "Mb\nTotal: "
+			+ (Runtime.getRuntime().totalMemory() * (9.357E-7)) + "Mb\nFree: " + (
+			Runtime.getRuntime()
+				.freeMemory() * (9.357E-7)) + "Mb");
+		System.out.println("Initialized files.");
 
 		System.out.println("Starting SGD...");
-		network.stochasticGradientDescent(imagesTrain, imagesTest, 50, 64);
+		network.stochasticGradientDescent(imagesTrain, imagesTest, 80, 32);
 		System.out.println("Finished SGD!");
-		network.outputChart("/home/edwin98carlsson/");
-		network.writeObject("/home/edwin98carlsson/");
+		network.outputChart(base);
+		network.writeObject(base);
 	}
 
 	private static List<NetworkInput> generateDataFromCSV(String path) throws IOException {

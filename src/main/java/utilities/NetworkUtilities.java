@@ -60,40 +60,8 @@ public class NetworkUtilities {
 		double[][] corr = new double[10][1];
 		String num = String.valueOf(in[0][0]);
 		String newNum = num.substring(0, 1);
-		switch (Integer.parseInt(newNum)) {
-			case 0:
-				corr[0][0] = 1;
-				break;
-			case 1:
-				corr[1][0] = 1;
-				break;
-			case 2:
-				corr[2][0] = 1;
-				break;
-			case 3:
-				corr[3][0] = 1;
-				break;
-			case 4:
-				corr[4][0] = 1;
-				break;
-			case 5:
-				corr[5][0] = 1;
-				break;
-			case 6:
-				corr[6][0] = 1;
-				break;
-			case 7:
-				corr[7][0] = 1;
-				break;
-			case 8:
-				corr[8][0] = 1;
-				break;
-			case 9:
-				corr[9][0] = 1;
-				break;
-			default:
-				break;
-		}
+		int index = Integer.parseInt(newNum);
+		corr[index][0] = 1;
 
 		double[][] data = new double[28 * 28][1];
 

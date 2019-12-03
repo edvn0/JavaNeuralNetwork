@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 import math.activations.ActivationFunction;
 import math.activations.SoftmaxFunction;
 import math.errors.CrossEntropyErrorFunction;
@@ -27,7 +25,6 @@ import org.knowm.xchart.XYChart;
 import org.ujmp.core.DenseMatrix;
 import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
-import utilities.NetworkUtilities;
 
 /**
  * A multi layer perceptron network.
@@ -61,9 +58,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 	// Current best score for this network, used for serialisation
 	private double score;
 
-	// Checker for functional initialisation of the NN.
-	private boolean activate;
-
 	private static transient final ArrayList<Double> xValues = new ArrayList<>();
 	private static transient final ArrayList<Double> lossValues = new ArrayList<>();
 	private static transient final ArrayList<Double> correctValues = new ArrayList<>();
@@ -78,7 +72,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 		int[] sizes, double score) {
 		this(learning, functions, function, eval, sizes);
 		this.score = score;
-		this.activate = true;
 	}
 
 	/**
@@ -104,13 +97,12 @@ public class NeuralNetwork implements Serializable, Trainable {
 		this.totalLayers = sizes.length;
 		this.evaluationFunction = eval;
 		this.score = 0;
-		this.activate = true;
 
 		createLayers(sizes);
 		initialiseWeights(sizes);
 
-		if ((!(functions[functions.length - 1] instanceof SoftmaxFunction)
-			&& function instanceof CrossEntropyErrorFunction)) {
+		if (function instanceof CrossEntropyErrorFunction &&
+			!(functions[functions.length - 1] instanceof SoftmaxFunction)) {
 			throw new BackpropagationError(
 				"To properly function, back-propagation needs the activation function of the last "
 					+ "layer to be differentiable with respect to the error function.");
@@ -228,7 +220,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 			setWeight(i, nW);
 			setLayerBias(i, nB);
 		}
-
 	}
 
 	private List<DenseMatrix[]> backPropagate(DenseMatrix toPredict, DenseMatrix correct) {
@@ -244,7 +235,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 		List<DenseMatrix> activations = new ArrayList<>();
 		List<DenseMatrix> xVector = new ArrayList<>();
 
-		// FIXME: Here things become NaN
 		// Alters all arrays and lists.
 		this.backPropFeedForward(toPredict, activations, xVector, weights, biases);
 		// End feedforward
@@ -379,69 +369,40 @@ public class NeuralNetwork implements Serializable, Trainable {
 		int teDataSize = test.size();
 
 		for (int i = 0; i < epochs; i++) {
+			// Randomize training sample.
 			Collections.shuffle(training);
 
 			System.out.println("Calculating epoch: " + (i + 1) + ".");
 
+			// Do backpropagation.
 			for (int j = 0; j < trDataSize - batchSize; j += batchSize) {
 				calculateMiniBatch(training.subList(j, j + batchSize));
 			}
 
+			// Feed forward the test data
 			List<NetworkInput> feedForwardData = this.feedForwardData(test);
+
+			// Evaluate prediction with the interface EvaluationFunction.
 			int correct = this.evaluationFunction.evaluatePrediction(feedForwardData).intValue();
+			// Calculate loss with the interface ErrorFunction
 			double loss = errorFunction.calculateCostFunction(feedForwardData);
 
-			xValues.add((double) i);
-			lossValues.add(loss);
-			correctValues.add((double) correct);
+			// Add the plotting data, x, y_1, y_2 to the global values.
+			addPlotData(i, correct, loss);
 
 			System.out.println("Loss: " + loss);
-
 			System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + teDataSize);
+
+			// Lower learning rate. Might implement? Don't know how to.
+			// this.learningRate = i % 10 == 0 ? this.learningRate / 4 : this.learningRate;
 		}
 
 	}
 
-	public void streamedSGD(Supplier<Stream<String>> trainingStream,
-		Supplier<Stream<String>> testStream,
-		int batch,
-		int epochs) throws IOException {
-		// Read {batch} items from trainingStream,
-
-		int trains = (int) trainingStream.get().count();
-		int tests = (int) testStream.get().count();
-		int its = trains;
-		for (int i = 0; i < epochs; i++) {
-			int batchIndex = 0;
-
-			while (its >= 0) {
-				Stream<String> copyTrain = trainingStream.get();
-				Stream<String> copyTest = testStream.get();
-
-				List<NetworkInput> it = NetworkUtilities
-					.importFromInputStream(copyTrain, batch, batchIndex);
-
-				Collections.shuffle(it);
-				calculateMiniBatch(it);
-
-				List<NetworkInput> toFeed = NetworkUtilities.importFromInputStream(copyTest, tests);
-				List<NetworkInput> feedForwardData = this.feedForwardData(toFeed);
-				int correct = this.evaluationFunction.evaluatePrediction(feedForwardData)
-					.intValue();
-				double loss = errorFunction.calculateCostFunction(feedForwardData);
-
-				xValues.add((double) i);
-				lossValues.add(loss);
-				correctValues.add((double) correct);
-
-				System.out.println("Loss: " + loss);
-
-				System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + tests);
-				batchIndex += batch;
-				its -= batch;
-			}
-			its = trains;
-		}
+	private void addPlotData(final double i, final double correct, final double loss) {
+		xValues.add(i);
+		lossValues.add(loss);
+		correctValues.add(correct);
 	}
 
 	/**
@@ -451,16 +412,17 @@ public class NeuralNetwork implements Serializable, Trainable {
 	 * Uses {@link ThreadLocalRandom#current} to generate a random long for ID.
 	 *
 	 * @param basePath base path to image root.
-	 *
-	 * @return successful
 	 */
-	public boolean outputChart(final String basePath) {
-		XYChart lossToEpoch = QuickChart
-			.getChart("Loss plot", "Epoch", "Loss", "loss(x)", xValues, lossValues);
-		XYChart correctToEpoch = QuickChart
-			.getChart("Correct plot", "Epoch", "Correct", "corr(x)", xValues, correctValues);
+	public void outputChart(final String basePath) {
 
-		// TODO: Fix with suffix / and change to loss/corr instead.
+		XYChart lossToEpoch = generateChart("Loss/Epoch", "Epoch", "Loss", "loss(x)",
+			xValues,
+			lossValues);
+
+		XYChart correctToEpoch = generateChart("Correct/Epoch", "Epoch", "Correct", "correct(x)",
+			xValues,
+			correctValues);
+
 		String use = basePath.endsWith("/") ? basePath : basePath + "/";
 		String loss = use + "LossToEpochPlot_";
 		String correct = use + "CorrectToEpochPlot_";
@@ -470,11 +432,21 @@ public class NeuralNetwork implements Serializable, Trainable {
 				.nextLong() + "_.jpg", BitmapFormat.PNG, 300);
 			BitmapEncoder.saveBitmapWithDPI(correctToEpoch, correct + ThreadLocalRandom
 				.current().nextLong() + "_.jpg", BitmapFormat.PNG, 300);
-			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
-			return false;
 		}
+	}
+
+	private XYChart generateChart(String heading, String xLabel, String yLabel, String function,
+		List<Double> xValues,
+		List<Double> yValues) {
+		XYChart chart = QuickChart.getChart(heading, xLabel, yLabel, function,
+			NeuralNetwork.xValues, yValues);
+		chart.getStyler().setXAxisMin(0d);
+		chart.getStyler().setXAxisMax(Collections.max(xValues));
+		chart.getStyler().setYAxisMin(0d);
+		chart.getStyler().setYAxisMax(Collections.max(yValues));
+		return chart;
 	}
 
 	private List<NetworkInput> feedForwardData(List<NetworkInput> test) {

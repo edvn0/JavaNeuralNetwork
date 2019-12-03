@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'com.edwin.neural'
-version '4.0'
+version '4.1'
 
 sourceCompatibility = 1.8
 
