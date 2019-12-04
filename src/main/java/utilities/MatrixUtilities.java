@@ -16,13 +16,13 @@ public class MatrixUtilities {
 	}
 
 	/**
-	 * Creates a vector, either row or column based on the {@param dim}. If dim is true, a column
-	 * vector will be create, else a row vector.
+	 * Creates a vector, either row or column based on the dim. If dim is true, a column vector will
+	 * be create, else a row vector.
 	 *
 	 * @param doubles the data from which the {@link DenseMatrix} will be created.
 	 * @param dim     column or row vector?
 	 *
-	 * @return a new {@link DenseMatrix} based in {@param doubles}.
+	 * @return a new {@link DenseMatrix} based in doubles.
 	 */
 	public static DenseMatrix toMatrix(double[] doubles, boolean dim) {
 		if (dim) {

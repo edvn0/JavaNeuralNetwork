@@ -65,10 +65,16 @@ public class NeuralNetwork implements Serializable {
 	private static transient final ArrayList<Double> lossValues = new ArrayList<>();
 	private static transient final ArrayList<Double> correctValues = new ArrayList<>();
 
+
 	/**
 	 * This is a wrapper constructor to facilitate the serialization concept of score.
 	 *
-	 * @param score a double representing the networks score
+	 * @param learning  learning rate
+	 * @param functions activation functions
+	 * @param function  error function
+	 * @param eval      evaluation function
+	 * @param sizes     nodes in each layer
+	 * @param score     score for the network
 	 */
 	public NeuralNetwork(double learning, ActivationFunction[] functions, ErrorFunction function,
 		EvaluationFunction eval,
@@ -145,6 +151,10 @@ public class NeuralNetwork implements Serializable {
 	 * paths}/NeuralNetwork_{LONG}_
 	 *
 	 * @param path the full path to the file. does not require the .ser extension.
+	 *
+	 * @return a deserialized object.
+	 *
+	 * @throws IOException if file could not be found.
 	 */
 	public static NeuralNetwork readObject(String path) throws IOException {
 		NeuralNetwork network = null;
