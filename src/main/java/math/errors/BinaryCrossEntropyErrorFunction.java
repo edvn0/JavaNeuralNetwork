@@ -8,7 +8,7 @@ public class BinaryCrossEntropyErrorFunction implements ErrorFunction {
 
 	@Override
 	public double calculateCostFunction(final List<NetworkInput> tData) {
-		double total = 0; // H_p(q)
+		double total = 0;
 		for (NetworkInput s : tData) {
 			double[][] yHat = s.getData().toDoubleArray();
 			double[][] y = s.getLabel().toDoubleArray();
@@ -19,7 +19,7 @@ public class BinaryCrossEntropyErrorFunction implements ErrorFunction {
 				double data = yHat[i][0];
 				temp += label * log2(data) + (1 - label) * log2(1 - data);
 			}
-			total += temp;
+			total += temp / yHat.length;
 		}
 		return (total * -1) / tData.size();
 	}

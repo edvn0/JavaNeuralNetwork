@@ -12,7 +12,7 @@ public class FraudEvaluationFunction implements EvaluationFunction {
 	public DenseMatrix evaluatePrediction(final List<NetworkInput> list) {
 		int correct = 0;
 		for (NetworkInput p : list) {
-			if (Math.abs(p.getData().doubleValue() - p.getLabel().doubleValue()) < 10e-5) {
+			if (Math.abs(p.getData().doubleValue() - p.getLabel().doubleValue()) < 10e-2) {
 				correct++;
 			}
 		}

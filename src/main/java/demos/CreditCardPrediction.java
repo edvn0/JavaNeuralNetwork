@@ -30,8 +30,8 @@ public class CreditCardPrediction {
 		aFunctions[2] = new SigmoidFunction();
 		ErrorFunction errorFunction = new BinaryCrossEntropyErrorFunction();
 		EvaluationFunction evaluationFunction = new FraudEvaluationFunction();
-		NeuralNetwork network = new NeuralNetwork(0.0035, aFunctions, errorFunction,
-			evaluationFunction, new int[]{30, 100, 1});
+		NeuralNetwork network = new NeuralNetwork(0.00035, aFunctions, errorFunction,
+			evaluationFunction, new int[]{30, 25, 1});
 
 		System.out.println("initializing SGD");
 		network.stochasticGradientDescent(inputs, inputs, 100, 32);

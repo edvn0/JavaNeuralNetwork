@@ -32,7 +32,7 @@ import utilities.MatrixUtilities;
 /**
  * A multi layer perceptron network.
  */
-public class NeuralNetwork implements Serializable, Trainable {
+public class NeuralNetwork implements Serializable {
 
 	// Serial ID
 	private static final long serialVersionUID = 0L;
@@ -205,9 +205,10 @@ public class NeuralNetwork implements Serializable, Trainable {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Train the network with one example.
+	 *
+	 * @param input a {@link NetworkInput} object to be trained on.
 	 */
-	@Override
 	public void train(NetworkInput input) {
 		calculateMiniBatch(Collections.singletonList(input));
 	}
@@ -358,7 +359,13 @@ public class NeuralNetwork implements Serializable, Trainable {
 		this.biases[i] = outputMatrix;
 	}
 
-	@Override
+	/**
+	 * Predict a single example input data.
+	 *
+	 * @param in {@link DenseMatrix} a Matrix to feed forward.
+	 *
+	 * @return a classification of {@link DenseMatrix}
+	 */
 	public DenseMatrix predict(DenseMatrix in) {
 		return feedForward(in);
 	}
@@ -386,10 +393,10 @@ public class NeuralNetwork implements Serializable, Trainable {
 	/**
 	 * Provides an implementation of SGD for this neural network.
 	 *
-	 * @param training  a Collections object with {@link NetworkInput }objects,
+	 * @param training  a Collections object with {@link NetworkInput} objects,
 	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel()is the label.
 	 * @param test      a Collections object with {@link NetworkInput} objects,
-	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel is the label.
+	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
 	 * @param epochs    how many iterations are we doing SGD for
 	 * @param batchSize how big is the batch size, typically 32. See https://stats.stackexchange.com/q/326663
 	 */
