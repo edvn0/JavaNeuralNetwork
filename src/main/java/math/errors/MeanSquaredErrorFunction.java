@@ -15,9 +15,11 @@ public class MeanSquaredErrorFunction implements ErrorFunction {
 		double sum = 0;
 
 		for (NetworkInput networkInput : tData) {
-			DenseMatrix inner = (DenseMatrix) networkInput.getLabel().minus(networkInput.getData());
-			inner = MatrixUtilities.map(inner, e -> e * e / 2);
-			sum += inner.getValueSum();
+			DenseMatrix label = networkInput.getLabel();
+			DenseMatrix data = networkInput.getData();
+			DenseMatrix inner = (DenseMatrix) label.minus(data);
+			inner = MatrixUtilities.map(inner, e -> e * e);
+			sum += inner.doubleValue();
 		}
 
 		sum /= tData.size();

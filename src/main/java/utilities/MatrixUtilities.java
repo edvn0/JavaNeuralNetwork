@@ -1,14 +1,40 @@
 package utilities;
 
 import java.util.function.UnaryOperator;
-import matrix.Matrix;
 import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 import org.ujmp.core.calculation.Calculation.Ret;
 
 public class MatrixUtilities {
 
 	public static double[] toArray(DenseMatrix b) {
 		return b.transpose().toDoubleArray()[0];
+	}
+
+	public static DenseMatrix toMatrix(double[][] doubles) {
+		return Matrix.Factory.importFromArray(doubles);
+	}
+
+	/**
+	 * Creates a vector, either row or column based on the {@param dim}. If dim is true, a column
+	 * vector will be create, else a row vector.
+	 *
+	 * @param doubles the data from which the {@link DenseMatrix} will be created.
+	 * @param dim     column or row vector?
+	 *
+	 * @return a new {@link DenseMatrix} based in {@param doubles}.
+	 */
+	public static DenseMatrix toMatrix(double[] doubles, boolean dim) {
+		if (dim) {
+			double[][] from = new double[doubles.length][1];
+			int i = 0;
+			for (double d : doubles) {
+				from[i][0] = d;
+			}
+			return Matrix.Factory.importFromArray(from);
+		} else {
+			return Matrix.Factory.importFromArray(doubles);
+		}
 	}
 
 	public static DenseMatrix map(DenseMatrix in, UnaryOperator<Double> t) {
@@ -21,55 +47,12 @@ public class MatrixUtilities {
 				out[i][j] = applied;
 			}
 		}
-		return org.ujmp.core.Matrix.Factory.importFromArray(out);
+		return Matrix.Factory.importFromArray(out);
 	}
 
-	/**
-	 * Return a probability distribution of the predicted values of {@link Matrix}.
-	 *
-	 * @param matrix {@link Matrix} with the predicted values
-	 *
-	 * @return SoftMax(exponential probability distribution) of the prediction.
-	 */
-	public static Matrix networkOutputsSoftMax(Matrix matrix) {
-
-		Matrix mapped = matrix.map(Math::exp);
-		double softMaxTotal = mapped.matrixSum();
-		System.out.println(softMaxTotal);
-
-		double[] newMatrix = new double[matrix.getRows()];
-
-		for (int i = 0; i < matrix.getRows(); i++) {
-			double inValue = matrix.getElement(i, 0);
-			double value = Math.exp(inValue);
-			newMatrix[i] = value / softMaxTotal;
-		}
-
-		return Matrix.fromArray(newMatrix);
-	}
-
-	/**
-	 * Output the index of the max element
-	 *
-	 * @param input Output data of the prediction network
-	 *
-	 * @return index of max element
-	 */
-	public static int argMax(Matrix input) {
-		double max = input.getData()[0][0];
-		int index = 0;
-		for (int i = 0; i < input.getData().length; i++) {
-			double[][] data = input.getData();
-			if (data[i][0] > max) {
-				max = data[i][0];
-				index = i;
-			}
-		}
-		return index;
-	}
 
 	public static int argMax(DenseMatrix input) {
-		org.ujmp.core.Matrix argMax = input.indexOfMax(Ret.NEW, 0);
+		Matrix argMax = input.indexOfMax(Ret.NEW, 0);
 		return argMax.intValue();
 
 	}

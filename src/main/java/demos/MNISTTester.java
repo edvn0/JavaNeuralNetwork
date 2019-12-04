@@ -1,10 +1,10 @@
-package neuralnetwork;
+package demos;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import math.activations.ActivationFunction;
 import math.activations.ReluFunction;
 import math.activations.SoftmaxFunction;
@@ -12,6 +12,8 @@ import math.errors.CrossEntropyErrorFunction;
 import math.errors.ErrorFunction;
 import math.evaluation.EvaluationFunction;
 import math.evaluation.MnistEvaluationFunction;
+import neuralnetwork.NetworkInput;
+import neuralnetwork.NeuralNetwork;
 import utilities.NetworkUtilities;
 
 public class MNISTTester {
@@ -21,6 +23,9 @@ public class MNISTTester {
 
 	public static void main(String[] args) throws IOException {
 
+		int epochs = Integer.parseInt(args[0]);
+		int batch = Integer.parseInt(args[1]);
+
 		ActivationFunction[] functions = new ActivationFunction[4];
 		functions[0] = new ReluFunction();
 		functions[1] = new ReluFunction();
@@ -28,21 +33,16 @@ public class MNISTTester {
 		functions[3] = new SoftmaxFunction();
 		ErrorFunction function = new CrossEntropyErrorFunction();
 		EvaluationFunction eval = new MnistEvaluationFunction();
-		NeuralNetwork network = new NeuralNetwork(0.015, functions, function, eval,
-			new int[]{784, 100, 30, 10});
+		NeuralNetwork network = new NeuralNetwork(0.035, functions, function, eval,
+			new int[]{784, 100, 100, 10});
 		System.out.println("Initialized network.");
+
 		System.out.println("Difference: " +
 			((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) * (9.357E-7))
 			+ "Mb\nTotal: "
 			+ (Runtime.getRuntime().totalMemory() * (9.357E-7)) + "Mb\nFree: " + (
 			Runtime.getRuntime()
 				.freeMemory() * (9.357E-7)) + "Mb");
-
-
-		/*System.out.println("Starting bGD");
-		batchGradientDescentKindOf(
-			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv", 10000, network);
-		System.out.println("Ending sGD.");*/
 
 		boolean existsMac = Files.exists(Paths.get(
 			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv"));
@@ -73,19 +73,16 @@ public class MNISTTester {
 		System.out.println("Initialized files.");
 
 		System.out.println("Starting SGD...");
-		network.stochasticGradientDescent(imagesTrain, imagesTest, 80, 32);
+		network.stochasticGradientDescent(imagesTrain, imagesTest, epochs, batch);
 		System.out.println("Finished SGD!");
 		network.outputChart(base);
 		network.writeObject(base);
 	}
 
 	private static List<NetworkInput> generateDataFromCSV(String path) throws IOException {
-		List<NetworkInput> things = new ArrayList<>();
-
-		Files.readAllLines(Paths.get(path))
-			.forEach((e) -> things.add(NetworkUtilities
-				.constructDataFromDoubleArray(NetworkUtilities.normalizeData(e.split(",")))));
-
-		return things;
+		return Files.lines(Paths.get(path)).
+			map(e -> e.split(",")).
+			map(NetworkUtilities::apply).
+			collect(Collectors.toList());
 	}
 }

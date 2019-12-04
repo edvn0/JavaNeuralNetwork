@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import neuralnetwork.NetworkInput;
@@ -11,7 +12,8 @@ import org.ujmp.core.Matrix;
 
 public class NetworkUtilities {
 
-	public static List<NetworkInput> importFromInputStream(String path, int size, int offset)
+	public static List<NetworkInput> importFromInputPath(String path, int offset,
+		Function<String[], NetworkInput> f)
 		throws IOException {
 
 		List<NetworkInput> fromStream;
@@ -19,17 +21,15 @@ public class NetworkUtilities {
 
 		fromStream = stream
 			.skip(offset)
-			.limit(size)
 			.map(line -> line.split(","))
-			.map(e -> constructDataFromDoubleArray(normalizeData(e)))
+			.map(f)
 			.collect(Collectors.toList());
 
 		return fromStream;
 	}
 
 	public static List<NetworkInput> importFromInputStream(Stream<String> path, int size,
-		int offset)
-		throws IOException {
+		int offset, Function<String[], NetworkInput> f) {
 
 		List<NetworkInput> fromStream;
 
@@ -37,7 +37,7 @@ public class NetworkUtilities {
 			.limit(size)
 			.skip(offset)
 			.map(line -> line.split(","))
-			.map(NetworkUtilities::apply)
+			.map(f)
 			.collect(Collectors.toList());
 
 		return fromStream;
@@ -73,12 +73,13 @@ public class NetworkUtilities {
 			Matrix.Factory.importFromArray(corr));
 	}
 
-	public static List<NetworkInput> importFromInputStream(final Stream<String> test, int size)
+	public static List<NetworkInput> importFromInputStream(final Stream<String> test, int size,
+		Function<String[], NetworkInput> f)
 		throws IOException {
-		return importFromInputStream(test, size, 0);
+		return importFromInputStream(test, size, 0, f);
 	}
 
-	private static NetworkInput apply(String[] e) {
+	public static NetworkInput apply(String[] e) {
 		return constructDataFromDoubleArray(normalizeData(e));
 	}
 }

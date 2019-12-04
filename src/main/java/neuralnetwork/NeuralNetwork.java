@@ -8,9 +8,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 import math.activations.ActivationFunction;
 import math.activations.SoftmaxFunction;
@@ -112,36 +115,46 @@ public class NeuralNetwork implements Serializable, Trainable {
 	private void initialiseWeights(int[] sizes) {
 		this.weights = new DenseMatrix[getTotalLayers() - 1];
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
+			final int size = sizes[i];
 			this.weights[i] = MatrixUtilities
-				.map(Matrix.Factory.rand(sizes[i + 1], sizes[i]), (e) -> (2 * e - 1) * 0.1);
+				.map(Matrix.Factory.rand(sizes[i + 1], sizes[i]),
+					(e) -> this.xavierInitialization(size));
 		}
 	}
 
 	private void createLayers(int[] sizes) {
 		this.biases = new DenseMatrix[getTotalLayers() - 1];
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
-			this.biases[i] = MatrixUtilities
-				.map(Matrix.Factory.rand(sizes[i + 1], 1), (e) -> (2 * e - 1) * 0.1);
+			this.biases[i] = Matrix.Factory.zeros(sizes[i + 1], 1);
 		}
+	}
+
+	public double xavierInitialization(int prev) {
+		return ThreadLocalRandom.current().nextGaussian() * (Math.sqrt(2) / Math.sqrt(prev));
 	}
 
 	private int getTotalLayers() {
 		return this.totalLayers;
 	}
 
+	/**
+	 * Reads a .ser file or a path to a .ser file (with the extension excluded) to a NeuralNetwork
+	 * object.
+	 *
+	 * E.g. /Users/{other paths}/NeuralNetwork_{LONG}_.ser works as well as /Users/{other
+	 * paths}/NeuralNetwork_{LONG}_
+	 *
+	 * @param path the full path to the file. does not require the .ser extension.
+	 */
 	public static NeuralNetwork readObject(String path) throws IOException {
 		NeuralNetwork network = null;
 		File file;
 		path = (path.endsWith(".ser") ? path : path + ".ser");
 
-		try {
-			FileInputStream fs = new FileInputStream(file = new File(path));
-			ObjectInputStream os = new ObjectInputStream(fs);
+		try (FileInputStream fs = new FileInputStream(
+			file = new File(path)); ObjectInputStream os = new ObjectInputStream(fs)) {
 
 			network = (NeuralNetwork) os.readObject();
-
-			os.close();
-			fs.close();
 
 			System.out.println("Completed deserialization, see file: " + file.getPath());
 		} catch (ClassNotFoundException e) {
@@ -171,12 +184,32 @@ public class NeuralNetwork implements Serializable, Trainable {
 		}
 	}
 
+	public void writeObject(final String path) {
+		File file;
+		String out = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+
+		try {
+			FileOutputStream fs = new FileOutputStream(
+				file = new File(
+					out + "/NeuralNetwork_" + getNow() + "_.ser"));
+			ObjectOutputStream os = new ObjectOutputStream(fs);
+			os.writeObject(this);
+
+			os.close();
+			fs.close();
+
+			System.out.println("Completed serialisation, see file: " + file.getPath());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void train(DenseMatrix training, DenseMatrix correct) {
-		calculateMiniBatch(Collections.singletonList(new NetworkInput(training, correct)));
+	public void train(NetworkInput input) {
+		calculateMiniBatch(Collections.singletonList(input));
 	}
 
 	private void calculateMiniBatch(List<NetworkInput> subList) {
@@ -236,7 +269,7 @@ public class NeuralNetwork implements Serializable, Trainable {
 		List<DenseMatrix> xVector = new ArrayList<>();
 
 		// Alters all arrays and lists.
-		this.backPropFeedForward(toPredict, activations, xVector, weights, biases);
+		this.backPropFeedForward(toPredict, activations, xVector);
 		// End feedforward
 
 		// Calculate error signal for last layer
@@ -280,13 +313,13 @@ public class NeuralNetwork implements Serializable, Trainable {
 	}
 
 	private void backPropFeedForward(DenseMatrix starter, List<DenseMatrix> actives,
-		List<DenseMatrix> vectors,
-		DenseMatrix[] weights, DenseMatrix[] biases) {
+		List<DenseMatrix> vectors) {
+
 		DenseMatrix toPredict = starter;
-		//actives.add(toPredict);
-		actives.add(Matrix.Factory.zeros(starter.getRowCount(), starter.getColumnCount()));
+
+		actives.add(toPredict);
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
-			DenseMatrix x = (DenseMatrix) weights[i].mtimes(toPredict).plus(biases[i]);
+			DenseMatrix x = (DenseMatrix) this.weights[i].mtimes(toPredict).plus(this.biases[i]);
 			vectors.add(x);
 
 			toPredict = this.functions[i + 1].applyFunction(x);
@@ -353,12 +386,12 @@ public class NeuralNetwork implements Serializable, Trainable {
 	/**
 	 * Provides an implementation of SGD for this neural network.
 	 *
-	 * @param training  a Collections object with Matrix[] objects, Matrix[0] is the data, Matrix[1]
-	 *                  is the label.
-	 * @param test      a Collections object with Matrix[] objects, Matrix[0] is the data, Matrix[1]
-	 *                  is the label.
+	 * @param training  a Collections object with {@link NetworkInput }objects,
+	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel()is the label.
+	 * @param test      a Collections object with {@link NetworkInput} objects,
+	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel is the label.
 	 * @param epochs    how many iterations are we doing SGD for
-	 * @param batchSize how big is the batch size, typically 32.
+	 * @param batchSize how big is the batch size, typically 32. See https://stats.stackexchange.com/q/326663
 	 */
 	public void stochasticGradientDescent(@NotNull List<NetworkInput> training,
 		@NotNull List<NetworkInput> test,
@@ -387,13 +420,16 @@ public class NeuralNetwork implements Serializable, Trainable {
 			// Calculate loss with the interface ErrorFunction
 			double loss = errorFunction.calculateCostFunction(feedForwardData);
 
-			// Add the plotting data, x, y_1, y_2 to the global values.
+			// Add the plotting data, x, y_1, y_2 to the global
+			// lists of xValues, correctValues, lossValues.
 			addPlotData(i, correct, loss);
 
 			System.out.println("Loss: " + loss);
 			System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + teDataSize);
 
-			// Lower learning rate. Might implement? Don't know how to.
+			// Lower learning rate each iteration?. Might implement? Don't know how to.
+			// ADAM? Is that here? Are they different algorithms all together?
+			// TODO: Implement Adam, RMSProp, Momentum?
 			// this.learningRate = i % 10 == 0 ? this.learningRate / 4 : this.learningRate;
 		}
 
@@ -409,8 +445,6 @@ public class NeuralNetwork implements Serializable, Trainable {
 	 * Prints the networks performance in terms of loss and correct identification to a path.
 	 * Example usage: "Users/{name}/Programming/DeepLearning/NN/Output/".
 	 *
-	 * Uses {@link ThreadLocalRandom#current} to generate a random long for ID.
-	 *
 	 * @param basePath base path to image root.
 	 */
 	public void outputChart(final String basePath) {
@@ -424,17 +458,27 @@ public class NeuralNetwork implements Serializable, Trainable {
 			correctValues);
 
 		String use = basePath.endsWith("/") ? basePath : basePath + "/";
-		String loss = use + "LossToEpochPlot_";
-		String correct = use + "CorrectToEpochPlot_";
+		String loss = use + "LossToEpochPlot";
+		String correct = use + "CorrectToEpochPlot";
+
+		String now = getNow();
+
+		String nowLoss = loss + "_" + now;
+		String nowCorr = correct + "_" + now;
 
 		try {
-			BitmapEncoder.saveBitmapWithDPI(lossToEpoch, loss + ThreadLocalRandom.current()
-				.nextLong() + "_.jpg", BitmapFormat.PNG, 300);
-			BitmapEncoder.saveBitmapWithDPI(correctToEpoch, correct + ThreadLocalRandom
-				.current().nextLong() + "_.jpg", BitmapFormat.PNG, 300);
+			BitmapEncoder.saveBitmapWithDPI(lossToEpoch, nowLoss, BitmapFormat.PNG, 300);
+			BitmapEncoder.saveBitmapWithDPI(correctToEpoch, nowCorr, BitmapFormat.PNG, 300);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static String getNow() {
+		String formattedDate;
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.ENGLISH);
+		formattedDate = sdf.format(new Date());
+		return formattedDate;
 	}
 
 	private XYChart generateChart(String heading, String xLabel, String yLabel, String function,
@@ -462,28 +506,5 @@ public class NeuralNetwork implements Serializable, Trainable {
 		return copy;
 	}
 
-	public double getScore() {
-		return this.score;
-	}
-
-	public void writeObject(String path) {
-		File file;
-		path = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
-
-		try {
-			FileOutputStream fs = new FileOutputStream(
-				file = new File(
-					path + "/NeuralNetwork_" + ThreadLocalRandom.current().nextLong() + "_.ser"));
-			ObjectOutputStream os = new ObjectOutputStream(fs);
-			os.writeObject(this);
-
-			os.close();
-			fs.close();
-
-			System.out.println("Completed serialisation, see file: " + file.getPath());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 }
