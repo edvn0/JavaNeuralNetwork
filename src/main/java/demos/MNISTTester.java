@@ -34,7 +34,7 @@ public class MNISTTester {
 		ErrorFunction function = new CrossEntropyErrorFunction();
 		EvaluationFunction eval = new MnistEvaluationFunction();
 		NeuralNetwork network = new NeuralNetwork(0.035, functions, function, eval,
-			new int[]{784, 100, 100, 10});
+			new int[]{784, 100, 100, 10}, , , );
 		System.out.println("Initialized network.");
 
 		System.out.println("Difference: " +

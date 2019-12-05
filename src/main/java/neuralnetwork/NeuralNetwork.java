@@ -51,6 +51,9 @@ public class NeuralNetwork implements Serializable {
 
 	// 0 based connections, i.e., connection 0 is from Layer 0 to Layer 1.
 	private DenseMatrix[] weights;
+	private DenseMatrix[] vDw;
+	private DenseMatrix[] sDw;
+	private DenseMatrix[] epsilon;
 
 	// 0 based layering, i.e. index 0 in layers is layer 0.
 	private DenseMatrix[] biases;
@@ -79,7 +82,7 @@ public class NeuralNetwork implements Serializable {
 	public NeuralNetwork(double learning, ActivationFunction[] functions, ErrorFunction function,
 		EvaluationFunction eval,
 		int[] sizes, double score) {
-		this(learning, functions, function, eval, sizes);
+		this(learning, functions, function, eval, sizes, 0, 0, 0);
 		this.score = score;
 	}
 
@@ -91,15 +94,18 @@ public class NeuralNetwork implements Serializable {
 	 * int[] sizes = {3,4,4,1} is a 4-layered fully connected network with 3 input nodes, 1 output
 	 * nodes, 2 hidden layers with 4 nodes in each of them.
 	 *
-	 * @param learning  a double representing step size in back propagation.
-	 * @param functions the activation functions for all layers
-	 * @param function  the error function to calculate error of last layers
-	 * @param eval      the evaluation function to compare the network to the data's labels
-	 * @param sizes     the table to initialize layers and weights.
+	 * @param learning    a double representing step size in back propagation.
+	 * @param functions   the activation functions for all layers
+	 * @param function    the error function to calculate error of last layers
+	 * @param eval        the evaluation function to compare the network to the data's labels
+	 * @param sizes       the table to initialize layers and weights.
+	 * @param adamBetaOne adam beta hyperparameter
+	 * @param adamBetaTwo adam beta hyperparameter
+	 * @param adamEpsilon adam beta hyperparameter
 	 */
 	public NeuralNetwork(double learning, ActivationFunction[] functions, ErrorFunction function,
 		EvaluationFunction eval,
-		int[] sizes) {
+		int[] sizes, final double adamBetaOne, final double adamBetaTwo, final double adamEpsilon) {
 		this.learningRate = learning;
 		this.functions = functions;
 		this.errorFunction = function;
@@ -109,6 +115,7 @@ public class NeuralNetwork implements Serializable {
 
 		createLayers(sizes);
 		initialiseWeights(sizes);
+		initialiseAdam();
 
 		if (function instanceof CrossEntropyErrorFunction &&
 			!(functions[functions.length - 1] instanceof SoftmaxFunction)) {
@@ -116,6 +123,24 @@ public class NeuralNetwork implements Serializable {
 				"To properly function, back-propagation needs the activation function of the last "
 					+ "layer to be differentiable with respect to the error function.");
 		}
+	}
+
+	private void initialiseAdam() {
+		for (int i = 0; i < this.weights.length; i++) {
+			this.vDw[i] = Matrix.Factory.zeros(this.weights[i].getRowCount(), 1);
+			this.sDw[i] = Matrix.Factory.zeros(this.weights[i].getRowCount(), 1);
+			this.epsilon[i] = Matrix.Factory
+				.importFromArray(generateStability(this.weights[i].getRowCount()));
+		}
+
+	}
+
+	private double[][] generateStability(final long rowCount) {
+		double[][] values = new double[(int) rowCount][1];
+		for (int i = 0; i < rowCount; i++) {
+			values[i][0] = 10e-8;
+		}
+		return values;
 	}
 
 	private void initialiseWeights(int[] sizes) {
@@ -262,7 +287,7 @@ public class NeuralNetwork implements Serializable {
 			DenseMatrix nB = (DenseMatrix) cB.minus(scaledDeltaB);
 
 			setWeight(i, nW);
-			setLayerBias(i, nB);
+			setBias(i, nB);
 		}
 	}
 
@@ -365,7 +390,7 @@ public class NeuralNetwork implements Serializable {
 		return this.biases[i];
 	}
 
-	private void setLayerBias(int i, DenseMatrix outputMatrix) {
+	private void setBias(int i, DenseMatrix outputMatrix) {
 		this.biases[i] = outputMatrix;
 	}
 
@@ -450,6 +475,21 @@ public class NeuralNetwork implements Serializable {
 			// this.learningRate = i % 10 == 0 ? this.learningRate / 4 : this.learningRate;
 		}
 
+	}
+
+	public void adam(List<NetworkInput> training, List<NetworkInput> testing, int epochs,
+		int batchSize) {
+		int trainSize = training.size();
+		int testSize = training.size();
+
+		for (int i = 0; i < epochs; i++) {
+
+			Collections.shuffle(training);
+			for (int k = 0; k < trainSize - batchSize; k += batchSize) {
+				calculateMiniBatch(training.subList(k, k + batchSize));
+			}
+
+		}
 	}
 
 	private void addPlotData(final double i, final double correct, final double loss) {

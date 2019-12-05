@@ -25,7 +25,7 @@ public class IrisPrediction {
 		ErrorFunction errorFunction = new CrossEntropyErrorFunction();
 		EvaluationFunction evaluationFunction = new MnistEvaluationFunction();
 		NeuralNetwork network = new NeuralNetwork(0.01, activationFunctions, errorFunction,
-			evaluationFunction, new int[]{4, 100, 100, 3});
+			evaluationFunction, new int[]{4, 100, 100, 3}, , , );
 
 		List<NetworkInput> inputList = NetworkUtilities.importFromInputPath(
 			"/Users/edwincarlsson/Downloads/DataAnalysisKaggle/scaled_iris_correct.csv", 1,
