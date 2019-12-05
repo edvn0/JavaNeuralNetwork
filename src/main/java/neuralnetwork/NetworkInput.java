@@ -4,6 +4,10 @@ import java.io.Serializable;
 
 import org.ujmp.core.DenseMatrix;
 
+/**
+ * A wrapper to contain a input to a Neural Network, with both the label and the
+ * data.
+ */
 public class NetworkInput implements Serializable {
 
 	/**
