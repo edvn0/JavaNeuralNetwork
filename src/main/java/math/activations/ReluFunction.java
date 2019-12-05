@@ -5,6 +5,10 @@ import utilities.MatrixUtilities;
 
 public class ReluFunction implements ActivationFunction {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 5116981892314745595L;
 	private static final String NAME = "RELU";
 
 	private double relu(double a) {

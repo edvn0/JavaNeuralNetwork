@@ -8,6 +8,10 @@ import utilities.MatrixUtilities;
 
 public class MnistEvaluationFunction implements EvaluationFunction {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 3730260463010183881L;
 
 	public MnistEvaluationFunction() {
 	}
@@ -26,31 +30,7 @@ public class MnistEvaluationFunction implements EvaluationFunction {
 			}
 
 		}
-		return Matrix.Factory.importFromArray(new int[][]{{correct}});
+		return Matrix.Factory.importFromArray(new int[][] { { correct } });
 	}
 
-	private int getLabel(DenseMatrix matrix) {
-		int i = 0;
-		for (double[] d : matrix.toDoubleArray()) {
-			int val = (int) d[0];
-			if (val == 1) {
-				return i;
-			}
-			i++;
-		}
-		return -1;
-	}
-
-	private int maxLabel(DenseMatrix fedForward) {
-		double[] data = fedForward.toDoubleArray()[0];
-		int index = 0;
-		double max = data[0];
-		for (int i = 1; i < data.length; i++) {
-			if (data[i] > max) {
-				max = data[i];
-				index = i;
-			}
-		}
-		return index;
-	}
 }

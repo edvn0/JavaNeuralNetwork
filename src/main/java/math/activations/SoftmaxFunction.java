@@ -9,7 +9,13 @@ import utilities.MatrixUtilities;
 public class SoftmaxFunction implements ActivationFunction {
 
 	/**
-	 * Takes as input a vector of size NX1 and returns a SoftMax Vector of that input.
+	 *
+	 */
+	private static final long serialVersionUID = -5298468440584699205L;
+
+	/**
+	 * Takes as input a vector of size NX1 and returns a SoftMax Vector of that
+	 * input.
 	 *
 	 * @param input input vector.
 	 *

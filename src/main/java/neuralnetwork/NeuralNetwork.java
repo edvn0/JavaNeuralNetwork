@@ -34,8 +34,10 @@ import utilities.MatrixUtilities;
  */
 public class NeuralNetwork implements Serializable {
 
-	// Serial ID
-	private static final long serialVersionUID = 0L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 7008674899707436812L;
 
 	// Learning rate
 	private double learningRate;
@@ -61,67 +63,41 @@ public class NeuralNetwork implements Serializable {
 	// Helper field to hold the total amount of layers
 	private int totalLayers;
 
-	// Current best score for this network, used for serialisation
-	private double score;
-
 	private static transient final ArrayList<Double> xValues = new ArrayList<>();
 	private static transient final ArrayList<Double> lossValues = new ArrayList<>();
 	private static transient final ArrayList<Double> correctValues = new ArrayList<>();
 
-
 	/**
-	 * This is a wrapper constructor to facilitate the serialization concept of score.
+	 * Create a Neural Network with a learning rate, all the activation functions
+	 * for all layers, the error function and the function to evaluate the network,
+	 * and also the sizes of the layers, for example:
 	 *
-	 * @param learning  learning rate
-	 * @param functions activation functions
-	 * @param function  error function
-	 * @param eval      evaluation function
-	 * @param sizes     nodes in each layer
-	 * @param score     score for the network
+	 * int[] sizes = {3,4,4,1} is a 4-layered fully connected network with 3 input
+	 * nodes, 1 output nodes, 2 hidden layers with 4 nodes in each of them.
+	 *
+	 * @param learning  a double representing step size in back propagation.
+	 * @param functions the activation functions for all layers
+	 * @param function  the error function to calculate error of last layers
+	 * @param eval      the evaluation function to compare the network to the data's
+	 *                  labels
+	 * @param sizes     the table to initialize layers and weights.
 	 */
 	public NeuralNetwork(double learning, ActivationFunction[] functions, ErrorFunction function,
-		EvaluationFunction eval,
-		int[] sizes, double score) {
-		this(learning, functions, function, eval, sizes, 0, 0, 0);
-		this.score = score;
-	}
-
-	/**
-	 * Create a Neural Network with a learning rate, all the activation functions for all layers,
-	 * the error function and the function to evaluate the network, and also the sizes of the
-	 * layers, for example:
-	 *
-	 * int[] sizes = {3,4,4,1} is a 4-layered fully connected network with 3 input nodes, 1 output
-	 * nodes, 2 hidden layers with 4 nodes in each of them.
-	 *
-	 * @param learning    a double representing step size in back propagation.
-	 * @param functions   the activation functions for all layers
-	 * @param function    the error function to calculate error of last layers
-	 * @param eval        the evaluation function to compare the network to the data's labels
-	 * @param sizes       the table to initialize layers and weights.
-	 * @param adamBetaOne adam beta hyperparameter
-	 * @param adamBetaTwo adam beta hyperparameter
-	 * @param adamEpsilon adam beta hyperparameter
-	 */
-	public NeuralNetwork(double learning, ActivationFunction[] functions, ErrorFunction function,
-		EvaluationFunction eval,
-		int[] sizes, final double adamBetaOne, final double adamBetaTwo, final double adamEpsilon) {
+			EvaluationFunction eval, int[] sizes) {
 		this.learningRate = learning;
 		this.functions = functions;
 		this.errorFunction = function;
 		this.totalLayers = sizes.length;
 		this.evaluationFunction = eval;
-		this.score = 0;
 
 		createLayers(sizes);
 		initialiseWeights(sizes);
-		initialiseAdam();
 
-		if (function instanceof CrossEntropyErrorFunction &&
-			!(functions[functions.length - 1] instanceof SoftmaxFunction)) {
+		if (function instanceof CrossEntropyErrorFunction
+				&& !(functions[functions.length - 1] instanceof SoftmaxFunction)) {
 			throw new BackpropagationError(
-				"To properly function, back-propagation needs the activation function of the last "
-					+ "layer to be differentiable with respect to the error function.");
+					"To properly function, back-propagation needs the activation function of the last "
+							+ "layer to be differentiable with respect to the error function.");
 		}
 	}
 
@@ -129,8 +105,7 @@ public class NeuralNetwork implements Serializable {
 		for (int i = 0; i < this.weights.length; i++) {
 			this.vDw[i] = Matrix.Factory.zeros(this.weights[i].getRowCount(), 1);
 			this.sDw[i] = Matrix.Factory.zeros(this.weights[i].getRowCount(), 1);
-			this.epsilon[i] = Matrix.Factory
-				.importFromArray(generateStability(this.weights[i].getRowCount()));
+			this.epsilon[i] = Matrix.Factory.importFromArray(generateStability(this.weights[i].getRowCount()));
 		}
 
 	}
@@ -147,8 +122,7 @@ public class NeuralNetwork implements Serializable {
 		this.weights = new DenseMatrix[getTotalLayers() - 1];
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
 			final int size = sizes[i];
-			this.weights[i] = MatrixUtilities
-				.map(Matrix.Factory.rand(sizes[i + 1], sizes[i]),
+			this.weights[i] = MatrixUtilities.map(Matrix.Factory.rand(sizes[i + 1], sizes[i]),
 					(e) -> this.xavierInitialization(size));
 		}
 	}
@@ -169,11 +143,11 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	/**
-	 * Reads a .ser file or a path to a .ser file (with the extension excluded) to a NeuralNetwork
-	 * object.
+	 * Reads a .ser file or a path to a .ser file (with the extension excluded) to a
+	 * NeuralNetwork object.
 	 *
-	 * E.g. /Users/{other paths}/NeuralNetwork_{LONG}_.ser works as well as /Users/{other
-	 * paths}/NeuralNetwork_{LONG}_
+	 * E.g. /Users/{other paths}/NeuralNetwork_{LONG}_.ser works as well as
+	 * /Users/{other paths}/NeuralNetwork_{LONG}_
 	 *
 	 * @param path the full path to the file. does not require the .ser extension.
 	 *
@@ -186,12 +160,12 @@ public class NeuralNetwork implements Serializable {
 		File file;
 		path = (path.endsWith(".ser") ? path : path + ".ser");
 
-		try (FileInputStream fs = new FileInputStream(
-			file = new File(path)); ObjectInputStream os = new ObjectInputStream(fs)) {
+		try (FileInputStream fs = new FileInputStream(file = new File(path));
+				ObjectInputStream os = new ObjectInputStream(fs)) {
 
 			network = (NeuralNetwork) os.readObject();
 
-			System.out.println("Completed deserialization, see file: " + file.getPath());
+			System.out.println("Completed deserialization from file: " + file.getPath());
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -204,8 +178,7 @@ public class NeuralNetwork implements Serializable {
 
 	public static NeuralNetwork readObject(File file) throws IOException {
 		NeuralNetwork neuralNetwork = null;
-		try (FileInputStream fs = new FileInputStream(
-			file); ObjectInputStream stream = new ObjectInputStream(fs)) {
+		try (FileInputStream fs = new FileInputStream(file); ObjectInputStream stream = new ObjectInputStream(fs)) {
 			neuralNetwork = (NeuralNetwork) stream.readObject();
 
 			System.out.println("Completed deserialization, see file: " + file.getAbsolutePath());
@@ -224,9 +197,7 @@ public class NeuralNetwork implements Serializable {
 		String out = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
 
 		try {
-			FileOutputStream fs = new FileOutputStream(
-				file = new File(
-					out + "/NeuralNetwork_" + getNow() + "_.ser"));
+			FileOutputStream fs = new FileOutputStream(file = new File(out + "/NeuralNetwork_" + getNow() + "_.ser"));
 			ObjectOutputStream os = new ObjectOutputStream(fs);
 			os.writeObject(this);
 
@@ -259,8 +230,7 @@ public class NeuralNetwork implements Serializable {
 			DenseMatrix bias = getBias(i);
 			DenseMatrix weight = getWeight(i);
 			dB[i] = Matrix.Factory.zeros(bias.getRowCount(), bias.getColumnCount());
-			dW[i] = Matrix.Factory
-				.zeros(weight.getRowCount(), weight.getColumnCount());
+			dW[i] = Matrix.Factory.zeros(weight.getRowCount(), weight.getColumnCount());
 		}
 
 		for (NetworkInput data : subList) {
@@ -312,21 +282,19 @@ public class NeuralNetwork implements Serializable {
 		DenseMatrix deltaError;
 
 		// Applies the error function to the last layer, create
-		deltaError = errorFunction
-			.applyErrorFunctionGradient(activations.get(activations.size() - 1), correct);
+		deltaError = errorFunction.applyErrorFunctionGradient(activations.get(activations.size() - 1), correct);
 
 		// Set the deltas to the error signals of bias and weight.
 		deltaBiases[deltaBiases.length - 1] = deltaError;
 		deltaWeights[deltaWeights.length - 1] = (DenseMatrix) deltaError
-			.mtimes(activations.get(activations.size() - 2).transpose());
+				.mtimes(activations.get(activations.size() - 2).transpose());
 
 		// Now iteratively apply the rule
 		for (int k = deltaBiases.length - 2; k >= 0; k--) {
 			DenseMatrix z = xVector.get(k);
 			DenseMatrix differentiate = functions[k + 1].applyDerivative(z);
 
-			deltaError = (DenseMatrix) weights[k + 1].transpose().mtimes(deltaError)
-				.times(differentiate);
+			deltaError = (DenseMatrix) weights[k + 1].transpose().mtimes(deltaError).times(differentiate);
 
 			deltaBiases[k] = deltaError;
 			deltaWeights[k] = (DenseMatrix) deltaError.mtimes(activations.get(k).transpose());
@@ -348,8 +316,7 @@ public class NeuralNetwork implements Serializable {
 		return deltas;
 	}
 
-	private void backPropFeedForward(DenseMatrix starter, List<DenseMatrix> actives,
-		List<DenseMatrix> vectors) {
+	private void backPropFeedForward(DenseMatrix starter, List<DenseMatrix> actives, List<DenseMatrix> vectors) {
 
 		DenseMatrix toPredict = starter;
 
@@ -363,9 +330,9 @@ public class NeuralNetwork implements Serializable {
 		}
 	}
 
-	//-------------------------
+	// -------------------------
 	// Mutators
-	//-------------------------
+	// -------------------------
 	private DenseMatrix[] getWeights() {
 		return this.weights;
 	}
@@ -418,8 +385,7 @@ public class NeuralNetwork implements Serializable {
 		DenseMatrix[] weights = getWeights();
 		DenseMatrix[] biases = getBiasesAsMatrices();
 		for (int i = 0; i < this.totalLayers - 1; i++) {
-			input = functions[i + 1]
-				.applyFunction((DenseMatrix) weights[i].mtimes(input).plus(biases[i]));
+			input = functions[i + 1].applyFunction((DenseMatrix) weights[i].mtimes(input).plus(biases[i]));
 		}
 
 		return input;
@@ -429,16 +395,17 @@ public class NeuralNetwork implements Serializable {
 	 * Provides an implementation of SGD for this neural network.
 	 *
 	 * @param training  a Collections object with {@link NetworkInput} objects,
-	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel()is the label.
+	 *                  NetworkInput.getData() is the data,
+	 *                  NetworkInput.getLabel()is the label.
 	 * @param test      a Collections object with {@link NetworkInput} objects,
-	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
+	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel()
+	 *                  is the label.
 	 * @param epochs    how many iterations are we doing SGD for
-	 * @param batchSize how big is the batch size, typically 32. See https://stats.stackexchange.com/q/326663
+	 * @param batchSize how big is the batch size, typically 32. See
+	 *                  https://stats.stackexchange.com/q/326663
 	 */
-	public void stochasticGradientDescent(@NotNull List<NetworkInput> training,
-		@NotNull List<NetworkInput> test,
-		int epochs,
-		int batchSize) {
+	public void stochasticGradientDescent(@NotNull List<NetworkInput> training, @NotNull List<NetworkInput> test,
+			int epochs, int batchSize) {
 
 		int trDataSize = training.size();
 		int teDataSize = test.size();
@@ -477,8 +444,8 @@ public class NeuralNetwork implements Serializable {
 
 	}
 
-	public void adam(List<NetworkInput> training, List<NetworkInput> testing, int epochs,
-		int batchSize) {
+	// TODO: Implement ADAM.
+	public void adam(List<NetworkInput> training, List<NetworkInput> testing, int epochs, int batchSize) {
 		int trainSize = training.size();
 		int testSize = training.size();
 
@@ -499,20 +466,17 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	/**
-	 * Prints the networks performance in terms of loss and correct identification to a path.
-	 * Example usage: "Users/{name}/Programming/DeepLearning/NN/Output/".
+	 * Prints the networks performance in terms of loss and correct identification
+	 * to a path. Example usage: "Users/{name}/Programming/DeepLearning/NN/Output/".
 	 *
 	 * @param basePath base path to image root.
 	 */
 	public void outputChart(final String basePath) {
 
-		XYChart lossToEpoch = generateChart("Loss/Epoch", "Epoch", "Loss", "loss(x)",
-			xValues,
-			lossValues);
+		XYChart lossToEpoch = generateChart("Loss/Epoch", "Epoch", "Loss", "loss(x)", xValues, lossValues);
 
-		XYChart correctToEpoch = generateChart("Correct/Epoch", "Epoch", "Correct", "correct(x)",
-			xValues,
-			correctValues);
+		XYChart correctToEpoch = generateChart("Correct/Epoch", "Epoch", "Correct", "correct(x)", xValues,
+				correctValues);
 
 		String use = basePath.endsWith("/") ? basePath : basePath + "/";
 		String loss = use + "LossToEpochPlot";
@@ -538,11 +502,9 @@ public class NeuralNetwork implements Serializable {
 		return formattedDate;
 	}
 
-	private XYChart generateChart(String heading, String xLabel, String yLabel, String function,
-		List<Double> xValues,
-		List<Double> yValues) {
-		XYChart chart = QuickChart.getChart(heading, xLabel, yLabel, function,
-			NeuralNetwork.xValues, yValues);
+	private XYChart generateChart(String heading, String xLabel, String yLabel, String function, List<Double> xValues,
+			List<Double> yValues) {
+		XYChart chart = QuickChart.getChart(heading, xLabel, yLabel, function, NeuralNetwork.xValues, yValues);
 		chart.getStyler().setXAxisMin(0d);
 		chart.getStyler().setXAxisMax(Collections.max(xValues));
 		chart.getStyler().setYAxisMin(0d);
@@ -563,5 +525,8 @@ public class NeuralNetwork implements Serializable {
 		return copy;
 	}
 
-
+	public int evaluateTestData(final List<NetworkInput> imagesTest) {
+		List<NetworkInput> test = this.feedForwardData(imagesTest);
+		return evaluationFunction.evaluatePrediction(test).intValue();
+	}
 }

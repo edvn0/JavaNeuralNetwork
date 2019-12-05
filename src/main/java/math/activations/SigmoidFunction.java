@@ -5,6 +5,10 @@ import utilities.MatrixUtilities;
 
 public class SigmoidFunction implements ActivationFunction {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 8268667665334669223L;
 	private static final String NAME = "SIGMOID";
 
 	private double sigmoid(double in) {

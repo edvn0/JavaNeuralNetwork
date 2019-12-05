@@ -19,35 +19,32 @@ import utilities.NetworkUtilities;
 public class MNISTTester {
 
 	private static List<NetworkInput> imagesTrain;
-	private static List<NetworkInput> imagesTest;
+	private static List<NetworkInput> imagesValidate;
 
-	public static void main(String[] args) throws IOException {
+	public static void main(final String[] args) throws IOException {
 
-		int epochs = Integer.parseInt(args[0]);
-		int batch = Integer.parseInt(args[1]);
+		final int epochs = Integer.parseInt(args[0]);
+		final int batch = Integer.parseInt(args[1]);
 
-		ActivationFunction[] functions = new ActivationFunction[4];
+		final ActivationFunction[] functions = new ActivationFunction[4];
 		functions[0] = new ReluFunction();
 		functions[1] = new ReluFunction();
 		functions[2] = new ReluFunction();
 		functions[3] = new SoftmaxFunction();
-		ErrorFunction function = new CrossEntropyErrorFunction();
-		EvaluationFunction eval = new MnistEvaluationFunction();
-		NeuralNetwork network = new NeuralNetwork(0.035, functions, function, eval,
-			new int[]{784, 100, 100, 10}, , , );
+		final ErrorFunction function = new CrossEntropyErrorFunction();
+		final EvaluationFunction eval = new MnistEvaluationFunction();
+		final NeuralNetwork network = new NeuralNetwork(0.035, functions, function, eval,
+				new int[] { 784, 100, 100, 10 });
 		System.out.println("Initialized network.");
 
-		System.out.println("Difference: " +
-			((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) * (9.357E-7))
-			+ "Mb\nTotal: "
-			+ (Runtime.getRuntime().totalMemory() * (9.357E-7)) + "Mb\nFree: " + (
-			Runtime.getRuntime()
-				.freeMemory() * (9.357E-7)) + "Mb");
+		System.out.println(
+				"Difference: " + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) * (9.357E-7))
+						+ "Mb\nTotal: " + (Runtime.getRuntime().totalMemory() * (9.357E-7)) + "Mb\nFree: "
+						+ (Runtime.getRuntime().freeMemory() * (9.357E-7)) + "Mb");
 
-		boolean existsMac = Files.exists(Paths.get(
-			"/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv"));
-		boolean existsVM = Files
-			.exists(Paths.get("/home/edwin98carlsson/mnist-in-csv/mnist_train.csv"));
+		final boolean existsMac = Files
+				.exists(Paths.get("/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv"));
+		final boolean existsVM = Files.exists(Paths.get("/home/edwin98carlsson/mnist-in-csv/mnist_train.csv"));
 
 		String base = "";
 		String pathTrain = null;
@@ -62,27 +59,26 @@ public class MNISTTester {
 			base = "/home/edwin98carlsson/";
 		}
 
-		imagesTrain = generateDataFromCSV(pathTrain);
-		imagesTest = generateDataFromCSV(pathTest);
-		System.out.println("Difference: " +
-			((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) * (9.357E-7))
-			+ "Mb\nTotal: "
-			+ (Runtime.getRuntime().totalMemory() * (9.357E-7)) + "Mb\nFree: " + (
-			Runtime.getRuntime()
-				.freeMemory() * (9.357E-7)) + "Mb");
+		System.out.println(
+				"Difference: " + ((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) * (9.357E-7))
+						+ "Mb\nTotal: " + (Runtime.getRuntime().totalMemory() * (9.357E-7)) + "Mb\nFree: "
+						+ (Runtime.getRuntime().freeMemory() * (9.357E-7)) + "Mb");
 		System.out.println("Initialized files.");
 
+		imagesTrain = generateDataFromCSV(pathTrain);
+		imagesValidate = generateDataFromCSV(pathTest);
+		final List<NetworkInput> imagesTest = imagesTrain.subList(0, (int) (imagesTrain.size() * 0.1));
+		imagesTest.addAll(imagesValidate.subList(0, (int) (imagesValidate.size() * 0.1)));
+
 		System.out.println("Starting SGD...");
-		network.stochasticGradientDescent(imagesTrain, imagesTest, epochs, batch);
+		network.stochasticGradientDescent(imagesTrain, imagesValidate, epochs, batch);
 		System.out.println("Finished SGD!");
 		network.outputChart(base);
 		network.writeObject(base);
 	}
 
-	private static List<NetworkInput> generateDataFromCSV(String path) throws IOException {
-		return Files.lines(Paths.get(path)).
-			map(e -> e.split(",")).
-			map(NetworkUtilities::apply).
-			collect(Collectors.toList());
+	private static List<NetworkInput> generateDataFromCSV(final String path) throws IOException {
+		return Files.lines(Paths.get(path)).map(e -> e.split(",")).map(NetworkUtilities::apply)
+				.collect(Collectors.toList());
 	}
 }

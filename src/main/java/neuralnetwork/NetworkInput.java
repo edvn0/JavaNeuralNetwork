@@ -1,9 +1,15 @@
 package neuralnetwork;
 
+import java.io.Serializable;
+
 import org.ujmp.core.DenseMatrix;
 
-public class NetworkInput {
+public class NetworkInput implements Serializable {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -8743845031383184256L;
 	private DenseMatrix data;
 	private DenseMatrix label;
 
@@ -22,8 +28,6 @@ public class NetworkInput {
 
 	@Override
 	public String toString() {
-		return "NetworkInput{" + "data=" + data
-			+ ", label=" + label
-			+ '}';
+		return "NetworkInput{" + "data=" + data + ", label=" + label + '}';
 	}
 }

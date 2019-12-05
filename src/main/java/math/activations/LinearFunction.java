@@ -5,6 +5,11 @@ import utilities.MatrixUtilities;
 
 public class LinearFunction implements ActivationFunction {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 5919973604842732692L;
+
 	public double linear(double a) {
 		return a;
 	}
@@ -16,7 +21,6 @@ public class LinearFunction implements ActivationFunction {
 	public LinearFunction() {
 
 	}
-
 
 	@Override
 	public DenseMatrix applyFunction(DenseMatrix input) {

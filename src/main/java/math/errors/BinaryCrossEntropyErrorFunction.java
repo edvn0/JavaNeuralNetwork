@@ -6,6 +6,11 @@ import org.ujmp.core.DenseMatrix;
 
 public class BinaryCrossEntropyErrorFunction implements ErrorFunction {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -5304955386755460591L;
+
 	@Override
 	public double calculateCostFunction(final List<NetworkInput> tData) {
 		double total = 0;

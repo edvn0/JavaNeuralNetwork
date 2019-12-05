@@ -7,6 +7,11 @@ import org.ujmp.core.Matrix;
 
 public class XOREvaluationFunction implements EvaluationFunction {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 2502293428392120484L;
+
 	public XOREvaluationFunction() {
 	}
 
@@ -25,6 +30,6 @@ public class XOREvaluationFunction implements EvaluationFunction {
 				correct++;
 			}
 		}
-		return Matrix.Factory.importFromArray(new double[]{correct});
+		return Matrix.Factory.importFromArray(new double[] { correct });
 	}
 }

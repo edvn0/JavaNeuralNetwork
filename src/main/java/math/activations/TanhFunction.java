@@ -5,6 +5,10 @@ import utilities.MatrixUtilities;
 
 public class TanhFunction implements ActivationFunction {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -1618049951503185298L;
 	private static final String NAME = "TANH";
 
 	private double tanh(double a) {

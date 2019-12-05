@@ -8,7 +8,10 @@ import org.ujmp.core.Matrix;
 
 public class CrossEntropyErrorFunction implements ErrorFunction {
 
-	private static double LOG_2_INV = 3.32192809489;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 5041727275192756048L;
 
 	public CrossEntropyErrorFunction() {
 
@@ -40,18 +43,13 @@ public class CrossEntropyErrorFunction implements ErrorFunction {
 		return (sum * -1) / tData.size();
 	}
 
-	private double log2(double e) {
-		return Math.log(e) * LOG_2_INV;
-	}
-
 	@Override
 	public DenseMatrix applyErrorFunction(final DenseMatrix in, final DenseMatrix correct) {
 		return null;
 	}
 
 	@Override
-	public DenseMatrix applyErrorFunctionGradient(final DenseMatrix input,
-		final DenseMatrix label) {
+	public DenseMatrix applyErrorFunctionGradient(final DenseMatrix input, final DenseMatrix label) {
 		return (DenseMatrix) input.minus(label);
 	}
 

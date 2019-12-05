@@ -12,33 +12,25 @@ import org.ujmp.core.Matrix;
 
 public class NetworkUtilities {
 
-	public static List<NetworkInput> importFromInputPath(String path, int offset,
-		Function<String[], NetworkInput> f)
-		throws IOException {
+	public static List<NetworkInput> importFromInputPath(String path, int offset, Function<String[], NetworkInput> f)
+			throws IOException {
 
 		List<NetworkInput> fromStream;
 		Stream<String> stream = Files.lines(Paths.get(path));
 
-		fromStream = stream
-			.skip(offset)
-			.map(line -> line.split(","))
-			.map(f)
-			.collect(Collectors.toList());
+		fromStream = stream.skip(offset).map(line -> line.split(",")).map(f).collect(Collectors.toList());
+
+		stream.close();
 
 		return fromStream;
 	}
 
-	public static List<NetworkInput> importFromInputStream(Stream<String> path, int size,
-		int offset, Function<String[], NetworkInput> f) {
+	public static List<NetworkInput> importFromInputStream(Stream<String> path, int size, int offset,
+			Function<String[], NetworkInput> f) {
 
 		List<NetworkInput> fromStream;
 
-		fromStream = path
-			.limit(size)
-			.skip(offset)
-			.map(line -> line.split(","))
-			.map(f)
-			.collect(Collectors.toList());
+		fromStream = path.limit(size).skip(offset).map(line -> line.split(",")).map(f).collect(Collectors.toList());
 
 		return fromStream;
 	}
@@ -69,13 +61,11 @@ public class NetworkUtilities {
 		for (int j = 1; j < dataSize; j++) {
 			data[j - 1][0] = in[j][0];
 		}
-		return new NetworkInput(Matrix.Factory.importFromArray(data),
-			Matrix.Factory.importFromArray(corr));
+		return new NetworkInput(Matrix.Factory.importFromArray(data), Matrix.Factory.importFromArray(corr));
 	}
 
 	public static List<NetworkInput> importFromInputStream(final Stream<String> test, int size,
-		Function<String[], NetworkInput> f)
-		throws IOException {
+			Function<String[], NetworkInput> f) throws IOException {
 		return importFromInputStream(test, size, 0, f);
 	}
 

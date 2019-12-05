@@ -7,6 +7,11 @@ import utilities.MatrixUtilities;
 
 public class MeanSquaredErrorFunction implements ErrorFunction {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 4470711763150915089L;
+
 	public MeanSquaredErrorFunction() {
 	}
 
