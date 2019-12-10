@@ -9,8 +9,6 @@ public interface ErrorFunction extends Serializable {
 
 	double calculateCostFunction(List<NetworkInput> tData);
 
-	DenseMatrix applyErrorFunction(DenseMatrix in, DenseMatrix correct);
-
 	DenseMatrix applyErrorFunctionGradient(DenseMatrix in, DenseMatrix label);
 
 }

@@ -6,14 +6,14 @@ import org.ujmp.core.DenseMatrix;
 import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
 
-public class MnistEvaluationFunction implements EvaluationFunction {
+public class ArgMaxEvaluationFunction implements EvaluationFunction {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 3730260463010183881L;
 
-	public MnistEvaluationFunction() {
+	public ArgMaxEvaluationFunction() {
 	}
 
 	@Override

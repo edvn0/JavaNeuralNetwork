@@ -33,11 +33,6 @@ public class MeanSquaredErrorFunction implements ErrorFunction {
 	}
 
 	@Override
-	public DenseMatrix applyErrorFunction(final DenseMatrix input, final DenseMatrix target) {
-		return (DenseMatrix) input.minus(target);
-	}
-
-	@Override
 	public DenseMatrix applyErrorFunctionGradient(final DenseMatrix in, final DenseMatrix label) {
 		return (DenseMatrix) in.minus(label);
 	}

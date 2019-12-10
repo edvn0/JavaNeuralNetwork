@@ -34,11 +34,6 @@ public class BinaryCrossEntropyErrorFunction implements ErrorFunction {
 	}
 
 	@Override
-	public DenseMatrix applyErrorFunction(final DenseMatrix in, final DenseMatrix correct) {
-		return (DenseMatrix) in.minus(correct);
-	}
-
-	@Override
 	public DenseMatrix applyErrorFunctionGradient(final DenseMatrix in, final DenseMatrix label) {
 		return (DenseMatrix) in.minus(label);
 	}

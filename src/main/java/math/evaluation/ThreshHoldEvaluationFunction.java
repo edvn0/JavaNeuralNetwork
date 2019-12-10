@@ -5,14 +5,17 @@ import neuralnetwork.NetworkInput;
 import org.ujmp.core.DenseMatrix;
 import org.ujmp.core.Matrix;
 
-public class XOREvaluationFunction implements EvaluationFunction {
+public class ThreshHoldEvaluationFunction implements EvaluationFunction {
+
+	private double threshHold;
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 2502293428392120484L;
 
-	public XOREvaluationFunction() {
+	public ThreshHoldEvaluationFunction(double a) {
+		this.threshHold = a;
 	}
 
 	@Override
@@ -25,11 +28,10 @@ public class XOREvaluationFunction implements EvaluationFunction {
 			double fedEl = fed.getValueSum();
 			double corrEl = corr.getValueSum();
 
-			// TODO: Might need some tweaking..
-			if (Math.abs(fedEl - corrEl) < 0.05) {
+			if (Math.abs(fedEl - corrEl) < this.threshHold) {
 				correct++;
 			}
 		}
-		return Matrix.Factory.importFromArray(new double[] { correct });
+		return Matrix.Factory.importFromArray(new double[]{correct});
 	}
 }

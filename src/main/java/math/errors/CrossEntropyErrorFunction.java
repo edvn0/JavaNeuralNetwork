@@ -32,7 +32,7 @@ public class CrossEntropyErrorFunction implements ErrorFunction {
 			double dot = 0;
 			for (int i = 0; i < data.length; i++) {
 				for (int j = 0; j < data[0].length; j++) {
-					double logged = Math.log(data[i][j]) / Math.log(2);
+					double logged = log2(data[i][j]);
 					dot += label[i][j] * logged;
 				}
 			}
@@ -43,13 +43,14 @@ public class CrossEntropyErrorFunction implements ErrorFunction {
 		return (sum * -1) / tData.size();
 	}
 
-	@Override
-	public DenseMatrix applyErrorFunction(final DenseMatrix in, final DenseMatrix correct) {
-		return null;
+	private double log2(final double v) {
+		return Math.log(v) / Math.log(2);
 	}
 
+
 	@Override
-	public DenseMatrix applyErrorFunctionGradient(final DenseMatrix input, final DenseMatrix label) {
+	public DenseMatrix applyErrorFunctionGradient(final DenseMatrix input,
+		final DenseMatrix label) {
 		return (DenseMatrix) input.minus(label);
 	}
 

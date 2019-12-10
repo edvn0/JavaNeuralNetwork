@@ -1,7 +1,6 @@
 package neuralnetwork;
 
 import java.io.Serializable;
-
 import org.ujmp.core.DenseMatrix;
 
 /**

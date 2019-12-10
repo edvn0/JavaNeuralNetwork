@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.stream.DoubleStream;
 import org.ujmp.core.DenseMatrix;
 import org.ujmp.core.Matrix;
+import org.ujmp.core.calculation.Calculation.Ret;
 import utilities.MatrixUtilities;
 
 public class SoftmaxFunction implements ActivationFunction {
@@ -14,8 +15,7 @@ public class SoftmaxFunction implements ActivationFunction {
 	private static final long serialVersionUID = -5298468440584699205L;
 
 	/**
-	 * Takes as input a vector of size NX1 and returns a SoftMax Vector of that
-	 * input.
+	 * Takes as input a vector of size NX1 and returns a SoftMax Vector of that input.
 	 *
 	 * @param input input vector.
 	 *
@@ -34,9 +34,8 @@ public class SoftmaxFunction implements ActivationFunction {
 	}
 
 	private DenseMatrix max(DenseMatrix input) {
-		double[][] inputs = input.toDoubleArray();
-		double[] out = new double[inputs.length];
-		double max = this.max(inputs);
+		double[] out = new double[(int) input.getRowCount()];
+		int max = input.indexOfMax(Ret.NEW, 0).intValue();
 		Arrays.fill(out, max);
 		return (DenseMatrix) Matrix.Factory.importFromArray(out).transpose();
 	}
