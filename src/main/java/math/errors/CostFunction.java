@@ -5,7 +5,7 @@ import java.util.List;
 import neuralnetwork.NetworkInput;
 import org.ujmp.core.DenseMatrix;
 
-public interface ErrorFunction extends Serializable {
+public interface CostFunction extends Serializable {
 
 	double calculateCostFunction(List<NetworkInput> tData);
 

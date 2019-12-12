@@ -6,15 +6,13 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import math.activations.ActivationFunction;
 import math.activations.ReluFunction;
 import math.activations.SoftmaxFunction;
-import math.errors.CrossEntropyErrorFunction;
-import math.errors.ErrorFunction;
+import math.errors.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
-import math.evaluation.EvaluationFunction;
 import neuralnetwork.NetworkInput;
 import neuralnetwork.NeuralNetwork;
+import neuralnetwork.NeuralNetwork.NetworkBuilder;
 import utilities.NetworkUtilities;
 
 public class MNISTTester {
@@ -28,15 +26,26 @@ public class MNISTTester {
 		final int batch = Integer.parseInt(args[1]);
 		final double learningRate = Double.parseDouble(args[2]);
 
-		final ActivationFunction[] functions = new ActivationFunction[4];
+		NeuralNetwork network = new NeuralNetwork(
+			new NetworkBuilder(4)
+				.setLayer(784, new ReluFunction())
+				.setLayer(100, new ReluFunction())
+				.setLayer(100, new ReluFunction())
+				.setLayer(10, new SoftmaxFunction())
+				.setCostFunction(new CrossEntropyCostFunction())
+				.setEvaluationFunction(new ArgMaxEvaluationFunction())
+				.setLearningRate(0.01)
+		);
+
+		/*final ActivationFunction[] functions = new ActivationFunction[4];
 		functions[0] = new ReluFunction();
 		functions[1] = new ReluFunction();
 		functions[2] = new ReluFunction();
 		functions[3] = new SoftmaxFunction();
-		final ErrorFunction function = new CrossEntropyErrorFunction();
+		final CostFunction function = new CrossEntropyCostFunction();
 		final EvaluationFunction eval = new ArgMaxEvaluationFunction();
 		final NeuralNetwork network = new NeuralNetwork(0.01, functions, function, eval,
-			new int[]{784, 100, 100, 10});
+			new int[]{784, 100, 100, 10});*/
 		System.out.println("Initialized network.");
 
 		System.out.println(

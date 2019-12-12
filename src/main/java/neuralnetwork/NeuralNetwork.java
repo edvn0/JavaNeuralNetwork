@@ -16,9 +16,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 import math.activations.ActivationFunction;
+import math.activations.LinearFunction;
 import math.activations.SoftmaxFunction;
-import math.errors.CrossEntropyErrorFunction;
-import math.errors.ErrorFunction;
+import math.errors.CostFunction;
+import math.errors.CrossEntropyCostFunction;
 import math.evaluation.EvaluationFunction;
 import org.jetbrains.annotations.NotNull;
 import org.knowm.xchart.BitmapEncoder;
@@ -45,22 +46,22 @@ public class NeuralNetwork implements Serializable {
 	private final ActivationFunction[] functions;
 
 	// The error function to minimize.
-	private final ErrorFunction errorFunction;
+	private final CostFunction costFunction;
 
 	// The function to evaluate the data set.
 	private final EvaluationFunction evaluationFunction;
 
-	// 0 based connections, i.e., connection 0 is from Layer 0 to Layer 1.
 	private DenseMatrix[] weights;
 	private DenseMatrix[] vDw;
 	private DenseMatrix[] sDw;
 	private DenseMatrix[] epsilon;
-
-	// 0 based layering, i.e. index 0 in layers is layer 0.
 	private DenseMatrix[] biases;
 
 	// Helper field to hold the total amount of layers
 	private final int totalLayers;
+
+	// The structure of the network
+	private int[] sizes;
 
 	private static transient final ArrayList<Double> xValues = new ArrayList<>();
 	private static transient final ArrayList<Double> lossValues = new ArrayList<>();
@@ -74,25 +75,26 @@ public class NeuralNetwork implements Serializable {
 	 * int[] sizes = {3,4,4,1} is a 4-layered fully connected network with 3 input nodes, 1 output
 	 * nodes, 2 hidden layers with 4 nodes in each of them.
 	 *
-	 * @param learning  a double representing step size in back propagation.
-	 * @param functions the activation functions for all layers
-	 * @param function  the error function to calculate error of last layers
-	 * @param eval      the evaluation function to compare the network to the data's labels
-	 * @param sizes     the table to initialize layers and weights.
+	 * @param learning      a double representing step size in back propagation.
+	 * @param functions     the activation functions for all layers
+	 * @param errorFunction the error function to calculate error of last layers
+	 * @param eval          the evaluation function to compare the network to the data's labels
+	 * @param sizes         the table to initialize layers and weights.
 	 */
 	public NeuralNetwork(final double learning, final ActivationFunction[] functions,
-		final ErrorFunction function,
+		final CostFunction errorFunction,
 		final EvaluationFunction eval, final int[] sizes) {
 		this.learningRate = learning;
 		this.functions = functions;
-		this.errorFunction = function;
+		this.costFunction = errorFunction;
 		this.totalLayers = sizes.length;
 		this.evaluationFunction = eval;
+		this.sizes = sizes;
 
-		createLayers(sizes);
+		initialiseBiases(sizes);
 		initialiseWeights(sizes);
 
-		if (function instanceof CrossEntropyErrorFunction
+		if (errorFunction instanceof CrossEntropyCostFunction
 			&& !(functions[functions.length - 1] instanceof SoftmaxFunction)) {
 			throw new BackpropagationError(
 				"To properly function, back-propagation needs the activation function of the last "
@@ -100,22 +102,25 @@ public class NeuralNetwork implements Serializable {
 		}
 	}
 
+	public NeuralNetwork(NetworkBuilder b) {
+		this.sizes = b.structure;
+		this.functions = b.toArray();
+		this.costFunction = b.costFunction;
+		this.learningRate = b.learningRate;
+		this.evaluationFunction = b.evaluationFunction;
+		this.totalLayers = sizes.length;
+
+		initialiseBiases(sizes);
+		initialiseWeights(sizes);
+	}
+
 	private void initialiseAdam() {
 		for (int i = 0; i < this.weights.length; i++) {
 			this.vDw[i] = Matrix.Factory.zeros(this.weights[i].getRowCount(), 1);
 			this.sDw[i] = Matrix.Factory.zeros(this.weights[i].getRowCount(), 1);
-			this.epsilon[i] = Matrix.Factory
-				.importFromArray(generateStability(this.weights[i].getRowCount()));
+			this.epsilon[i] = (DenseMatrix) Matrix.Factory.zeros(this.weights[i].getRowCount(), 1)
+				.plus(10e-8);
 		}
-
-	}
-
-	private double[][] generateStability(final long rowCount) {
-		final double[][] values = new double[(int) rowCount][1];
-		for (int i = 0; i < rowCount; i++) {
-			values[i][0] = 10e-8;
-		}
-		return values;
 	}
 
 	private void initialiseWeights(final int[] sizes) {
@@ -127,7 +132,7 @@ public class NeuralNetwork implements Serializable {
 		}
 	}
 
-	private void createLayers(final int[] sizes) {
+	private void initialiseBiases(final int[] sizes) {
 		this.biases = new DenseMatrix[getTotalLayers() - 1];
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
 			this.biases[i] = (DenseMatrix) Matrix.Factory.zeros(sizes[i + 1], 1).plus(0.01);
@@ -280,10 +285,10 @@ public class NeuralNetwork implements Serializable {
 		// Applies the error function to the last layer, create
 		DenseMatrix a = activations.get(activations.size() - 1);
 
-		DenseMatrix deltaError = errorFunction
+		DenseMatrix deltaError = costFunction
 			.applyErrorFunctionGradient(a, correct);
 
-		// Now iteratively apply the rule
+		// Iterate over all layers, they are indexed by the last layer (here given b
 		for (int k = deltaBiases.length - 1; k >= 0; k--) {
 			final DenseMatrix aCurr = activations.get(k + 1); // this layer
 			final DenseMatrix aNext = activations.get(k); // Previous layer
@@ -296,24 +301,10 @@ public class NeuralNetwork implements Serializable {
 			deltaError = (DenseMatrix) this.weights[k].transpose().mtimes(differentiate);
 		}
 
-		/*for (int i = 0; i < deltaBiases.length; i++) {
-			System.out.println(Arrays.deepToString(deltaBiases[i].toDoubleArray()));
-			System.out.println(Arrays.deepToString(deltaWeights[i].toDoubleArray()));
-		}*/
-
 		totalDeltas.add(deltaBiases);
 		totalDeltas.add(deltaWeights);
 
 		return totalDeltas;
-	}
-
-	private boolean hasNaN(final DenseMatrix differentiate) {
-		for (double[] d : differentiate.toDoubleArray()) {
-			for (double a : d) {
-				return Double.isNaN(a);
-			}
-		}
-		return false;
 	}
 
 	private DenseMatrix[] initializeDeltas(final DenseMatrix[] toCopyFrom) {
@@ -410,7 +401,7 @@ public class NeuralNetwork implements Serializable {
 	 * Provides an implementation of SGD for this neural network.
 	 *
 	 * @param training  a Collections object with {@link NetworkInput} objects,
-	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel()is the label.
+	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
 	 * @param test      a Collections object with {@link NetworkInput} objects,
 	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
 	 * @param epochs    how many iterations are we doing SGD for
@@ -429,7 +420,7 @@ public class NeuralNetwork implements Serializable {
 		// Evaluate prediction with the interface EvaluationFunction.
 		final int c = this.evaluationFunction.evaluatePrediction(ffD)
 			.intValue();
-		final double l = errorFunction.calculateCostFunction(ffD);
+		final double l = costFunction.calculateCostFunction(ffD);
 		addPlotData(0, c, l);
 		System.out.println("Loss: " + l);
 		System.out.println("Epoch " + (0) + ": " + c + "/" + teDataSize);
@@ -451,8 +442,8 @@ public class NeuralNetwork implements Serializable {
 			// Evaluate prediction with the interface EvaluationFunction.
 			final int correct = this.evaluationFunction.evaluatePrediction(feedForwardData)
 				.intValue();
-			// Calculate loss with the interface ErrorFunction
-			final double loss = errorFunction.calculateCostFunction(feedForwardData);
+			// Calculate loss with the interface CostFunction
+			final double loss = costFunction.calculateCostFunction(feedForwardData);
 
 			// Add the plotting data, x, y_1, y_2 to the global
 			// lists of xValues, correctValues, lossValues.
@@ -567,7 +558,76 @@ public class NeuralNetwork implements Serializable {
 			final List<NetworkInput> test = this.feedForwardData(imagesTest);
 			sum += evaluationFunction.evaluatePrediction(test).intValue();
 		}
+
 		return sum / size;
 
+	}
+
+	public static class NetworkBuilder {
+
+		private final int[] structure;
+		private int index;
+		List<ActivationFunction> functions;
+		private double learningRate;
+		private CostFunction costFunction;
+		private EvaluationFunction evaluationFunction;
+
+		public NetworkBuilder(int[] structure) {
+			this.structure = structure;
+			this.index = 0;
+			functions = new ArrayList<>();
+		}
+
+		public NetworkBuilder(int s) {
+			this.structure = new int[s];
+			this.index = 0;
+			functions = new ArrayList<>();
+		}
+
+		public NetworkBuilder setLayer(final int i, final ActivationFunction f) {
+			structure[index] = i;
+			functions.add(f);
+			this.index++;
+			return this;
+		}
+
+		public NetworkBuilder setActivationFunction(ActivationFunction f) {
+			this.functions.add(f);
+			this.index++;
+			return this;
+		}
+
+		public NetworkBuilder setLearningRate(double l) {
+			this.learningRate = l;
+			return this;
+		}
+
+		public NetworkBuilder setCostFunction(CostFunction k) {
+			this.costFunction = k;
+			return this;
+		}
+
+		public NetworkBuilder setEvaluationFunction(EvaluationFunction f) {
+			this.evaluationFunction = f;
+			return this;
+		}
+
+		public ActivationFunction[] toArray() {
+			ActivationFunction[] f = new ActivationFunction[this.index];
+			if (this.functions.size() == this.structure.length) {
+				for (int i = 1; i < this.structure.length; i++) {
+					f[i] = this.functions.get(i);
+				}
+				// We do not care about this one, never gets evaluated.
+				f[0] = new LinearFunction();
+			} else if (this.functions.size() + 1 == this.structure.length) {
+				for (int i = 0; i < this.structure.length; i++) {
+					f[i] = this.functions.get(i);
+				}
+			} else {
+				throw new IllegalArgumentException("Not enough activation functions provided.");
+			}
+			return f;
+		}
 	}
 }

@@ -4,7 +4,7 @@ import java.util.List;
 import neuralnetwork.NetworkInput;
 import org.ujmp.core.DenseMatrix;
 
-public class BinaryCrossEntropyErrorFunction implements ErrorFunction {
+public class BinaryCrossEntropyCostFunction implements CostFunction {
 
 	/**
 	 *

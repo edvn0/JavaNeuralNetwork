@@ -5,14 +5,14 @@ import neuralnetwork.NetworkInput;
 import org.ujmp.core.DenseMatrix;
 import utilities.MatrixUtilities;
 
-public class MeanSquaredErrorFunction implements ErrorFunction {
+public class MeanSquaredCostFunction implements CostFunction {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 4470711763150915089L;
 
-	public MeanSquaredErrorFunction() {
+	public MeanSquaredCostFunction() {
 	}
 
 	@Override

@@ -6,14 +6,14 @@ import neuralnetwork.NetworkInput;
 import org.ujmp.core.DenseMatrix;
 import org.ujmp.core.Matrix;
 
-public class CrossEntropyErrorFunction implements ErrorFunction {
+public class CrossEntropyCostFunction implements CostFunction {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 5041727275192756048L;
 
-	public CrossEntropyErrorFunction() {
+	public CrossEntropyCostFunction() {
 
 	}
 

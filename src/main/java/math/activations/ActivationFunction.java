@@ -15,6 +15,5 @@ public interface ActivationFunction extends Serializable {
 
 	String getName();
 
-
 	String toString();
 }
