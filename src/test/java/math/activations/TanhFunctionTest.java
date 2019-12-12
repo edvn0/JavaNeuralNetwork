@@ -38,8 +38,8 @@ public class TanhFunctionTest {
 	public void applyDerivative() {
 		in = function.applyFunction(in);
 		div = function.applyFunction(div);
-		DenseMatrix derivIn = function.applyDerivative(in);
-		DenseMatrix derivDiv = function.applyDerivative(div);
+		DenseMatrix derivIn = function.applyDerivative(in, null);
+		DenseMatrix derivDiv = function.applyDerivative(div, null);
 		System.out.println(derivIn);
 		System.out.println(derivDiv);
 	}

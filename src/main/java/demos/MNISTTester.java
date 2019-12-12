@@ -26,7 +26,7 @@ public class MNISTTester {
 
 		final int epochs = Integer.parseInt(args[0]);
 		final int batch = Integer.parseInt(args[1]);
-		final double learningRate = Integer.parseInt(args[2]);
+		final double learningRate = Double.parseDouble(args[2]);
 
 		final ActivationFunction[] functions = new ActivationFunction[4];
 		functions[0] = new ReluFunction();
@@ -35,8 +35,8 @@ public class MNISTTester {
 		functions[3] = new SoftmaxFunction();
 		final ErrorFunction function = new CrossEntropyErrorFunction();
 		final EvaluationFunction eval = new ArgMaxEvaluationFunction();
-		final NeuralNetwork network = new NeuralNetwork(0.075, functions, function, eval,
-			new int[]{784, 300, 30, 10});
+		final NeuralNetwork network = new NeuralNetwork(0.01, functions, function, eval,
+			new int[]{784, 100, 100, 10});
 		System.out.println("Initialized network.");
 
 		System.out.println(

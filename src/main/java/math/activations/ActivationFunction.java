@@ -5,16 +5,16 @@ import org.ujmp.core.DenseMatrix;
 
 public interface ActivationFunction extends Serializable {
 
-	String SIGMOID = "SIGMOID";
-	String RELU = "RELU";
-	String TANH = "TANH";
-	String LIN = "LIN";
-
 	DenseMatrix applyFunction(DenseMatrix input);
 
 	DenseMatrix applyDerivative(DenseMatrix input);
 
+	default DenseMatrix derivativeOnInput(DenseMatrix input, DenseMatrix out) {
+		return (DenseMatrix) out.times(applyDerivative(input));
+	}
+
 	String getName();
+
 
 	String toString();
 }

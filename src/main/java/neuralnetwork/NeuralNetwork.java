@@ -36,9 +36,6 @@ import utilities.MatrixUtilities;
  */
 public class NeuralNetwork implements Serializable {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 7008674899707436812L;
 
 	// Learning rate
@@ -133,7 +130,7 @@ public class NeuralNetwork implements Serializable {
 	private void createLayers(final int[] sizes) {
 		this.biases = new DenseMatrix[getTotalLayers() - 1];
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
-			this.biases[i] = Matrix.Factory.zeros(sizes[i + 1], 1);
+			this.biases[i] = (DenseMatrix) Matrix.Factory.zeros(sizes[i + 1], 1).plus(0.01);
 		}
 	}
 
@@ -154,7 +151,7 @@ public class NeuralNetwork implements Serializable {
 	 *
 	 * @param path the full path to the file. does not require the .ser extension.
 	 *
-	 * @return a deserialized object.
+	 * @return a deserialised object.
 	 *
 	 * @throws IOException if file could not be found.
 	 */
@@ -257,19 +254,14 @@ public class NeuralNetwork implements Serializable {
 		}
 
 		for (int i = 0; i < this.totalLayers - 1; i++) {
-			final DenseMatrix cW = getWeight(i);
-			final DenseMatrix cB = getBias(i);
-
-			final DenseMatrix nW = (DenseMatrix) cW.minus(dW[i]);
-			final DenseMatrix nB = (DenseMatrix) cB.minus(dB[i]);
-
-			setWeight(i, nW);
-			setBias(i, nB);
+			this.weights[i] = (DenseMatrix) this.weights[i].minus(dW[i]);
+			this.biases[i] = (DenseMatrix) this.biases[i].minus(dB[i]);
 		}
 	}
 
 	private List<DenseMatrix[]> backPropagate(final DenseMatrix toPredict,
 		final DenseMatrix correct) {
+
 		final List<DenseMatrix[]> totalDeltas = new ArrayList<>();
 
 		final DenseMatrix[] deltaBiases = this.initializeDeltas(biases);
@@ -286,30 +278,42 @@ public class NeuralNetwork implements Serializable {
 		// Calculate error signal for last layer
 
 		// Applies the error function to the last layer, create
-		DenseMatrix deltaError = errorFunction
-			.applyErrorFunctionGradient(activations.get(activations.size() - 1), correct);
+		DenseMatrix a = activations.get(activations.size() - 1);
 
-		// Set the deltas to the error signals of bias and weight.
-		deltaBiases[deltaBiases.length - 1] = deltaError;
-		deltaWeights[deltaWeights.length - 1] = (DenseMatrix) deltaError
-			.mtimes(activations.get(activations.size() - 2).transpose());
+		DenseMatrix deltaError = errorFunction
+			.applyErrorFunctionGradient(a, correct);
 
 		// Now iteratively apply the rule
-		for (int k = deltaBiases.length - 2; k >= 0; k--) {
-			final DenseMatrix z = xVector.get(k);
-			final DenseMatrix differentiate = this.functions[k + 1].applyDerivative(z);
+		for (int k = deltaBiases.length - 1; k >= 0; k--) {
+			final DenseMatrix aCurr = activations.get(k + 1); // this layer
+			final DenseMatrix aNext = activations.get(k); // Previous layer
+			DenseMatrix differentiate = this.functions[k + 1].derivativeOnInput(aCurr, deltaError);
 
-			deltaError = (DenseMatrix) this.weights[k + 1].transpose().mtimes(deltaError)
-				.times(differentiate);
+			deltaBiases[k] = differentiate;
+			deltaWeights[k] = (DenseMatrix) differentiate
+				.mtimes(aNext.transpose());
 
-			deltaBiases[k] = deltaError;
-			deltaWeights[k] = (DenseMatrix) deltaError.mtimes(activations.get(k).transpose());
+			deltaError = (DenseMatrix) this.weights[k].transpose().mtimes(differentiate);
 		}
+
+		/*for (int i = 0; i < deltaBiases.length; i++) {
+			System.out.println(Arrays.deepToString(deltaBiases[i].toDoubleArray()));
+			System.out.println(Arrays.deepToString(deltaWeights[i].toDoubleArray()));
+		}*/
 
 		totalDeltas.add(deltaBiases);
 		totalDeltas.add(deltaWeights);
 
 		return totalDeltas;
+	}
+
+	private boolean hasNaN(final DenseMatrix differentiate) {
+		for (double[] d : differentiate.toDoubleArray()) {
+			for (double a : d) {
+				return Double.isNaN(a);
+			}
+		}
+		return false;
 	}
 
 	private DenseMatrix[] initializeDeltas(final DenseMatrix[] toCopyFrom) {
@@ -329,8 +333,10 @@ public class NeuralNetwork implements Serializable {
 
 		actives.add(toPredict);
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
-			final DenseMatrix x = (DenseMatrix) this.weights[i].mtimes(toPredict)
+			final DenseMatrix x = (DenseMatrix) this.weights[i]
+				.mtimes(toPredict)
 				.plus(this.biases[i]);
+
 			vectors.add(x);
 
 			toPredict = this.functions[i + 1].applyFunction(x);
@@ -425,6 +431,7 @@ public class NeuralNetwork implements Serializable {
 			.intValue();
 		final double l = errorFunction.calculateCostFunction(ffD);
 		addPlotData(0, c, l);
+		System.out.println("Loss: " + l);
 		System.out.println("Epoch " + (0) + ": " + c + "/" + teDataSize);
 
 		for (int i = 0; i < epochs; i++) {

@@ -35,6 +35,6 @@ public class SoftmaxFunctionTest {
 		SoftmaxFunction function = new SoftmaxFunction();
 		sm = function.applyFunction(sm);
 		System.out.println(sm);
-		System.out.println(function.applyDerivative(sm));
+		System.out.println(function.applyDerivative(sm, null));
 	}
 }
