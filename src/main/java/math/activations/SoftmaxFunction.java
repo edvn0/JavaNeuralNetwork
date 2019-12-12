@@ -64,8 +64,7 @@ public class SoftmaxFunction implements ActivationFunction {
 	public DenseMatrix derivativeOnInput(final DenseMatrix input, final DenseMatrix out) {
 		double xOut = input.times(out).getValueSum();
 		DenseMatrix derive = (DenseMatrix) out.minus(xOut);
-		DenseMatrix n = (DenseMatrix) input.times(derive);
-		return out;
+		return (DenseMatrix) input.times(derive);
 	}
 
 	public SoftmaxFunction() {

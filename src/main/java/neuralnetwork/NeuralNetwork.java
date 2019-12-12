@@ -104,7 +104,7 @@ public class NeuralNetwork implements Serializable {
 
 	public NeuralNetwork(NetworkBuilder b) {
 		this.sizes = b.structure;
-		this.functions = b.toArray();
+		this.functions = b.getActivationFunctions();
 		this.costFunction = b.costFunction;
 		this.learningRate = b.learningRate;
 		this.evaluationFunction = b.evaluationFunction;
@@ -447,7 +447,7 @@ public class NeuralNetwork implements Serializable {
 
 			// Add the plotting data, x, y_1, y_2 to the global
 			// lists of xValues, correctValues, lossValues.
-			addPlotData(i, correct, loss);
+			addPlotData((i + 1), correct, loss);
 
 			// Lower learning rate for each k-th iteration.
 			if ((i + 1) % decreaseLR == 0) {
@@ -584,6 +584,13 @@ public class NeuralNetwork implements Serializable {
 			functions = new ArrayList<>();
 		}
 
+		public NetworkBuilder setFirstLayer(final int i) {
+			structure[index] = i;
+			functions.add(new LinearFunction());
+			this.index++;
+			return this;
+		}
+
 		public NetworkBuilder setLayer(final int i, final ActivationFunction f) {
 			structure[index] = i;
 			functions.add(f);
@@ -612,15 +619,20 @@ public class NeuralNetwork implements Serializable {
 			return this;
 		}
 
-		public ActivationFunction[] toArray() {
+		public ActivationFunction[] getActivationFunctions() {
 			ActivationFunction[] f = new ActivationFunction[this.index];
+
 			if (this.functions.size() == this.structure.length) {
+				// We have one too many functions, one associated with the "first layer"
+				// which in essence does not exist, we apply a linear function here.
+				// However, this is never calculated.
 				for (int i = 1; i < this.structure.length; i++) {
 					f[i] = this.functions.get(i);
 				}
 				// We do not care about this one, never gets evaluated.
 				f[0] = new LinearFunction();
 			} else if (this.functions.size() + 1 == this.structure.length) {
+				// We have supplied the builder with the correct amount of functions.
 				for (int i = 0; i < this.structure.length; i++) {
 					f[i] = this.functions.get(i);
 				}
@@ -628,6 +640,13 @@ public class NeuralNetwork implements Serializable {
 				throw new IllegalArgumentException("Not enough activation functions provided.");
 			}
 			return f;
+		}
+
+		public NetworkBuilder setLastLayer(final int i, final ActivationFunction f) {
+			this.structure[index] = i;
+			functions.add(f);
+			index++;
+			return this;
 		}
 	}
 }
