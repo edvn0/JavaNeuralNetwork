@@ -15,12 +15,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 import math.activations.ActivationFunction;
 import math.activations.LinearFunction;
 import math.activations.SoftmaxFunction;
 import math.errors.CostFunction;
 import math.errors.CrossEntropyCostFunction;
 import math.evaluation.EvaluationFunction;
+import optimizers.Optimizer;
 import org.jetbrains.annotations.NotNull;
 import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.BitmapEncoder.BitmapFormat;
@@ -28,6 +30,7 @@ import org.knowm.xchart.QuickChart;
 import org.knowm.xchart.XYChart;
 import org.ujmp.core.DenseMatrix;
 import org.ujmp.core.Matrix;
+import org.ujmp.core.interfaces.Clearable;
 import utilities.MatrixUtilities;
 
 /**
@@ -51,11 +54,18 @@ public class NeuralNetwork implements Serializable {
 	// The function to evaluate the data set.
 	private final EvaluationFunction evaluationFunction;
 
+	// The optimizer to be used
+	private Optimizer optimizer;
+
 	private DenseMatrix[] weights;
+	private DenseMatrix[] biases;
+	private DenseMatrix[] deltaWeights;
+	private DenseMatrix[] deltaBiases;
+	private DenseMatrix[] dW;
+	private DenseMatrix[] dB;
 	private DenseMatrix[] vDw;
 	private DenseMatrix[] sDw;
 	private DenseMatrix[] epsilon;
-	private DenseMatrix[] biases;
 
 	// Helper field to hold the total amount of layers
 	private final int totalLayers;
@@ -92,7 +102,9 @@ public class NeuralNetwork implements Serializable {
 		this.sizes = sizes;
 
 		initialiseBiases(sizes);
+		this.deltaWeights = initializeMatrices(this.weights);
 		initialiseWeights(sizes);
+		this.deltaBiases = initializeMatrices(this.biases);
 
 		if (errorFunction instanceof CrossEntropyCostFunction
 			&& !(functions[functions.length - 1] instanceof SoftmaxFunction)) {
@@ -110,17 +122,34 @@ public class NeuralNetwork implements Serializable {
 		this.evaluationFunction = b.evaluationFunction;
 		this.totalLayers = sizes.length;
 
-		initialiseBiases(sizes);
+		// Initialize the optimizer and the parameters.
+		this.optimizer = b.optimizer;
+		this.optimizer.initializeOptimizer(this.totalLayers);
+
+		// Initialize weights, deltas and gradients.
 		initialiseWeights(sizes);
+		this.deltaWeights = initializeMatrices(this.weights);
+		this.dW = initializeMatrices(this.weights);
+		initialiseBiases(sizes);
+		this.deltaBiases = initializeMatrices(this.biases);
+		this.dB = initializeMatrices(this.biases);
 	}
 
-	private void initialiseAdam() {
-		for (int i = 0; i < this.weights.length; i++) {
-			this.vDw[i] = Matrix.Factory.zeros(this.weights[i].getRowCount(), 1);
-			this.sDw[i] = Matrix.Factory.zeros(this.weights[i].getRowCount(), 1);
-			this.epsilon[i] = (DenseMatrix) Matrix.Factory.zeros(this.weights[i].getRowCount(), 1)
-				.plus(10e-8);
+	/**
+	 * Returns matrices of zeroes, of similar dimensions as provided in input.
+	 *
+	 * @param toCopyFrom input matrices of RowCount_iXColumnCount_i
+	 *
+	 * @return zero matrices with RowCount_iXColumnCount_i dimensions.
+	 */
+	private DenseMatrix[] initializeMatrices(final DenseMatrix[] toCopyFrom) {
+		final DenseMatrix[] deltas = new DenseMatrix[toCopyFrom.length];
+		for (int i = 0; i < deltas.length; i++) {
+			final int rows = (int) toCopyFrom[i].getRowCount();
+			final int cols = (int) toCopyFrom[i].getColumnCount();
+			deltas[i] = Matrix.Factory.zeros(rows, cols);
 		}
+		return deltas;
 	}
 
 	private void initialiseWeights(final int[] sizes) {
@@ -145,6 +174,245 @@ public class NeuralNetwork implements Serializable {
 
 	private int getTotalLayers() {
 		return this.totalLayers;
+	}
+
+	/**
+	 * Train the network with one example.
+	 *
+	 * @param input a {@link NetworkInput} object to be trained on.
+	 */
+	public void train(final NetworkInput input) {
+		calculateMiniBatch(Collections.singletonList(input));
+	}
+
+	private void calculateMiniBatch(final List<NetworkInput> subList) {
+		final int size = subList.size();
+
+		// final double scaleFactor = this.learningRate / size;
+		Stream.of(dB).forEach(Clearable::clear);
+		Stream.of(dW).forEach(Clearable::clear);
+
+		for (final NetworkInput data : subList) {
+			final List<DenseMatrix[]> deltas = backPropagate(data);
+			final DenseMatrix[] deltaB = deltas.get(0);
+			final DenseMatrix[] deltaW = deltas.get(1);
+
+			for (int j = 0; j < this.totalLayers - 1; j++) {
+				dW[j] = (DenseMatrix) dW[j].plus(deltaW[j]);
+				dB[j] = (DenseMatrix) dB[j].plus(deltaB[j]);
+			}
+		}
+
+		for (int i = 0; i < dB.length; i++) {
+			dW[i] = (DenseMatrix) dW[i].times(1d / size);
+			dB[i] = (DenseMatrix) dB[i].times(1d / size);
+		}
+
+		this.weights = optimizer.changeWeights(this.weights, dW);
+		this.biases = optimizer.changeBiases(this.biases, dB);
+	}
+
+	private List<DenseMatrix[]> backPropagate(NetworkInput in) {
+
+		final List<DenseMatrix[]> totalDeltas = new ArrayList<>();
+		final List<DenseMatrix> activations = new ArrayList<>();
+
+		Stream.of(this.deltaBiases).forEach(Clearable::clear);
+		Stream.of(this.deltaWeights).forEach(Clearable::clear);
+
+		// Alters all arrays and lists.
+		this.feedForward(in.getData(), activations);
+		// End feedforward
+
+		DenseMatrix a = activations.get(activations.size() - 1);
+		DenseMatrix deltaError = costFunction
+			.applyCostFunctionGradient(a, in.getLabel());
+
+		// Iterate over all layers, they are indexed by the last layer (here given b
+		for (int k = deltaBiases.length - 1; k >= 0; k--) {
+			final DenseMatrix aCurr = activations.get(k + 1); // this layer
+			final DenseMatrix aNext = activations.get(k); // Previous layer
+			DenseMatrix differentiate = this.functions[k + 1]
+				.derivativeOnInput(aCurr, deltaError);
+
+			this.deltaBiases[k] = differentiate;
+			this.deltaWeights[k] = (DenseMatrix) differentiate
+				.mtimes(aNext.transpose());
+
+			deltaError = (DenseMatrix) this.weights[k].transpose().mtimes(differentiate);
+		}
+
+		totalDeltas.add(deltaBiases);
+		totalDeltas.add(deltaWeights);
+
+		return totalDeltas;
+	}
+
+	private void feedForward(final DenseMatrix starter, final List<DenseMatrix> actives) {
+		DenseMatrix toPredict = starter;
+		actives.add(toPredict);
+		for (int i = 0; i < getTotalLayers() - 1; i++) {
+			final DenseMatrix x =
+				(DenseMatrix) this.weights[i]
+					.mtimes(toPredict)
+					.plus(this.biases[i]);
+
+			toPredict = this.functions[i + 1].applyFunction(x);
+			actives.add(toPredict);
+		}
+	}
+
+	/**
+	 * Predict a single example input data.
+	 *
+	 * @param in {@link DenseMatrix} a Matrix to feed forward.
+	 *
+	 * @return a classification of {@link DenseMatrix}
+	 */
+	public DenseMatrix predict(final DenseMatrix in) {
+		return feedForward(in);
+	}
+
+	/**
+	 * Feed the input through the network for classification.
+	 *
+	 * @param in values to predict
+	 *
+	 * @return classified values.
+	 */
+	private DenseMatrix feedForward(final DenseMatrix in) {
+		DenseMatrix input = in;
+		for (int i = 0; i < this.totalLayers - 1; i++) {
+			input = functions[i + 1]
+				.applyFunction((DenseMatrix) this.weights[i].mtimes(input).plus(this.biases[i]));
+		}
+		return input;
+	}
+
+	private List<NetworkInput> feedForwardData(final List<NetworkInput> test) {
+		final List<NetworkInput> copy = new ArrayList<>();
+
+		for (final NetworkInput networkInput : test) {
+
+			final DenseMatrix out = this.feedForward(networkInput.getData());
+			final NetworkInput newOut = new NetworkInput(out, networkInput.getLabel());
+			copy.add(newOut);
+		}
+
+		return copy;
+	}
+
+	public double evaluateTestData(final List<NetworkInput> imagesTest, int size) {
+		double sum = 0;
+		double s = imagesTest.size();
+		for (int i = 0; i < size; i++) {
+			final List<NetworkInput> test = this.feedForwardData(imagesTest);
+			sum += evaluationFunction.evaluatePrediction(test).intValue() / s;
+		}
+
+		return sum;
+	}
+
+	/**
+	 * Trains this network on training data, and validates on validation data. Uses a {@link
+	 * Optimizer} to optimize the gradient descent.
+	 *
+	 * @param training   a Collections object with {@link NetworkInput} objects,
+	 *                   NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
+	 * @param validation a Collections object with {@link NetworkInput} objects,
+	 *                   NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
+	 * @param epochs     how many iterations are we doing the descent for
+	 * @param batchSize  how big is the batch size, typically 32. See https://stats.stackexchange.com/q/326663
+	 */
+	public void train(@NotNull final List<NetworkInput> training,
+		@NotNull final List<NetworkInput> validation, final int epochs, final int batchSize) {
+
+		// How many times will we decrease the learning rate?
+		final int teDataSize = validation.size();
+		final int trDataSize = training.size();
+
+		// Feed forward the test data
+		final List<NetworkInput> ffD = this.feedForwardData(validation);
+		// Evaluate prediction with the interface EvaluationFunction.
+		final int c = this.evaluationFunction.evaluatePrediction(ffD)
+			.intValue();
+		final double l = this.costFunction.calculateCostFunction(ffD);
+		addPlotData(0, c, l);
+		System.out.println("Loss: " + l);
+		System.out.println("Epoch " + (0) + ": " + c + "/" + teDataSize);
+
+		for (int i = 0; i < epochs; i++) {
+			System.out.println("Calculating epoch: " + (i + 1) + ".");
+
+			// Randomize training sample.
+			Collections.shuffle(training);
+
+			// Calculates a batch of training data.
+			for (int j = 0; j < trDataSize - batchSize; j += batchSize) {
+				calculateMiniBatch(training.subList(j, j + batchSize));
+			}
+
+			// Feed forward the test data
+			final List<NetworkInput> feedForwardData = this.feedForwardData(validation);
+
+			// Evaluate prediction with the interface EvaluationFunction.
+			final int correct = this.evaluationFunction.evaluatePrediction(feedForwardData)
+				.intValue();
+			// Calculate loss with the interface CostFunction
+			final double loss = this.costFunction.calculateCostFunction(feedForwardData);
+
+			// Add the plotting data, x, y_1, y_2 to the global
+			// lists of xValues, correctValues, lossValues.
+			addPlotData((i + 1), correct, loss);
+			System.out.println("Loss: " + loss);
+			System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + teDataSize);
+		}
+	}
+
+
+	// -------------------------------------------------------------
+	// HERE STARTS AUXILARIES, I/O for Plots, and for serialisation.
+	// -------------------------------------------------------------
+	private void addPlotData(final double i, final double correct, final double loss) {
+		xValues.add(i);
+		lossValues.add(loss);
+		correctValues.add(correct);
+	}
+
+	/**
+	 * Prints the networks performance in terms of loss and correct identification to a path.
+	 * Example usage: "Users/{name}/Programming/DeepLearning/NN/Output/".
+	 *
+	 * @param basePath base path to image root.
+	 */
+	public void outputChart(final String basePath) {
+
+		final XYChart lossToEpoch = generateChart("Loss/Epoch", "Epoch", "Loss", "loss(x)", xValues,
+			lossValues);
+
+		final XYChart correctToEpoch = generateChart("Correct/Epoch", "Epoch", "Correct",
+			"correct(x)", xValues,
+			correctValues);
+
+		final String use = basePath.endsWith("/") ? basePath : basePath + "/";
+		final String loss = use + "LossToEpochPlot";
+		final String correct = use + "CorrectToEpochPlot";
+
+		String formattedDate;
+		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.ENGLISH);
+		formattedDate = sdf.format(new Date());
+
+		final String now = formattedDate;
+
+		final String nowLoss = loss + "_" + now;
+		final String nowCorr = correct + "_" + now;
+
+		try {
+			BitmapEncoder.saveBitmapWithDPI(lossToEpoch, nowLoss, BitmapFormat.PNG, 300);
+			BitmapEncoder.saveBitmapWithDPI(correctToEpoch, nowCorr, BitmapFormat.PNG, 300);
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -198,13 +466,21 @@ public class NeuralNetwork implements Serializable {
 		}
 	}
 
+	/**
+	 * Serialises this network. Outputs a file (.ser) with the date.
+	 *
+	 * @param path the path to the serialised file.
+	 */
 	public void writeObject(final String path) {
 		File file;
 		final String out = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+		String formattedDate;
+		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.ENGLISH);
+		formattedDate = sdf.format(new Date());
 
 		try {
 			final FileOutputStream fs = new FileOutputStream(
-				file = new File(out + "/NeuralNetwork_" + getNow() + "_.ser"));
+				file = new File(out + "/NeuralNetwork_" + formattedDate + "_.ser"));
 			final ObjectOutputStream os = new ObjectOutputStream(fs);
 			os.writeObject(this);
 
@@ -215,316 +491,6 @@ public class NeuralNetwork implements Serializable {
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * Train the network with one example.
-	 *
-	 * @param input a {@link NetworkInput} object to be trained on.
-	 */
-	public void train(final NetworkInput input) {
-		calculateMiniBatch(Collections.singletonList(input));
-	}
-
-	private void calculateMiniBatch(final List<NetworkInput> subList) {
-		final int size = subList.size();
-
-		final double scaleFactor = this.learningRate / size;
-
-		final DenseMatrix[] dB = new DenseMatrix[this.totalLayers - 1];
-		final DenseMatrix[] dW = new DenseMatrix[this.totalLayers - 1];
-		for (int i = 0; i < this.totalLayers - 1; i++) {
-			final DenseMatrix bias = getBias(i);
-			final DenseMatrix weight = getWeight(i);
-			dB[i] = Matrix.Factory.zeros(bias.getRowCount(), bias.getColumnCount());
-			dW[i] = Matrix.Factory.zeros(weight.getRowCount(), weight.getColumnCount());
-		}
-
-		for (final NetworkInput data : subList) {
-			final DenseMatrix dataIn = data.getData();
-			final DenseMatrix label = data.getLabel();
-			final List<DenseMatrix[]> deltas = backPropagate(dataIn, label);
-			final DenseMatrix[] deltaB = deltas.get(0);
-			final DenseMatrix[] deltaW = deltas.get(1);
-
-			for (int j = 0; j < this.totalLayers - 1; j++) {
-				dB[j] = (DenseMatrix) dB[j].plus(deltaB[j]);
-				dW[j] = (DenseMatrix) dW[j].plus(deltaW[j]);
-			}
-		}
-
-		for (int i = 0; i < dB.length; i++) {
-			dB[i] = (DenseMatrix) dB[i].times(scaleFactor);
-			dW[i] = (DenseMatrix) dW[i].times(scaleFactor);
-		}
-
-		for (int i = 0; i < this.totalLayers - 1; i++) {
-			this.weights[i] = (DenseMatrix) this.weights[i].minus(dW[i]);
-			this.biases[i] = (DenseMatrix) this.biases[i].minus(dB[i]);
-		}
-	}
-
-	private List<DenseMatrix[]> backPropagate(final DenseMatrix toPredict,
-		final DenseMatrix correct) {
-
-		final List<DenseMatrix[]> totalDeltas = new ArrayList<>();
-
-		final DenseMatrix[] deltaBiases = this.initializeDeltas(biases);
-		final DenseMatrix[] deltaWeights = this.initializeDeltas(weights);
-
-		// Perform Feed Forward here...
-		final List<DenseMatrix> activations = new ArrayList<>();
-		final List<DenseMatrix> xVector = new ArrayList<>();
-
-		// Alters all arrays and lists.
-		this.backPropFeedForward(toPredict, activations, xVector);
-		// End feedforward
-
-		// Calculate error signal for last layer
-
-		// Applies the error function to the last layer, create
-		DenseMatrix a = activations.get(activations.size() - 1);
-
-		DenseMatrix deltaError = costFunction
-			.applyErrorFunctionGradient(a, correct);
-
-		// Iterate over all layers, they are indexed by the last layer (here given b
-		for (int k = deltaBiases.length - 1; k >= 0; k--) {
-			final DenseMatrix aCurr = activations.get(k + 1); // this layer
-			final DenseMatrix aNext = activations.get(k); // Previous layer
-			DenseMatrix differentiate = this.functions[k + 1].derivativeOnInput(aCurr, deltaError);
-
-			deltaBiases[k] = differentiate;
-			deltaWeights[k] = (DenseMatrix) differentiate
-				.mtimes(aNext.transpose());
-
-			deltaError = (DenseMatrix) this.weights[k].transpose().mtimes(differentiate);
-		}
-
-		totalDeltas.add(deltaBiases);
-		totalDeltas.add(deltaWeights);
-
-		return totalDeltas;
-	}
-
-	private DenseMatrix[] initializeDeltas(final DenseMatrix[] toCopyFrom) {
-		final DenseMatrix[] deltas = new DenseMatrix[toCopyFrom.length];
-		for (int i = 0; i < deltas.length; i++) {
-			final int rows = (int) toCopyFrom[i].getRowCount();
-			final int cols = (int) toCopyFrom[i].getColumnCount();
-			deltas[i] = Matrix.Factory.zeros(rows, cols);
-		}
-		return deltas;
-	}
-
-	private void backPropFeedForward(final DenseMatrix starter, final List<DenseMatrix> actives,
-		final List<DenseMatrix> vectors) {
-
-		DenseMatrix toPredict = starter;
-
-		actives.add(toPredict);
-		for (int i = 0; i < getTotalLayers() - 1; i++) {
-			final DenseMatrix x = (DenseMatrix) this.weights[i]
-				.mtimes(toPredict)
-				.plus(this.biases[i]);
-
-			vectors.add(x);
-
-			toPredict = this.functions[i + 1].applyFunction(x);
-			actives.add(toPredict);
-		}
-	}
-
-	// -------------------------
-	// Mutators
-	// -------------------------
-	private DenseMatrix[] getWeights() {
-		return this.weights;
-	}
-
-	private DenseMatrix[] getBiasesAsMatrices() {
-		final DenseMatrix[] biases = new DenseMatrix[getTotalLayers() - 1];
-		for (int i = 0; i < getTotalLayers() - 1; i++) {
-			biases[i] = getBias(i);
-		}
-		return biases;
-	}
-
-	private void setWeight(final int i, final DenseMatrix newWeights) {
-		this.weights[i] = newWeights;
-	}
-
-	private DenseMatrix getWeight(final int i) {
-		return this.weights[i];
-	}
-
-	private DenseMatrix getBias(final int i) {
-		return this.biases[i];
-	}
-
-	private void setBias(final int i, final DenseMatrix outputMatrix) {
-		this.biases[i] = outputMatrix;
-	}
-
-	/**
-	 * Predict a single example input data.
-	 *
-	 * @param in {@link DenseMatrix} a Matrix to feed forward.
-	 *
-	 * @return a classification of {@link DenseMatrix}
-	 */
-	public DenseMatrix predict(final DenseMatrix in) {
-		return feedForward(in);
-	}
-
-	/**
-	 * Feed the input through the network for classification.
-	 *
-	 * @param in values to predict
-	 *
-	 * @return classified values.
-	 */
-	private DenseMatrix feedForward(final DenseMatrix in) {
-		// Make input into matrix.
-		DenseMatrix input = in;
-		final DenseMatrix[] weights = getWeights();
-		final DenseMatrix[] biases = getBiasesAsMatrices();
-		for (int i = 0; i < this.totalLayers - 1; i++) {
-			input = functions[i + 1]
-				.applyFunction((DenseMatrix) weights[i].mtimes(input).plus(biases[i]));
-		}
-
-		return input;
-	}
-
-	/**
-	 * Provides an implementation of SGD for this neural network.
-	 *
-	 * @param training  a Collections object with {@link NetworkInput} objects,
-	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
-	 * @param test      a Collections object with {@link NetworkInput} objects,
-	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
-	 * @param epochs    how many iterations are we doing SGD for
-	 * @param batchSize how big is the batch size, typically 32. See https://stats.stackexchange.com/q/326663
-	 */
-	public void stochasticGradientDescent(@NotNull final List<NetworkInput> training,
-		@NotNull final List<NetworkInput> test, final int epochs, final int batchSize) {
-
-		// How many times will we decrease the learning rate?
-		final int decreaseLR = epochs / 5;
-		final int teDataSize = test.size();
-		final int trDataSize = training.size();
-
-		// Feed forward the test data
-		final List<NetworkInput> ffD = this.feedForwardData(test);
-		// Evaluate prediction with the interface EvaluationFunction.
-		final int c = this.evaluationFunction.evaluatePrediction(ffD)
-			.intValue();
-		final double l = costFunction.calculateCostFunction(ffD);
-		addPlotData(0, c, l);
-		System.out.println("Loss: " + l);
-		System.out.println("Epoch " + (0) + ": " + c + "/" + teDataSize);
-
-		for (int i = 0; i < epochs; i++) {
-			// Randomize training sample.
-			Collections.shuffle(training);
-
-			System.out.println("Calculating epoch: " + (i + 1) + ".");
-
-			// Do backpropagation.
-			for (int j = 0; j < trDataSize - batchSize; j += batchSize) {
-				calculateMiniBatch(training.subList(j, j + batchSize));
-			}
-
-			// Feed forward the test data
-			final List<NetworkInput> feedForwardData = this.feedForwardData(test);
-
-			// Evaluate prediction with the interface EvaluationFunction.
-			final int correct = this.evaluationFunction.evaluatePrediction(feedForwardData)
-				.intValue();
-			// Calculate loss with the interface CostFunction
-			final double loss = costFunction.calculateCostFunction(feedForwardData);
-
-			// Add the plotting data, x, y_1, y_2 to the global
-			// lists of xValues, correctValues, lossValues.
-			addPlotData((i + 1), correct, loss);
-
-			// Lower learning rate for each k-th iteration.
-			if ((i + 1) % decreaseLR == 0) {
-				this.learningRate = this.learningRate * 0.95;
-			}
-
-			System.out.println("Loss: " + loss);
-			System.out.println("Epoch " + (i + 1) + ": " + correct + "/" + teDataSize);
-
-			// Lower learning rate each iteration?. Might implement? Don't know how to.
-			// ADAM? Is that here? Are they different algorithms all together?
-			// TODO: Implement Adam, RMSProp, Momentum?
-			// this.learningRate = i % 10 == 0 ? this.learningRate / 4 : this.learningRate;
-		}
-
-	}
-
-	// TODO: Implement ADAM.
-	public void adam(final List<NetworkInput> training, final List<NetworkInput> testing,
-		final int epochs,
-		final int batchSize) {
-		final int trainSize = training.size();
-		final int testSize = training.size();
-
-		for (int i = 0; i < epochs; i++) {
-
-			Collections.shuffle(training);
-			for (int k = 0; k < trainSize - batchSize; k += batchSize) {
-				calculateMiniBatch(training.subList(k, k + batchSize));
-			}
-
-		}
-	}
-
-	private void addPlotData(final double i, final double correct, final double loss) {
-		xValues.add(i);
-		lossValues.add(loss);
-		correctValues.add(correct);
-	}
-
-	/**
-	 * Prints the networks performance in terms of loss and correct identification to a path.
-	 * Example usage: "Users/{name}/Programming/DeepLearning/NN/Output/".
-	 *
-	 * @param basePath base path to image root.
-	 */
-	public void outputChart(final String basePath) {
-
-		final XYChart lossToEpoch = generateChart("Loss/Epoch", "Epoch", "Loss", "loss(x)", xValues,
-			lossValues);
-
-		final XYChart correctToEpoch = generateChart("Correct/Epoch", "Epoch", "Correct",
-			"correct(x)", xValues,
-			correctValues);
-
-		final String use = basePath.endsWith("/") ? basePath : basePath + "/";
-		final String loss = use + "LossToEpochPlot";
-		final String correct = use + "CorrectToEpochPlot";
-
-		final String now = getNow();
-
-		final String nowLoss = loss + "_" + now;
-		final String nowCorr = correct + "_" + now;
-
-		try {
-			BitmapEncoder.saveBitmapWithDPI(lossToEpoch, nowLoss, BitmapFormat.PNG, 300);
-			BitmapEncoder.saveBitmapWithDPI(correctToEpoch, nowCorr, BitmapFormat.PNG, 300);
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static String getNow() {
-		String formattedDate;
-		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.ENGLISH);
-		formattedDate = sdf.format(new Date());
-		return formattedDate;
 	}
 
 	private XYChart generateChart(final String heading, final String xLabel, final String yLabel,
@@ -539,62 +505,50 @@ public class NeuralNetwork implements Serializable {
 		return chart;
 	}
 
-	private List<NetworkInput> feedForwardData(final List<NetworkInput> test) {
-		final List<NetworkInput> copy = new ArrayList<>();
-
-		for (final NetworkInput networkInput : test) {
-
-			final DenseMatrix out = this.feedForward(networkInput.getData());
-			final NetworkInput newOut = new NetworkInput(out, networkInput.getLabel());
-			copy.add(newOut);
-		}
-
-		return copy;
-	}
-
-	public double evaluateTestData(final List<NetworkInput> imagesTest, int size) {
-		double sum = 0;
-		for (int i = 0; i < size; i++) {
-			final List<NetworkInput> test = this.feedForwardData(imagesTest);
-			sum += evaluationFunction.evaluatePrediction(test).intValue();
-		}
-
-		return sum / size;
-
-	}
-
+	/**
+	 * A Builder for the Network.
+	 */
 	public static class NetworkBuilder {
 
-		private final int[] structure;
+		private int[] structure;
 		private int index;
-		List<ActivationFunction> functions;
+		private List<ActivationFunction> functions;
 		private double learningRate;
 		private CostFunction costFunction;
 		private EvaluationFunction evaluationFunction;
+		private Optimizer optimizer;
 
 		public NetworkBuilder(int[] structure) {
 			this.structure = structure;
 			this.index = 0;
-			functions = new ArrayList<>();
+			this.functions = new ArrayList<>();
 		}
 
 		public NetworkBuilder(int s) {
 			this.structure = new int[s];
 			this.index = 0;
-			functions = new ArrayList<>();
+			this.functions = new ArrayList<>();
 		}
 
 		public NetworkBuilder setFirstLayer(final int i) {
+
 			structure[index] = i;
-			functions.add(new LinearFunction());
 			this.index++;
+
+			functions.add(new LinearFunction());
+			return this;
+		}
+
+		public NetworkBuilder setOptimizer(Optimizer o) {
+			this.optimizer = o;
 			return this;
 		}
 
 		public NetworkBuilder setLayer(final int i, final ActivationFunction f) {
+
 			structure[index] = i;
-			functions.add(f);
 			this.index++;
+			functions.add(f);
 			return this;
 		}
 
@@ -620,7 +574,8 @@ public class NeuralNetwork implements Serializable {
 		}
 
 		public ActivationFunction[] getActivationFunctions() {
-			ActivationFunction[] f = new ActivationFunction[this.index];
+			ActivationFunction[] f;
+			f = new ActivationFunction[this.index];
 
 			if (this.functions.size() == this.structure.length) {
 				// We have one too many functions, one associated with the "first layer"
@@ -644,8 +599,8 @@ public class NeuralNetwork implements Serializable {
 
 		public NetworkBuilder setLastLayer(final int i, final ActivationFunction f) {
 			this.structure[index] = i;
-			functions.add(f);
-			index++;
+			this.index++;
+			this.functions.add(f);
 			return this;
 		}
 	}

@@ -3,6 +3,7 @@ package utilities;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -73,5 +74,14 @@ public class NetworkUtilities {
 
 	public static NetworkInput apply(String[] e) {
 		return constructDataFromDoubleArray(normalizeData(e));
+	}
+
+	public static List<List<NetworkInput>> splitData(final List<NetworkInput> training,
+		final int batchSize) {
+		List<List<NetworkInput>> d = new ArrayList<>();
+		for (int i = 0; i < training.size() - batchSize; i += batchSize) {
+			d.add(training.subList(i, i + batchSize));
+		}
+		return d;
 	}
 }

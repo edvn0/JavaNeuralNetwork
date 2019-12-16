@@ -34,7 +34,7 @@ public class BinaryCrossEntropyCostFunction implements CostFunction {
 	}
 
 	@Override
-	public DenseMatrix applyErrorFunctionGradient(final DenseMatrix in, final DenseMatrix label) {
+	public DenseMatrix applyCostFunctionGradient(final DenseMatrix in, final DenseMatrix label) {
 		return (DenseMatrix) in.minus(label);
 	}
 }

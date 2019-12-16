@@ -9,6 +9,6 @@ public interface CostFunction extends Serializable {
 
 	double calculateCostFunction(List<NetworkInput> tData);
 
-	DenseMatrix applyErrorFunctionGradient(DenseMatrix in, DenseMatrix label);
+	DenseMatrix applyCostFunctionGradient(DenseMatrix in, DenseMatrix label);
 
 }

@@ -18,6 +18,9 @@ public class ThreshHoldEvaluationFunction implements EvaluationFunction {
 		this.threshHold = a;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public DenseMatrix evaluatePrediction(List<NetworkInput> toEvaluate) {
 		int correct = 0;

@@ -4,6 +4,7 @@
 <p>This is a neural network implementation in Java. How do you use it?
 Example:
 </p>
+<h2>Example: 4 layer, MNIST evaluator</h2>
 
 <code>NeuralNetwork network = new NeuralNetwork(
       			new NetworkBuilder(4)

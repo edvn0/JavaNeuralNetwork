@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import math.activations.SigmoidFunction;
 import math.activations.SoftmaxFunction;
 import math.activations.TanhFunction;
 import math.errors.CrossEntropyCostFunction;
@@ -14,6 +13,7 @@ import math.evaluation.ArgMaxEvaluationFunction;
 import neuralnetwork.NetworkInput;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.NeuralNetwork.NetworkBuilder;
+import optimizers.ADAM;
 import utilities.NetworkUtilities;
 
 public class MNISTTester {
@@ -22,7 +22,7 @@ public class MNISTTester {
 	private static List<NetworkInput> imagesValidate;
 
 	public static void main(final String[] args) throws IOException {
-
+		long tMem, fMem;
 		final int epochs = Integer.parseInt(args[0]);
 		final int batch = Integer.parseInt(args[1]);
 		final double learningRate = Double.parseDouble(args[2]);
@@ -30,21 +30,23 @@ public class MNISTTester {
 		NeuralNetwork network = new NeuralNetwork(
 			new NetworkBuilder(4)
 				.setFirstLayer(784)
-				.setLayer(100, new SigmoidFunction())
-				.setLayer(100, new SigmoidFunction())
+				.setLayer(100, new TanhFunction())
+				.setLayer(100, new TanhFunction())
 				.setLastLayer(10, new SoftmaxFunction())
 				.setCostFunction(new CrossEntropyCostFunction())
 				.setEvaluationFunction(new ArgMaxEvaluationFunction())
-				.setLearningRate(learningRate)
+				.setOptimizer(new ADAM(0.001, 0.9, 0.999))
+				.setLearningRate(0.05)
 		);
 		System.out.println("Initialized network.");
 
-		System.out.println(
-			"Difference: " + (
-				(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())
-					* (9.357E-7))
-				+ "Mb\nTotal: " + (Runtime.getRuntime().totalMemory() * (9.357E-7)) + "Mb\nFree: "
-				+ (Runtime.getRuntime().freeMemory() * (9.357E-7)) + "Mb");
+		tMem = Runtime.getRuntime().totalMemory();
+		fMem = Runtime.getRuntime().freeMemory();
+		System.out.println();
+		System.out.println("Memory information:");
+		System.out.println(String.format("Total allocated memory in the JVM: %-10d", tMem));
+		System.out.println(String.format("Free memory in the JVM: %-10d", fMem));
+		System.out.println();
 
 		final boolean existsMac = Files
 			.exists(Paths.get("/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv"));
@@ -66,13 +68,14 @@ public class MNISTTester {
 
 		imagesTrain = generateDataFromCSV(pathTrain);
 		imagesValidate = generateDataFromCSV(pathTest);
-		System.out.println(
-			"Difference: " + (
-				(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())
-					* (9.357E-7))
-				+ "Mb\nTotal: " + (Runtime.getRuntime().totalMemory() * (9.357E-7)) + "Mb\nFree: "
-				+ (Runtime.getRuntime().freeMemory() * (9.357E-7)) + "Mb");
-		System.out.println("Initialized files.");
+
+		tMem = Runtime.getRuntime().totalMemory();
+		fMem = Runtime.getRuntime().freeMemory();
+		System.out.println();
+		System.out.println("Memory information:");
+		System.out.println(String.format("Total allocated memory in the JVM: %-10d", tMem));
+		System.out.println(String.format("Free memory in the JVM: %-10d", fMem));
+		System.out.println();
 
 		Collections.shuffle(imagesTrain);
 		Collections.shuffle(imagesValidate);
@@ -83,7 +86,7 @@ public class MNISTTester {
 		imagesTest.addAll(imagesValidate.subList(0, (int) (imagesValidate.size() * 0.1)));
 
 		System.out.println("Starting SGD...");
-		network.stochasticGradientDescent(imagesTrain, imagesValidate, epochs, batch);
+		network.train(imagesTrain, imagesValidate, epochs, batch);
 		System.out.println("Finished SGD!");
 		System.out.println("Evaluating the test data.");
 		double correct = network.evaluateTestData(imagesTest, 100);
@@ -94,7 +97,10 @@ public class MNISTTester {
 	}
 
 	private static List<NetworkInput> generateDataFromCSV(final String path) throws IOException {
-		return Files.lines(Paths.get(path)).map(e -> e.split(",")).map(NetworkUtilities::apply)
+		return Files
+			.lines(Paths.get(path))
+			.map(e -> e.split(","))
+			.map(NetworkUtilities::apply)
 			.collect(Collectors.toList());
 	}
 }

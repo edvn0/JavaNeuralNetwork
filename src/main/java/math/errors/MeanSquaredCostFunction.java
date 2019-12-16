@@ -3,7 +3,6 @@ package math.errors;
 import java.util.List;
 import neuralnetwork.NetworkInput;
 import org.ujmp.core.DenseMatrix;
-import utilities.MatrixUtilities;
 
 public class MeanSquaredCostFunction implements CostFunction {
 
@@ -23,8 +22,7 @@ public class MeanSquaredCostFunction implements CostFunction {
 			DenseMatrix label = networkInput.getLabel();
 			DenseMatrix data = networkInput.getData();
 			DenseMatrix inner = (DenseMatrix) label.minus(data);
-			inner = MatrixUtilities.map(inner, e -> e * e);
-			sum += inner.doubleValue();
+			sum += inner.times(inner).doubleValue();
 		}
 
 		sum /= tData.size();
@@ -33,8 +31,8 @@ public class MeanSquaredCostFunction implements CostFunction {
 	}
 
 	@Override
-	public DenseMatrix applyErrorFunctionGradient(final DenseMatrix in, final DenseMatrix label) {
-		return (DenseMatrix) in.minus(label);
+	public DenseMatrix applyCostFunctionGradient(final DenseMatrix in, final DenseMatrix label) {
+		return (DenseMatrix) in.minus(label).times(2);
 	}
 
 }

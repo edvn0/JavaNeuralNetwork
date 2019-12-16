@@ -16,6 +16,9 @@ public class ArgMaxEvaluationFunction implements EvaluationFunction {
 	public ArgMaxEvaluationFunction() {
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public DenseMatrix evaluatePrediction(List<NetworkInput> toEvaluate) {
 		int correct = 0;
@@ -30,7 +33,7 @@ public class ArgMaxEvaluationFunction implements EvaluationFunction {
 			}
 
 		}
-		return Matrix.Factory.importFromArray(new int[][] { { correct } });
+		return Matrix.Factory.importFromArray(new int[][]{{correct}});
 	}
 
 }
