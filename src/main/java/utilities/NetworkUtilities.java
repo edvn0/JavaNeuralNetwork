@@ -13,6 +13,25 @@ import org.ujmp.core.Matrix;
 
 public class NetworkUtilities {
 
+	/**
+	 * Maps a file input to {@link NetworkInput} objects to be used in the Neural Network
+	 *
+	 * Splits every line in the file on a comma, and then applies the {@link Function} on that
+	 * array.
+	 *
+	 * Example: "1.1,1.3,0.13,0.01,TRUE"->["1.1","1.3",0.13","0.01","TRUE"]->
+	 * Vector(1.1,1.3,0.13,0.01), Vector(0,0,1,0), if TRUE in some represents a one hot vector.
+	 * Vector here is not some class in this project, rather a representation of what the function
+	 * should do.
+	 *
+	 * @param path   Path to the file
+	 * @param offset should a header line be skipped? Or even more lines?
+	 * @param f      a map from a split string to a NetworkInput.
+	 *
+	 * @return a {@link List} with objects that can be used with the Neural Network
+	 *
+	 * @throws IOException if the file associated with the path does not exist.
+	 */
 	public static List<NetworkInput> importFromInputPath(String path, int offset,
 		Function<String[], NetworkInput> f)
 		throws IOException {

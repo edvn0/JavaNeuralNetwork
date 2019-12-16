@@ -36,7 +36,6 @@ public class MNISTTester {
 				.setCostFunction(new CrossEntropyCostFunction())
 				.setEvaluationFunction(new ArgMaxEvaluationFunction())
 				.setOptimizer(new ADAM(0.001, 0.9, 0.999))
-				.setLearningRate(0.05)
 		);
 		System.out.println("Initialized network.");
 

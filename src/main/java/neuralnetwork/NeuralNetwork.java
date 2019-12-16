@@ -1,6 +1,5 @@
 package neuralnetwork;
 
-import errors.BackpropagationError;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -57,15 +56,15 @@ public class NeuralNetwork implements Serializable {
 	// The optimizer to be used
 	private Optimizer optimizer;
 
+	// Weights and biases of the network
 	private DenseMatrix[] weights;
 	private DenseMatrix[] biases;
+
+	// Deltas and gradients for back-propagation.
 	private DenseMatrix[] deltaWeights;
 	private DenseMatrix[] deltaBiases;
 	private DenseMatrix[] dW;
 	private DenseMatrix[] dB;
-	private DenseMatrix[] vDw;
-	private DenseMatrix[] sDw;
-	private DenseMatrix[] epsilon;
 
 	// Helper field to hold the total amount of layers
 	private final int totalLayers;
@@ -108,7 +107,7 @@ public class NeuralNetwork implements Serializable {
 
 		if (errorFunction instanceof CrossEntropyCostFunction
 			&& !(functions[functions.length - 1] instanceof SoftmaxFunction)) {
-			throw new BackpropagationError(
+			throw new IllegalArgumentException(
 				"To properly function, back-propagation needs the activation function of the last "
 					+ "layer to be differentiable with respect to the error function.");
 		}
