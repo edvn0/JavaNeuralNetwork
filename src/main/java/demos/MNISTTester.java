@@ -6,8 +6,8 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
-import math.activations.TanhFunction;
 import math.errors.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import neuralnetwork.NetworkInput;
@@ -30,8 +30,8 @@ public class MNISTTester {
 		NeuralNetwork network = new NeuralNetwork(
 			new NetworkBuilder(4)
 				.setFirstLayer(784)
-				.setLayer(100, new TanhFunction())
-				.setLayer(100, new TanhFunction())
+				.setLayer(35, new LeakyReluFunction(0.01))
+				.setLayer(35, new LeakyReluFunction(0.01))
 				.setLastLayer(10, new SoftmaxFunction())
 				.setCostFunction(new CrossEntropyCostFunction())
 				.setEvaluationFunction(new ArgMaxEvaluationFunction())
@@ -42,9 +42,11 @@ public class MNISTTester {
 		tMem = Runtime.getRuntime().totalMemory();
 		fMem = Runtime.getRuntime().freeMemory();
 		System.out.println();
-		System.out.println("Memory information:");
-		System.out.println(String.format("Total allocated memory in the JVM: %-10d", tMem));
-		System.out.println(String.format("Free memory in the JVM: %-10d", fMem));
+		System.out.println("Memory information prior to file reading:");
+		System.out
+			.printf("Total Memory: %.3fMB%n", tMem / (1024.0 * 1024.0));
+		System.out
+			.printf("Free Memory: %.3fMB", fMem / (1024.0 * 1024.0));
 		System.out.println();
 
 		final boolean existsMac = Files
@@ -71,9 +73,11 @@ public class MNISTTester {
 		tMem = Runtime.getRuntime().totalMemory();
 		fMem = Runtime.getRuntime().freeMemory();
 		System.out.println();
-		System.out.println("Memory information:");
-		System.out.println(String.format("Total allocated memory in the JVM: %-10d", tMem));
-		System.out.println(String.format("Free memory in the JVM: %-10d", fMem));
+		System.out.println("Memory information after reading files:");
+		System.out
+			.printf("Total Memory: %.3fMB\n", tMem / (1024.0 * 1024.0));
+		System.out
+			.printf("Free Memory: %.3fMB\n", fMem / (1024.0 * 1024.0));
 		System.out.println();
 
 		Collections.shuffle(imagesTrain);
@@ -87,6 +91,7 @@ public class MNISTTester {
 		System.out.println("Starting SGD...");
 		network.train(imagesTrain, imagesValidate, epochs, batch);
 		System.out.println("Finished SGD!");
+		System.out.println();
 		System.out.println("Evaluating the test data.");
 		double correct = network.evaluateTestData(imagesTest, 100);
 		System.out.println("Correct evaluation percentage: " + correct + ".");
@@ -99,7 +104,7 @@ public class MNISTTester {
 		return Files
 			.lines(Paths.get(path))
 			.map(e -> e.split(","))
-			.map(NetworkUtilities::apply)
+			.map(NetworkUtilities::MNISTApply)
 			.collect(Collectors.toList());
 	}
 }

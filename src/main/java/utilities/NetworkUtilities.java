@@ -59,7 +59,7 @@ public class NetworkUtilities {
 		return fromStream;
 	}
 
-	public static double[][] normalizeData(String[] split) {
+	private static double[][] normalizeData(String[] split) {
 		double[][] d = new double[1 + 28 * 28][1];
 		for (int i = 1; i < split.length; i++) {
 			if (Double.parseDouble(split[i]) > 1) {
@@ -72,7 +72,7 @@ public class NetworkUtilities {
 		return d;
 	}
 
-	public static NetworkInput constructDataFromDoubleArray(double[][] in) {
+	private static NetworkInput constructDataFromDoubleArray(double[][] in) {
 		double[][] corr = new double[10][1];
 		int index = (int) in[0][0];
 		corr[index][0] = 1;
@@ -91,7 +91,7 @@ public class NetworkUtilities {
 		return importFromInputStream(test, size, 0, f);
 	}
 
-	public static NetworkInput apply(String[] e) {
+	public static NetworkInput MNISTApply(String[] e) {
 		return constructDataFromDoubleArray(normalizeData(e));
 	}
 

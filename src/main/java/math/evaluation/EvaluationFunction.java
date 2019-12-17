@@ -6,6 +6,9 @@ import java.util.List;
 import neuralnetwork.NetworkInput;
 import org.ujmp.core.DenseMatrix;
 
+/**
+ * Evaluate a set of test data against some strategy, like thresholds or ArgMaxing.
+ */
 public interface EvaluationFunction extends Serializable {
 
 	/**

@@ -31,7 +31,7 @@ public interface Optimizer extends Serializable {
 	DenseMatrix[] changeBiases(DenseMatrix[] biases, DenseMatrix[] deltas);
 
 	/**
-	 * Some optimizers need to initialise some base case fields, here you do that.
+	 * Some optimizers need to initialise some base case parameters, here you do that.
 	 *
 	 * @param layers how many layers are in the network?
 	 */

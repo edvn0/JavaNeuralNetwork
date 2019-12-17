@@ -3,6 +3,7 @@ package math.errors;
 import java.util.List;
 import neuralnetwork.NetworkInput;
 import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.calculation.Calculation.Ret;
 
 public class BinaryCrossEntropyCostFunction implements CostFunction {
 
@@ -11,26 +12,30 @@ public class BinaryCrossEntropyCostFunction implements CostFunction {
 	 */
 	private static final long serialVersionUID = -5304955386755460591L;
 
-	@Override
-	public double calculateCostFunction(final List<NetworkInput> tData) {
-		double total = 0;
-		for (NetworkInput s : tData) {
-			double[][] yHat = s.getData().toDoubleArray();
-			double[][] y = s.getLabel().toDoubleArray();
-
-			double temp = 0;
-			for (int i = 0; i < yHat.length; i++) {
-				double label = y[i][0];
-				double data = yHat[i][0];
-				temp += label * log2(data) + (1 - label) * log2(1 - data);
-			}
-			total += temp / yHat.length;
-		}
-		return (total * -1) / tData.size();
+	public BinaryCrossEntropyCostFunction() {
 	}
 
-	private double log2(final double v) {
-		return Math.log(v) / Math.log(2);
+	@Override
+	public double calculateCostFunction(final List<NetworkInput> tData) {
+
+		DenseMatrix onesData = DenseMatrix.Factory.ones(tData.get(0).getData().getRowCount(), 1);
+		DenseMatrix onesLabel = DenseMatrix.Factory.ones(tData.get(0).getLabel().getRowCount(), 1);
+
+		double total = 0;
+		for (NetworkInput s : tData) {
+
+			DenseMatrix label = s.getLabel();
+			DenseMatrix data = s.getData();
+
+			DenseMatrix log2Data = (DenseMatrix) label.times(data.log2(Ret.NEW));
+			DenseMatrix onesMinusLabel = (DenseMatrix) onesLabel.minus(label);
+			DenseMatrix onesMinusData = (DenseMatrix) onesData.minus(data);
+			DenseMatrix partTwo = (DenseMatrix) onesMinusLabel.times(onesMinusData.log2(Ret.NEW));
+
+			DenseMatrix out = (DenseMatrix) log2Data.plus(partTwo);
+			total += out.doubleValue() / data.getRowCount();
+		}
+		return (total * -1) / tData.size();
 	}
 
 	@Override

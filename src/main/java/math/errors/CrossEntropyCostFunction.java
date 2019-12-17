@@ -16,6 +16,7 @@ public class CrossEntropyCostFunction implements CostFunction {
 
 	}
 
+	@Override
 	public double calculateCostFunction(final List<NetworkInput> tData) {
 		double sum = 0;
 
