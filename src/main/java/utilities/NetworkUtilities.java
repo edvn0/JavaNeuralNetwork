@@ -103,4 +103,51 @@ public class NetworkUtilities {
 		}
 		return d;
 	}
+
+
+	public static List<NetworkInput> importData(String path, DataImport dI, String splitOn)
+		throws IOException {
+
+		Stream<String> lines = Files.lines(Paths.get(path));
+
+		return lines.map(e -> e.split(splitOn)).map(dI.function)
+			.collect(Collectors.toList());
+	}
+
+
+	// TODO: Implement DataImport thingie
+	public static class DataImport {
+
+		private enum DataMethods {
+			MINMAX, Z_TRANSFORM, UNMODIFIED
+		}
+
+		private Function<String[], NetworkInput> function;
+		private int dataSize, labelSize;
+		private String method;
+
+		public DataImport() {
+
+		}
+
+		public DataImport setDataSize(int k) {
+			this.dataSize = k;
+			return this;
+		}
+
+		public DataImport setLabelSize(int k) {
+			this.labelSize = k;
+			return this;
+		}
+
+		public DataImport setImportMethod(String m) {
+			this.method = m;
+			return this;
+		}
+
+		public DataImport setMap(Function<String[], NetworkInput> e) {
+			this.function = e;
+			return this;
+		}
+	}
 }

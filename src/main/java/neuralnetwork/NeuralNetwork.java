@@ -176,7 +176,7 @@ public class NeuralNetwork implements Serializable {
 	 * @param input a {@link NetworkInput} object to be trained on.
 	 */
 	public void train(final NetworkInput input) {
-		calculateBatch(Collections.singletonList(input));
+		evaluateTrainingExample(Collections.singletonList(input));
 		learnFromDeltas();
 	}
 
@@ -184,7 +184,7 @@ public class NeuralNetwork implements Serializable {
 	 * Back-propagates a data set and normalizes the deltas against the size of the batch to be used
 	 * in an optimizer.
 	 */
-	private void calculateBatch(final List<NetworkInput> subList) {
+	private void evaluateTrainingExample(final List<NetworkInput> subList) {
 		final int size = subList.size();
 
 		for (final NetworkInput data : subList) {
@@ -193,13 +193,16 @@ public class NeuralNetwork implements Serializable {
 			final DenseMatrix[] deltaW = deltas.get(1);
 
 			for (int j = 0; j < this.totalLayers - 1; j++) {
-				dW[j] = (DenseMatrix) dW[j].plus(deltaW[j].times(1d / size));
-				dB[j] = (DenseMatrix) dB[j].plus(deltaB[j].times(1d / size));
+				this.dW[j] = (DenseMatrix) this.dW[j].plus(deltaW[j].times(1d / size));
+				this.dB[j] = (DenseMatrix) this.dB[j].plus(deltaB[j].times(1d / size));
 			}
 		}
 	}
 
-	private void calculateBatch(final NetworkInput ni) {
+	/**
+	 * Evaluates one example for multi threaded gradient descent.
+	 */
+	private void evaluateTrainingExample(final NetworkInput ni) {
 		final List<DenseMatrix[]> deltas = backPropagate(ni);
 		final DenseMatrix[] deltaB = deltas.get(0);
 		final DenseMatrix[] deltaW = deltas.get(1);
@@ -339,7 +342,8 @@ public class NeuralNetwork implements Serializable {
 		// How many times will we decrease the learning rate?
 		List<List<NetworkInput>> split = NetworkUtilities.splitData(training, batchSize);
 
-		// Feed forward the test data
+		// Feed forward the validation data prior to the batch descent
+		// to establish
 		final List<NetworkInput> ffD = this.feedForwardData(validation);
 		// Evaluate prediction with the interface EvaluationFunction.
 		int correct = this.evaluationFunction.evaluatePrediction(ffD)
@@ -359,14 +363,16 @@ public class NeuralNetwork implements Serializable {
 
 			t1 = System.nanoTime();
 			for (int k = 0; k <= training.size() / batchSize; k++) {
-				getBatch(k, training, batchSize).parallelStream().forEach(this::calculateBatch);
+				getBatch(k, training, batchSize).parallelStream()
+					.forEach(this::evaluateTrainingExample);
 				learnFromDeltas();
 			}
 			t2 = System.nanoTime();
+
 			/* TODO: Keeping this here to show to myself what is
 			     "correct"; this parallelStreaming thing, I do not trust it.
 			for (List<NetworkInput> in : split) {
-				calculateBatch(in);
+				evaluateTrainingExample(in);
 				learnFromDeltas();
 			}*/
 
@@ -445,6 +451,8 @@ public class NeuralNetwork implements Serializable {
 		final String loss = use + "LossToEpochPlot";
 		final String correct = use + "CorrectToEpochPlot";
 		final String calc = use + "BenchmarkTimingPlot";
+
+		System.out.println(use);
 
 		String formattedDate;
 		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.ENGLISH);
