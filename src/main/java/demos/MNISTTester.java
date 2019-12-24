@@ -53,6 +53,8 @@ public class MNISTTester {
 			.exists(Paths.get("/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv"));
 		final boolean existsVM = Files
 			.exists(Paths.get("/home/edwin98carlsson/mnist-in-csv/mnist_train.csv"));
+		final boolean existsWindows;/*Files
+			.exists(Paths.get("/home/edwin98carlsson/mnist-in-csv/mnist_train.csv"))*/
 
 		String base = "";
 		String pathTrain = null;
