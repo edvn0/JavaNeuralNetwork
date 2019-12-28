@@ -25,7 +25,10 @@ public class MNISTTester {
 		long tMem, fMem;
 		final int epochs = Integer.parseInt(args[0]);
 		final int batch = Integer.parseInt(args[1]);
-		final double learningRate = Double.parseDouble(args[2]);
+
+		if (args[2] != null) {
+			final double learningRate = Double.parseDouble(args[2]);
+		}
 
 		NeuralNetwork network = new NeuralNetwork(
 			new NetworkBuilder(4)
@@ -97,7 +100,7 @@ public class MNISTTester {
 		System.out.println("Evaluating the test data.");
 		double correct = network.evaluateTestData(imagesTest, 100);
 		System.out.println("Correct evaluation percentage: " + correct + ".");
-		System.out.println("Writing charts and serialisation.");
+		System.out.println("Writing charts. Serialising.");
 		network.outputChart(base);
 		network.writeObject(base);
 	}

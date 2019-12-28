@@ -29,7 +29,8 @@ public class ADAM implements Optimizer {
 	@NotNull
 	private DenseMatrix[] getAdamDeltas(final DenseMatrix[] inParams,
 		final DenseMatrix[] paramDeltas,
-		final DenseMatrix[] M, final DenseMatrix[] N) {
+		final DenseMatrix[] M,
+		final DenseMatrix[] N) {
 		DenseMatrix[] newOut = new DenseMatrix[inParams.length];
 		for (int i = 0; i < inParams.length; i++) {
 			int index = i + 1;

@@ -41,12 +41,4 @@ public class SigmoidFunction implements ActivationFunction {
 	public String getName() {
 		return NAME;
 	}
-
-	@Override
-	public String toString() {
-		final StringBuilder sb = new StringBuilder("SigmoidFunction{");
-		sb.append("name='").append(getName()).append('\'');
-		sb.append('}');
-		return sb.toString();
-	}
 }

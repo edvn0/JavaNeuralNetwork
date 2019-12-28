@@ -322,7 +322,7 @@ public class NeuralNetwork implements Serializable {
 			sum += evaluationFunction.evaluatePrediction(test).intValue() / s;
 		}
 
-		return sum;
+		return sum / size;
 	}
 
 	/**
@@ -353,13 +353,13 @@ public class NeuralNetwork implements Serializable {
 
 		final ProgressBar bar = new ProgressBar("Backpropagation", epochs);
 		for (int i = 0; i < epochs; i++) {
+			long t1, t2;
 			// Randomize training sample.
 			// TODO: is this necessary????
 			Collections.shuffle(split);
 			split.forEach(Collections::shuffle);
 
 			// Calculates a batch of training data and update the deltas.
-			long t1, t2;
 
 			t1 = System.nanoTime();
 			for (int k = 0; k <= training.size() / batchSize; k++) {
@@ -368,13 +368,6 @@ public class NeuralNetwork implements Serializable {
 				learnFromDeltas();
 			}
 			t2 = System.nanoTime();
-
-			/* TODO: Keeping this here to show to myself what is
-			     "correct"; this parallelStreaming thing, I do not trust it.
-			for (List<NetworkInput> in : split) {
-				evaluateTrainingExample(in);
-				learnFromDeltas();
-			}*/
 
 			// Feed forward the test data
 			final List<NetworkInput> feedForwardData = this.feedForwardData(validation);
@@ -443,7 +436,8 @@ public class NeuralNetwork implements Serializable {
 			correctValues);
 
 		List<Double> copy = xValues.subList(1, xValues.size());
-		final XYChart calcTimeToEpoch = generateChart("Benchmark time/Epoch", "Epoch", "Time",
+		final XYChart calcTimeToEpoch = generateChart(
+			"Benchmark time/Epoch", "Epoch", "Time",
 			"time(x)", copy,
 			calculationTimes);
 
