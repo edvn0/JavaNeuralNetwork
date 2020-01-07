@@ -43,11 +43,10 @@ public class IRISTester {
 		List<NetworkInput> validation = fullDataSet.subList(110, 130);
 		List<NetworkInput> testing = fullDataSet.subList(130, 150);
 
-		network.train(training,
+		network.trainWithMetrics(training,
 			validation,
 			10_000,
-			1);
+			1, true, "/Users/edwincarlsson/Downloads");
 		System.out.println(network.evaluateTestData(testing, 1000));
-		network.outputChart("/Users/edwincarlsson/Downloads");
 	}
 }

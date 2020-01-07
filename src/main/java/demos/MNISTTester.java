@@ -94,14 +94,13 @@ public class MNISTTester {
 		imagesTest.addAll(imagesValidate.subList(0, (int) (imagesValidate.size() * 0.1)));
 
 		System.out.println("Starting SGD...");
-		network.train(imagesTrain, imagesValidate, epochs, batch);
+		network.trainWithMetrics(imagesTrain, imagesValidate, epochs, batch, true, base);
 		System.out.println("Finished SGD!");
 		System.out.println();
 		System.out.println("Evaluating the test data.");
 		double correct = network.evaluateTestData(imagesTest, 100);
 		System.out.println("Correct evaluation percentage: " + correct + ".");
 		System.out.println("Writing charts. Serialising.");
-		network.outputChart(base);
 		network.writeObject(base);
 	}
 

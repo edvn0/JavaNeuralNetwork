@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 import math.activations.ActivationFunction;
 import math.activations.LinearFunction;
@@ -26,10 +25,6 @@ import me.tongfei.progressbar.ProgressBar;
 import optimizers.Optimizer;
 import optimizers.StochasticGradientDescent;
 import org.jetbrains.annotations.NotNull;
-import org.knowm.xchart.BitmapEncoder;
-import org.knowm.xchart.BitmapEncoder.BitmapFormat;
-import org.knowm.xchart.QuickChart;
-import org.knowm.xchart.XYChart;
 import org.ujmp.core.DenseMatrix;
 import org.ujmp.core.Matrix;
 import org.ujmp.core.interfaces.Clearable;
@@ -67,11 +62,7 @@ public class NeuralNetwork implements Serializable {
 	private int[] sizes;
 
 	// Members which supply functionality to the plots.
-	private static transient final ArrayList<Double> xValues = new ArrayList<>();
-	private static transient final ArrayList<Double> lossValues = new ArrayList<>();
-	private static transient final ArrayList<Double> correctValues = new ArrayList<>();
-	private static transient final ArrayList<Double> calculationTimes = new ArrayList<>();
-
+	private transient NetworkMetrics metrics;
 
 	/**
 	 * Create a Neural Network with a learning rate, all the activation functions for all layers,
@@ -86,6 +77,7 @@ public class NeuralNetwork implements Serializable {
 	 * @param eval          the evaluation function to compare the network to the data's labels
 	 * @param sizes         the table to initialize layers and weights.
 	 */
+	@Deprecated
 	public NeuralNetwork(final double learning, final ActivationFunction[] functions,
 		final CostFunction errorFunction,
 		final EvaluationFunction eval, final int[] sizes) {
@@ -164,10 +156,6 @@ public class NeuralNetwork implements Serializable {
 
 	public double xavierInitialization(final int prev) {
 		return ThreadLocalRandom.current().nextGaussian() * (Math.sqrt(2) / Math.sqrt(prev));
-	}
-
-	private int getTotalLayers() {
-		return this.totalLayers;
 	}
 
 	/**
@@ -259,9 +247,16 @@ public class NeuralNetwork implements Serializable {
 		return totalDeltas;
 	}
 
+	/**
+	 * Feed forward inside the back propagation, mutates the actives list.
+	 *
+	 * @param starter Input matrix
+	 * @param actives activations list
+	 */
 	private void feedForward(final DenseMatrix starter,
 		final List<DenseMatrix> actives) {
 		DenseMatrix toPredict = starter;
+
 		actives.add(toPredict);
 		for (int i = 0; i < getTotalLayers() - 1; i++) {
 			final DenseMatrix x =
@@ -339,25 +334,106 @@ public class NeuralNetwork implements Serializable {
 	public void train(@NotNull final List<NetworkInput> training,
 		@NotNull final List<NetworkInput> validation, final int epochs, final int batchSize) {
 
+		List<List<NetworkInput>> split = NetworkUtilities.splitData(training, batchSize);
+		for (int i = 0; i < epochs; i++) {
+			// Randomize training sample.
+			Collections.shuffle(split);
+			for (List<NetworkInput> networkInputs : split) {
+				Collections.shuffle(networkInputs);
+			}
+			// Calculates a batch of training data and update the deltas.
+			for (int k = 0; k <= training.size() / batchSize; k++) {
+				getBatch(k, training, batchSize)
+					.parallelStream()
+					.forEach(this::evaluateTrainingExample);
+
+				learnFromDeltas();
+			}
+
+			if (i % 10 == 0) {
+				List<NetworkInput> l = this.feedForwardData(validation);
+				double loss = this.costFunction.calculateCostFunction(l);
+				int correct = this.evaluationFunction.evaluatePrediction(l).intValue();
+				System.out.printf(
+					"Epoch %d: Loss value of %f\n%d examples were classified correctly.\n\n",
+					i, loss, correct);
+			}
+		}
+	}
+
+
+	/**
+	 * Trains this network on training data, and validates on validation data. Uses a {@link
+	 * Optimizer} to optimize the gradient descent.
+	 *
+	 * Displays a progress bar!
+	 *
+	 * @param training  a Collections object with {@link NetworkInput} objects,
+	 *                  NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
+	 * @param epochs    how many iterations are we doing the descent for
+	 * @param batchSize how big is the batch size, typically 32. See https://stats.stackexchange.com/q/326663
+	 */
+	public void trainVerbose(@NotNull final List<NetworkInput> training,
+		final int epochs, final int batchSize) {
+		System.out.println("Started stochastic gradient descent, verbose mode on.");
+		// How many times will we decrease the learning rate?
+		List<List<NetworkInput>> split = NetworkUtilities.splitData(training, batchSize);
+		ProgressBar bar = new ProgressBar("Backpropagation", epochs);
+		for (int i = 0; i < epochs; i++) {
+			// Randomize training sample.
+			// TODO: is this necessary????
+			Collections.shuffle(split);
+			for (List<NetworkInput> networkInputs : split) {
+				Collections.shuffle(networkInputs);
+			}
+
+			// Calculates a batch of training data and update the deltas.
+			for (int k = 0; k <= training.size() / batchSize; k++) {
+				getBatch(k, training, batchSize).parallelStream()
+					.forEach(this::evaluateTrainingExample);
+				learnFromDeltas();
+			}
+			bar.step();
+		}
+		bar.close();
+	}
+
+	/**
+	 * Trains this network on training data, and validates on validation data. Uses a {@link
+	 * Optimizer} to optimize the gradient descent.
+	 *
+	 * @param training   a Collections object with {@link NetworkInput} objects,
+	 *                   NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
+	 * @param validation a Collections object with {@link NetworkInput} objects,
+	 *                   NetworkInput.getData() is the data, NetworkInput.getLabel() is the label.
+	 * @param epochs     how many iterations are we doing the descent for
+	 * @param batchSize  how big is the batch size, typically 32. See https://stats.stackexchange.com/q/326663
+	 */
+	public void trainWithMetrics(@NotNull final List<NetworkInput> training,
+		@NotNull final List<NetworkInput> validation,
+		final int epochs, final int batchSize, boolean print, String path) {
+
+		long t1, t2;
+		metrics = new NetworkMetrics();
+
 		// How many times will we decrease the learning rate?
 		List<List<NetworkInput>> split = NetworkUtilities.splitData(training, batchSize);
 
 		// Feed forward the validation data prior to the batch descent
-		// to establish
+		// to establish a ground truth value
 		final List<NetworkInput> ffD = this.feedForwardData(validation);
 		// Evaluate prediction with the interface EvaluationFunction.
 		int correct = this.evaluationFunction.evaluatePrediction(ffD)
 			.intValue();
 		double loss = this.costFunction.calculateCostFunction(ffD);
-		addPlotData(0, correct, loss);
+		metrics.addPlotData(0, correct, loss);
 
-		final ProgressBar bar = new ProgressBar("Backpropagation", epochs);
 		for (int i = 0; i < epochs; i++) {
-			long t1, t2;
 			// Randomize training sample.
-			// TODO: is this necessary????
 			Collections.shuffle(split);
-			split.forEach(Collections::shuffle);
+			for (List<NetworkInput> networkInputs : split) {
+				Collections.shuffle(networkInputs);
+			}
 
 			// Calculates a batch of training data and update the deltas.
 
@@ -380,12 +456,19 @@ public class NeuralNetwork implements Serializable {
 
 			// Add the plotting data, x, y_1, y_2 to the global
 			// lists of xValues, correctValues, lossValues.
-			addPlotData((i + 1), correct, loss, (t2 - t1));
-			bar.step();
+			metrics.addPlotData(i + 1, (double) correct, loss, (double) (t2 - t1));
 		}
-		bar.close();
-	}
 
+		System.out.println("Outputting charts into " + path);
+		if (print) {
+			try {
+				metrics.present(path);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Charts outputted.");
+	}
 
 	private List<NetworkInput> getBatch(final int k, final List<NetworkInput> training,
 		int batchSize) {
@@ -394,78 +477,13 @@ public class NeuralNetwork implements Serializable {
 		return Collections.unmodifiableList(training.subList(fromIx, toIx));
 	}
 
+	private int getTotalLayers() {
+		return this.totalLayers;
+	}
+
 	// -------------------------------------------------------------
 	// HERE STARTS AUXILIARIES, I/O for Plots, and for serialisation.
 	// -------------------------------------------------------------
-
-	/**
-	 * Adds plotting data to global lists.
-	 *
-	 * @param i       the epoch
-	 * @param correct the validation correctness for this epoch
-	 * @param loss    the loss function for this epoch
-	 * @param time    the time to calculate one epoch
-	 */
-	private void addPlotData(final double i, final double correct, final double loss,
-		final long time) {
-		xValues.add(i);
-		lossValues.add(loss);
-		correctValues.add(correct);
-		calculationTimes.add((double) TimeUnit.NANOSECONDS.toMillis(time));
-	}
-
-	private void addPlotData(final int i, final int correct, final double loss) {
-		xValues.add((double) i);
-		lossValues.add(loss);
-		correctValues.add((double) correct);
-	}
-
-	/**
-	 * Prints the networks performance in terms of loss and correct identification to a path.
-	 * Example usage: "Users/{name}/Programming/DeepLearning/NN/Output/".
-	 *
-	 * @param basePath base path to image root.
-	 */
-	public void outputChart(final String basePath) {
-
-		final XYChart lossToEpoch = generateChart("Loss/Epoch", "Epoch", "Loss", "loss(x)", xValues,
-			lossValues);
-
-		final XYChart correctToEpoch = generateChart("Correct/Epoch", "Epoch", "Correct",
-			"correct(x)", xValues,
-			correctValues);
-
-		List<Double> copy = xValues.subList(1, xValues.size());
-		final XYChart calcTimeToEpoch = generateChart(
-			"Benchmark time/Epoch", "Epoch", "Time",
-			"time(x)", copy,
-			calculationTimes);
-
-		final String use = basePath.endsWith("/") ? basePath : basePath + "/";
-		final String loss = use + "LossToEpochPlot";
-		final String correct = use + "CorrectToEpochPlot";
-		final String calc = use + "BenchmarkTimingPlot";
-
-		System.out.println(use);
-
-		String formattedDate;
-		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.ENGLISH);
-		formattedDate = sdf.format(new Date());
-
-		final String now = formattedDate;
-
-		final String nowLoss = loss + "_" + now;
-		final String nowCorr = correct + "_" + now;
-		final String nowCalc = calc + "_" + now;
-
-		try {
-			BitmapEncoder.saveBitmapWithDPI(lossToEpoch, nowLoss, BitmapFormat.PNG, 300);
-			BitmapEncoder.saveBitmapWithDPI(correctToEpoch, nowCorr, BitmapFormat.PNG, 300);
-			BitmapEncoder.saveBitmapWithDPI(calcTimeToEpoch, nowCalc, BitmapFormat.PNG, 300);
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * Reads a .ser file or a path to a .ser file (with the extension excluded) to a NeuralNetwork
@@ -520,7 +538,8 @@ public class NeuralNetwork implements Serializable {
 			file); ObjectInputStream stream = new ObjectInputStream(fs)) {
 			neuralNetwork = (NeuralNetwork) stream.readObject();
 
-			System.out.println("Completed deserialization, see file: " + file.getAbsolutePath());
+			System.out
+				.println("Completed deserialization, see file: " + file.getAbsolutePath());
 		} catch (final ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -540,7 +559,8 @@ public class NeuralNetwork implements Serializable {
 		File file;
 		final String out = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
 		String formattedDate;
-		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.ENGLISH);
+		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss",
+			Locale.ENGLISH);
 		formattedDate = sdf.format(new Date());
 
 		try {
@@ -556,18 +576,6 @@ public class NeuralNetwork implements Serializable {
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private XYChart generateChart(final String heading, final String xLabel, final String yLabel,
-		final String function,
-		final List<Double> xValues, final List<Double> yValues) {
-		final XYChart chart = QuickChart
-			.getChart(heading, xLabel, yLabel, function, xValues, yValues);
-		chart.getStyler().setXAxisMin(0d);
-		chart.getStyler().setXAxisMax(Collections.max(xValues));
-		chart.getStyler().setYAxisMin(0d);
-		chart.getStyler().setYAxisMax(Collections.max(yValues));
-		return chart;
 	}
 
 	/**
@@ -632,7 +640,7 @@ public class NeuralNetwork implements Serializable {
 			return this;
 		}
 
-		public ActivationFunction[] getActivationFunctions() {
+		private ActivationFunction[] getActivationFunctions() {
 			ActivationFunction[] f;
 			f = new ActivationFunction[this.index];
 

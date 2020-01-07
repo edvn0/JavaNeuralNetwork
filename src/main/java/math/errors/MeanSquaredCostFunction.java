@@ -16,18 +16,10 @@ public class MeanSquaredCostFunction implements CostFunction {
 
 	@Override
 	public double calculateCostFunction(final List<NetworkInput> tData) {
-		double sum = 0;
 
-		for (NetworkInput networkInput : tData) {
-			DenseMatrix label = networkInput.getLabel();
-			DenseMatrix data = networkInput.getData();
-			DenseMatrix inner = (DenseMatrix) label.minus(data);
-			sum += inner.times(inner).doubleValue();
-		}
+		return tData.parallelStream().map(e -> e.getData().minus(e.getLabel()))
+			.map(e -> e.times(e).doubleValue()).reduce(Double::sum).get() / tData.size();
 
-		sum /= tData.size();
-
-		return sum;
 	}
 
 	@Override
