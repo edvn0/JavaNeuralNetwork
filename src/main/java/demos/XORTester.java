@@ -31,13 +31,15 @@ public class XORTester {
 	private NeuralNetwork network;
 	private String path;
 
+	private int imagesSize;
 	private int w, h;
 
-	XORTester(String path) {
+	XORTester(String path, int size) {
 		this.path = path;
+		this.imagesSize = size;
 		w = 600;
 		h = 600;
-		images = new BufferedImage[50];
+		images = new BufferedImage[imagesSize];
 
 		data = new ArrayList<>();
 		SecureRandom r = new SecureRandom();
@@ -64,8 +66,6 @@ public class XORTester {
 		//.setOptimizer(new ADAM(0.001, 0.999, 0.9)));
 
 		network.train(data.subList(0, 1000), data.subList(1000, 2000), 70, 64);
-
-		System.out.println(network.predict(toInputMatrix(1, 1)));
 	}
 
 
@@ -75,9 +75,10 @@ public class XORTester {
 		}
 		int cols = w / in;
 		int rows = h / in;
-		for (int l = 0; l < 50; l++) {
+		for (int l = 0; l < imagesSize; l++) {
 			BufferedImage img = new BufferedImage(600, 600, BufferedImage.TYPE_INT_ARGB);
 			images[l] = img;
+			System.out.println("Image " + l);
 			for (int i = 0; i < cols; i++) {
 				for (int j = 0; j < rows; j++) {
 					double col = (double) i / cols;
@@ -107,6 +108,6 @@ public class XORTester {
 
 
 	public static void main(String[] args) throws IOException {
-		new XORTester("/Users/edwincarlsson/Downloads/XORImages").run(1);
+		new XORTester("/Users/edwincarlsson/Downloads/XORImages", 3).run(1);
 	}
 }

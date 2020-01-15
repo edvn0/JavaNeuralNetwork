@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import neuralnetwork.NetworkInput;
-import org.ujmp.core.DenseMatrix;
 
 /**
  * Evaluate a set of test data against some strategy, like thresholds or ArgMaxing.
@@ -18,7 +17,7 @@ public interface EvaluationFunction extends Serializable {
 	 *
 	 * @return a matrix representing the correct score.
 	 */
-	DenseMatrix evaluatePrediction(List<NetworkInput> toEvaluate);
+	double evaluatePrediction(List<NetworkInput> toEvaluate);
 
 	/**
 	 * Evaluate a single training example
@@ -27,7 +26,7 @@ public interface EvaluationFunction extends Serializable {
 	 *
 	 * @return a matrix representing the correct score.
 	 */
-	default DenseMatrix evaluateSingle(NetworkInput toEvaluate) {
+	default double evaluateSingle(NetworkInput toEvaluate) {
 		return evaluatePrediction(Collections.singletonList(toEvaluate));
 	}
 

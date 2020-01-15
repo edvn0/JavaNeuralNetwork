@@ -3,7 +3,6 @@ package math.evaluation;
 import java.util.List;
 import neuralnetwork.NetworkInput;
 import org.ujmp.core.DenseMatrix;
-import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
 
 public class ArgMaxEvaluationFunction implements EvaluationFunction {
@@ -20,7 +19,7 @@ public class ArgMaxEvaluationFunction implements EvaluationFunction {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DenseMatrix evaluatePrediction(List<NetworkInput> toEvaluate) {
+	public double evaluatePrediction(List<NetworkInput> toEvaluate) {
 		int correct = 0;
 		for (NetworkInput networkInput : toEvaluate) {
 			// data[i] = {data, correctLabels}
@@ -33,7 +32,7 @@ public class ArgMaxEvaluationFunction implements EvaluationFunction {
 			}
 
 		}
-		return Matrix.Factory.importFromArray(new int[][]{{correct}});
+		return (double) correct / toEvaluate.size();
 	}
 
 }

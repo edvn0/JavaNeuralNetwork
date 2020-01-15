@@ -38,7 +38,7 @@ public class NetworkMetrics {
 		xValues.add((double) i);
 		correctValues.add(correct);
 		lossValues.add(loss);
-		calculationTimes.add(time);
+		calculationTimes.add(time * 10E-6);
 	}
 
 	/**
@@ -48,9 +48,9 @@ public class NetworkMetrics {
 	 * @param correct accuracy on validation
 	 * @param loss    loss on validation
 	 */
-	protected void addPlotData(final int i, final int correct, final double loss) {
+	protected void addPlotData(final int i, final double correct, final double loss) {
 		xValues.add((double) i);
-		correctValues.add((double) correct);
+		correctValues.add(correct);
 		lossValues.add(loss);
 	}
 
@@ -96,7 +96,13 @@ public class NetworkMetrics {
 
 	private void chartForLoss(String out) throws IOException {
 		BitmapEncoder.saveBitmapWithDPI(
-			generateChart("Loss per Epoch", "Epoch", "Loss", "loss(x)", xValues, lossValues),
+			generateChart("Loss per Epoch", "Epoch", "Loss", "loss(x)",
+				xValues,
+				lossValues,
+				0,
+				Collections.max(xValues),
+				0,
+				Collections.max(lossValues)),
 			createChartPathFromBasePath(out, "LossToEpochPlot") + "_" + getNow(), BitmapFormat.PNG,
 			300);
 	}
@@ -104,7 +110,10 @@ public class NetworkMetrics {
 	private void chartForAccuracy(String out) throws IOException {
 		BitmapEncoder.saveBitmapWithDPI(
 			generateChart("Accuracy per Epoch", "Epoch", "Accuracy", "acc(x)", xValues,
-				correctValues),
+				correctValues,
+				0,
+				Collections.max(xValues),
+				0, 1),
 			createChartPathFromBasePath(out, "AccuracyToEpochPlot") + "_" + getNow(),
 			BitmapFormat.PNG, 300);
 
@@ -114,7 +123,8 @@ public class NetworkMetrics {
 		BitmapEncoder.saveBitmapWithDPI(
 			generateChart("Time measure per Epoch", "Epoch", "Time", "time(x)",
 				xValues.subList(1, xValues.size()),
-				calculationTimes),
+				calculationTimes, 0, Collections.max(xValues), 0,
+				Collections.max(calculationTimes)),
 			createChartPathFromBasePath(out, "TimeMeasureToEpochPlot") + "_" + getNow(),
 			BitmapFormat.PNG, 300);
 
@@ -153,13 +163,14 @@ public class NetworkMetrics {
 
 	private XYChart generateChart(final String heading, final String xLabel, final String yLabel,
 		final String function,
-		final List<Double> xValues, final List<Double> yValues) {
+		final List<Double> xValues, final List<Double> yValues, double minX, double maxX,
+		double minY, double maxY) {
 		final XYChart chart = QuickChart
 			.getChart(heading, xLabel, yLabel, function, xValues, yValues);
-		chart.getStyler().setXAxisMin(0d);
-		chart.getStyler().setXAxisMax(Collections.max(xValues));
-		chart.getStyler().setYAxisMin(0d);
-		chart.getStyler().setYAxisMax(Collections.max(yValues));
+		chart.getStyler().setXAxisMin(minX);
+		chart.getStyler().setXAxisMax(maxX);
+		chart.getStyler().setYAxisMin(minY);
+		chart.getStyler().setYAxisMax(maxY);
 		return chart;
 	}
 

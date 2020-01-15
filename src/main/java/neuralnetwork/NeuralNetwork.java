@@ -310,14 +310,11 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	public double evaluateTestData(final List<NetworkInput> imagesTest, int size) {
-		double sum = 0;
-		double s = imagesTest.size();
+		double avg = 0;
 		for (int i = 0; i < size; i++) {
-			final List<NetworkInput> test = this.feedForwardData(imagesTest);
-			sum += evaluationFunction.evaluatePrediction(test).intValue() / s;
+			avg += this.evaluationFunction.evaluatePrediction(imagesTest);
 		}
-
-		return sum / size;
+		return avg / size;
 	}
 
 	/**
@@ -353,9 +350,9 @@ public class NeuralNetwork implements Serializable {
 			if (i % 10 == 0) {
 				List<NetworkInput> l = this.feedForwardData(validation);
 				double loss = this.costFunction.calculateCostFunction(l);
-				int correct = this.evaluationFunction.evaluatePrediction(l).intValue();
+				double correct = this.evaluationFunction.evaluatePrediction(l);
 				System.out.printf(
-					"Epoch %d: Loss value of %f\n%d examples were classified correctly.\n\n",
+					"Epoch %d: Loss value of %f\n%f examples were classified correctly.\n\n",
 					i, loss, correct);
 			}
 		}
@@ -423,8 +420,7 @@ public class NeuralNetwork implements Serializable {
 		// to establish a ground truth value
 		final List<NetworkInput> ffD = this.feedForwardData(validation);
 		// Evaluate prediction with the interface EvaluationFunction.
-		int correct = this.evaluationFunction.evaluatePrediction(ffD)
-			.intValue();
+		double correct = this.evaluationFunction.evaluatePrediction(ffD);
 		double loss = this.costFunction.calculateCostFunction(ffD);
 		metrics.addPlotData(0, correct, loss);
 
@@ -449,14 +445,14 @@ public class NeuralNetwork implements Serializable {
 			final List<NetworkInput> feedForwardData = this.feedForwardData(validation);
 
 			// Evaluate prediction with the interface EvaluationFunction.
-			correct = this.evaluationFunction.evaluatePrediction(feedForwardData)
-				.intValue();
+			correct = this.evaluationFunction.evaluatePrediction(feedForwardData);
 			// Calculate loss with the interface CostFunction
 			loss = this.costFunction.calculateCostFunction(feedForwardData);
 
 			// Add the plotting data, x, y_1, y_2 to the global
 			// lists of xValues, correctValues, lossValues.
-			metrics.addPlotData(i + 1, (double) correct, loss, (double) (t2 - t1));
+			metrics.addPlotData(i + 1, correct, loss, (double) (t2 - t1));
+			System.out.println("Epoch " + (i + 1) + " completed.");
 		}
 
 		System.out.println("Outputting charts into " + path);

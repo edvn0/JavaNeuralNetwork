@@ -17,8 +17,12 @@ public class MeanSquaredCostFunction implements CostFunction {
 	@Override
 	public double calculateCostFunction(final List<NetworkInput> tData) {
 
-		return tData.parallelStream().map(e -> e.getData().minus(e.getLabel()))
-			.map(e -> e.times(e).doubleValue()).reduce(Double::sum).get() / tData.size();
+		return tData.parallelStream()
+			.map((NetworkInput e) -> e.getData().minus(e.getLabel()))
+			.map(e -> e.times(e).doubleValue())
+			.reduce(Double::sum)
+			.get()
+			/ tData.size();
 
 	}
 
