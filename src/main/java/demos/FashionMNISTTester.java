@@ -10,9 +10,9 @@ import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
 import math.errors.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
+import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NetworkInput;
 import neuralnetwork.NeuralNetwork;
-import neuralnetwork.NeuralNetwork.NetworkBuilder;
 import optimizers.ADAM;
 import utilities.NetworkUtilities;
 
@@ -25,8 +25,11 @@ public class FashionMNISTTester {
 		long tMem, fMem;
 
 		NeuralNetwork network = new NeuralNetwork(
-			new NetworkBuilder(4)
+			new NetworkBuilder(7)
 				.setFirstLayer(784)
+				.setLayer(35, new LeakyReluFunction(0.01))
+				.setLayer(35, new LeakyReluFunction(0.01))
+				.setLayer(35, new LeakyReluFunction(0.01))
 				.setLayer(35, new LeakyReluFunction(0.01))
 				.setLayer(35, new LeakyReluFunction(0.01))
 				.setLastLayer(10, new SoftmaxFunction())
@@ -34,6 +37,8 @@ public class FashionMNISTTester {
 				.setEvaluationFunction(new ArgMaxEvaluationFunction())
 				.setOptimizer(new ADAM(0.001, 0.9, 0.999))
 		);
+
+		network.display();
 		System.out.println("Initialized network.");
 
 		tMem = Runtime.getRuntime().totalMemory();
@@ -57,10 +62,14 @@ public class FashionMNISTTester {
 		String base = "";
 		String pathTrain = null;
 		String pathTest = null;
-		if (existsMac && !existsVM) {
+		if (existsMac) {
 			pathTrain = "/Users/edwincarlsson/Downloads/fashionmnist/fashion-mnist_train.csv";
 			pathTest = "/Users/edwincarlsson/Downloads/fashionmnist/fashion-mnist_test.csv";
 			base = "/Users/edwincarlsson/Downloads";
+		} else if (existsVM) {
+			pathTrain = "/home/edwin98carlsson/fashionmnist/fashion-mnist_train.csv";
+			pathTest = "/home/edwin98carlsson/fashionmnist/fashion-mnist_test.csv";
+			base = "/home/edwin98carlsson/";
 		}
 
 		imagesTrain = generateDataFromCSV(pathTrain);
@@ -85,7 +94,7 @@ public class FashionMNISTTester {
 		imagesTest.addAll(imagesValidate.subList(0, (int) (imagesValidate.size() * 0.1)));
 
 		System.out.println("Starting gradient descent...");
-		network.trainWithMetrics(imagesTrain, imagesValidate, 64, 64, true, base);
+		network.trainWithMetrics(imagesTrain, imagesValidate, 10, 128, true, base);
 		System.out.println("Finished gradient descent!");
 		System.out.println();
 		System.out.println("Evaluating the test data.");

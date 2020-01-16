@@ -40,16 +40,6 @@ public class SoftmaxFunction implements ActivationFunction {
 		return (DenseMatrix) Matrix.Factory.importFromArray(out).transpose();
 	}
 
-	private double max(double[][] data) {
-		double max = data[0][0];
-		for (int i = 1; i < data.length; i++) {
-			if (data[i][0] > max) {
-				max = data[i][0];
-			}
-		}
-		return max;
-	}
-
 	@Override
 	public DenseMatrix applyFunction(DenseMatrix input) {
 		return this.softMax(input);
@@ -74,13 +64,5 @@ public class SoftmaxFunction implements ActivationFunction {
 	@Override
 	public String getName() {
 		return "SOFTMAX";
-	}
-
-	@Override
-	public String toString() {
-		final StringBuilder sb = new StringBuilder("SoftmaxFunction{");
-		sb.append("name='").append(getName()).append('\'');
-		sb.append('}');
-		return sb.toString();
 	}
 }

@@ -32,16 +32,24 @@ public class ADAM implements Optimizer {
 		final DenseMatrix[] M,
 		final DenseMatrix[] N) {
 		DenseMatrix[] newOut = new DenseMatrix[inParams.length];
+
 		for (int i = 0; i < inParams.length; i++) {
 			int index = i + 1;
 			DenseMatrix mHat, vHat;
 			if (M[i] != null && N[i] != null) {
 				// m = beta_1 * m + (1 - beta_1) * g
 				// v = beta_2 * v + (1 - beta_2) * np.power(g, 2)
-				M[i] = (DenseMatrix) M[i].times(beta1)
-					.plus(paramDeltas[i].times((1 - beta1)));
-				N[i] = (DenseMatrix) N[i].times(beta2)
-					.plus(paramDeltas[i].times(paramDeltas[i]).times((1 - beta2)));
+				M[i] = (DenseMatrix)
+					M[i]
+						.times(beta1)
+						.plus(paramDeltas[i]
+							.times((1 - beta1)));
+				N[i] = (DenseMatrix)
+					N[i]
+						.times(beta2)
+						.plus(paramDeltas[i]
+							.times(paramDeltas[i])
+							.times((1 - beta2)));
 			} else {
 				M[i] = (DenseMatrix) paramDeltas[i].times((1 - beta1));
 				N[i] = (DenseMatrix) paramDeltas[i].times(paramDeltas[i]).times((1 - beta2));

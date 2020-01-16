@@ -10,9 +10,9 @@ import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
 import math.errors.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
+import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NetworkInput;
 import neuralnetwork.NeuralNetwork;
-import neuralnetwork.NeuralNetwork.NetworkBuilder;
 import optimizers.ADAM;
 import utilities.NetworkUtilities;
 

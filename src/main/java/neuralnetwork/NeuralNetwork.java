@@ -16,12 +16,17 @@ import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 import math.activations.ActivationFunction;
-import math.activations.LinearFunction;
+import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
+import math.activations.TanhFunction;
 import math.errors.CostFunction;
 import math.errors.CrossEntropyCostFunction;
+import math.errors.MeanSquaredCostFunction;
+import math.evaluation.ArgMaxEvaluationFunction;
 import math.evaluation.EvaluationFunction;
+import math.evaluation.ThreshHoldEvaluationFunction;
 import me.tongfei.progressbar.ProgressBar;
+import optimizers.ADAM;
 import optimizers.Optimizer;
 import optimizers.StochasticGradientDescent;
 import org.jetbrains.annotations.NotNull;
@@ -60,9 +65,6 @@ public class NeuralNetwork implements Serializable {
 	private final int totalLayers;
 	// The structure of the network
 	private int[] sizes;
-
-	// Members which supply functionality to the plots.
-	private transient NetworkMetrics metrics;
 
 	/**
 	 * Create a Neural Network with a learning rate, all the activation functions for all layers,
@@ -122,6 +124,31 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	/**
+	 * Defaults a neural network with the structure [[in * 1, linear], [35*1, leaky Relu], [35*1,
+	 * leaky Relu], [out * 1, Tanh]] with ADAM as optimizer, MSE as error function, a threshhold
+	 * accuracy of |y-y'| < 0.01 (alternatively cross entropy for error function and arg max
+	 * evaluator)
+	 *
+	 * @param in         input data size
+	 * @param out        output data size
+	 * @param regOrClass classification or regression? I.e, threshold or cross entropy
+	 */
+	public NeuralNetwork(int in, int out, boolean regOrClass) {
+		this(new NetworkBuilder(in)
+			.setFirstLayer(out)
+			.setLayer(35, new LeakyReluFunction(0.01))
+			.setLayer(35, new LeakyReluFunction(0.01))
+			.setLastLayer(10, new TanhFunction())
+			.setCostFunction(
+				regOrClass ? new MeanSquaredCostFunction() : new CrossEntropyCostFunction())
+			.setEvaluationFunction(
+				regOrClass ? new ThreshHoldEvaluationFunction(0.01)
+					: new ArgMaxEvaluationFunction())
+			.setOptimizer(new ADAM(0.001, 0.9, 0.999))
+		);
+	}
+
+	/**
 	 * Returns matrices of zeroes, of similar dimensions as provided in input.
 	 *
 	 * @param toCopyFrom input matrices of RowCount_iXColumnCount_i
@@ -139,8 +166,8 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	private void initialiseWeights(final int[] sizes) {
-		this.weights = new DenseMatrix[getTotalLayers() - 1];
-		for (int i = 0; i < getTotalLayers() - 1; i++) {
+		this.weights = new DenseMatrix[this.totalLayers - 1];
+		for (int i = 0; i < this.totalLayers - 1; i++) {
 			final int size = sizes[i];
 			this.weights[i] = MatrixUtilities.map(Matrix.Factory.rand(sizes[i + 1], sizes[i]),
 				(e) -> this.xavierInitialization(size));
@@ -148,8 +175,8 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	private void initialiseBiases(final int[] sizes) {
-		this.biases = new DenseMatrix[getTotalLayers() - 1];
-		for (int i = 0; i < getTotalLayers() - 1; i++) {
+		this.biases = new DenseMatrix[this.totalLayers - 1];
+		for (int i = 0; i < this.totalLayers - 1; i++) {
 			this.biases[i] = (DenseMatrix) Matrix.Factory.zeros(sizes[i + 1], 1).plus(0.01);
 		}
 	}
@@ -258,7 +285,7 @@ public class NeuralNetwork implements Serializable {
 		DenseMatrix toPredict = starter;
 
 		actives.add(toPredict);
-		for (int i = 0; i < getTotalLayers() - 1; i++) {
+		for (int i = 0; i < this.totalLayers - 1; i++) {
 			final DenseMatrix x =
 				(DenseMatrix) this.weights[i]
 					.mtimes(toPredict)
@@ -311,8 +338,9 @@ public class NeuralNetwork implements Serializable {
 
 	public double evaluateTestData(final List<NetworkInput> imagesTest, int size) {
 		double avg = 0;
+		List<NetworkInput> d = this.feedForwardData(imagesTest);
 		for (int i = 0; i < size; i++) {
-			avg += this.evaluationFunction.evaluatePrediction(imagesTest);
+			avg += this.evaluationFunction.evaluatePrediction(d);
 		}
 		return avg / size;
 	}
@@ -411,7 +439,8 @@ public class NeuralNetwork implements Serializable {
 		final int epochs, final int batchSize, boolean print, String path) {
 
 		long t1, t2;
-		metrics = new NetworkMetrics();
+		// Members which supply functionality to the plots.
+		NetworkMetrics metrics = new NetworkMetrics();
 
 		// How many times will we decrease the learning rate?
 		List<List<NetworkInput>> split = NetworkUtilities.splitData(training, batchSize);
@@ -452,20 +481,35 @@ public class NeuralNetwork implements Serializable {
 			// Add the plotting data, x, y_1, y_2 to the global
 			// lists of xValues, correctValues, lossValues.
 			metrics.addPlotData(i + 1, correct, loss, (double) (t2 - t1));
-			System.out.println("Epoch " + (i + 1) + " completed.");
+
+			if ((i + 1) % (epochs / 8) == 0) {
+				System.out
+					.printf("An eight of the progress has been done.\n%d Epochs are finished.\n",
+						i);
+			}
 		}
 
-		System.out.println("Outputting charts into " + path);
 		if (print) {
+			System.out.println("Outputting charts into " + path);
 			try {
 				metrics.present(path);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			System.out.println("Charts outputted.");
 		}
-		System.out.println("Charts outputted.");
 	}
 
+	/**
+	 * A helper method to construct a batch of a List, "indexed" by the batch size. For example: 0
+	 * to 10, 10 to 20, 20 to 30, etc...
+	 *
+	 * @param k         index into the list.
+	 * @param training  the list.
+	 * @param batchSize the batch size.
+	 *
+	 * @return a slice of the list starting at k*batchSize.
+	 */
 	private List<NetworkInput> getBatch(final int k, final List<NetworkInput> training,
 		int batchSize) {
 		int fromIx = k * batchSize;
@@ -473,8 +517,31 @@ public class NeuralNetwork implements Serializable {
 		return Collections.unmodifiableList(training.subList(fromIx, toIx));
 	}
 
-	private int getTotalLayers() {
-		return this.totalLayers;
+	public void display() {
+		System.out
+			.println("======================================================================");
+		System.out.println("Network information and structure.");
+		System.out
+			.printf("Input nodes: [%d]; Output nodes: [%d]\n\n",
+				weightDimensions(0)[1],
+				weightDimensions(weights.length - 1)[0]);
+
+		for (int i = 0; i < weights.length; i++) {
+			int[] dims = weightDimensions(i);
+			System.out.printf("\t\tLayer %d : [%d X %d]\n", i, dims[0], dims[1]);
+			System.out.println("\t\tActivation function from this layer: " + functions[i]);
+			System.out.println();
+		}
+		System.out.println("The error function: " + this.costFunction);
+		System.out.println("The evaluation function: " + this.evaluationFunction);
+		System.out.println("The optimizer: " + this.optimizer);
+		System.out
+			.println("======================================================================");
+	}
+
+	private int[] weightDimensions(int i) {
+		return new int[]{Math.toIntExact(this.weights[i].getSize()[0]),
+			Math.toIntExact(this.weights[i].getSize()[1])};
 	}
 
 	// -------------------------------------------------------------
@@ -574,97 +641,4 @@ public class NeuralNetwork implements Serializable {
 		}
 	}
 
-	/**
-	 * A Builder for the Network.
-	 */
-	public static class NetworkBuilder {
-
-		private int[] structure;
-		private int index;
-		private List<ActivationFunction> functions;
-		private CostFunction costFunction;
-		private EvaluationFunction evaluationFunction;
-		private Optimizer optimizer;
-
-		public NetworkBuilder(int[] structure) {
-			this.structure = structure;
-			this.index = 0;
-			this.functions = new ArrayList<>();
-		}
-
-		public NetworkBuilder(int s) {
-			this.structure = new int[s];
-			this.index = 0;
-			this.functions = new ArrayList<>();
-		}
-
-		public NetworkBuilder setFirstLayer(final int i) {
-
-			structure[index] = i;
-			this.index++;
-
-			functions.add(new LinearFunction());
-			return this;
-		}
-
-		public NetworkBuilder setOptimizer(Optimizer o) {
-			this.optimizer = o;
-			return this;
-		}
-
-		public NetworkBuilder setLayer(final int i, final ActivationFunction f) {
-
-			structure[index] = i;
-			this.index++;
-			functions.add(f);
-			return this;
-		}
-
-		public NetworkBuilder setActivationFunction(ActivationFunction f) {
-			this.functions.add(f);
-			this.index++;
-			return this;
-		}
-
-		public NetworkBuilder setCostFunction(CostFunction k) {
-			this.costFunction = k;
-			return this;
-		}
-
-		public NetworkBuilder setEvaluationFunction(EvaluationFunction f) {
-			this.evaluationFunction = f;
-			return this;
-		}
-
-		private ActivationFunction[] getActivationFunctions() {
-			ActivationFunction[] f;
-			f = new ActivationFunction[this.index];
-
-			if (this.functions.size() == this.structure.length) {
-				// We have one too many functions, one associated with the "first layer"
-				// which in essence does not exist, we MNISTApply a linear function here.
-				// However, this is never calculated.
-				for (int i = 1; i < this.structure.length; i++) {
-					f[i] = this.functions.get(i);
-				}
-				// We do not care about this one, never gets evaluated.
-				f[0] = new LinearFunction();
-			} else if (this.functions.size() + 1 == this.structure.length) {
-				// We have supplied the builder with the correct amount of functions.
-				for (int i = 0; i < this.structure.length; i++) {
-					f[i] = this.functions.get(i);
-				}
-			} else {
-				throw new IllegalArgumentException("Not enough activation functions provided.");
-			}
-			return f;
-		}
-
-		public NetworkBuilder setLastLayer(final int i, final ActivationFunction f) {
-			this.structure[index] = i;
-			this.index++;
-			this.functions.add(f);
-			return this;
-		}
-	}
 }

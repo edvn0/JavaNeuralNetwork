@@ -8,7 +8,7 @@ Example:
 
 ```java
 NeuralNetwork network = new NeuralNetwork(
-	new NetworkBuilder(4)
+	new neuralnetwork.NetworkBuilder(4)
 		.setFirstLayer(784)
 		.setLayer(100, new ReluFunction())
 		.setLayer(100, new ReluFunction())

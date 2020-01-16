@@ -15,7 +15,7 @@ public interface EvaluationFunction extends Serializable {
 	 *
 	 * @param toEvaluate the data set to evaluate and compare to its label.
 	 *
-	 * @return a matrix representing the correct score.
+	 * @return a double representing the percentage correct score.
 	 */
 	double evaluatePrediction(List<NetworkInput> toEvaluate);
 
@@ -24,7 +24,7 @@ public interface EvaluationFunction extends Serializable {
 	 *
 	 * @param toEvaluate a single training / test / validation input.
 	 *
-	 * @return a matrix representing the correct score.
+	 * @return a double representing the percentage correct score.
 	 */
 	default double evaluateSingle(NetworkInput toEvaluate) {
 		return evaluatePrediction(Collections.singletonList(toEvaluate));

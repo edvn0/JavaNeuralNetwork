@@ -18,11 +18,21 @@ public class CrossEntropyCostFunction implements CostFunction {
 
 	@Override
 	public double calculateCostFunction(final List<NetworkInput> tData) {
-		return tData.parallelStream().map(e ->
-			e.getData().plus(1e-6).log(Ret.NEW)
-				.times(e.getLabel()).times(-1)
-				.getValueSum())
-			.reduce(Double::sum).get() / tData.size();
+		return tData
+			.parallelStream()
+			.map(e ->
+				e.getData()
+					.plus(1e-6)
+					.log(Ret.NEW)
+					.times(
+						e.getLabel()
+					)
+					.times(-1)
+					.getValueSum())
+			.reduce(Double::sum)
+			.get()
+			/
+			tData.size();
 	}
 
 	@Override

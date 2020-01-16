@@ -123,8 +123,7 @@ public class NetworkMetrics {
 		BitmapEncoder.saveBitmapWithDPI(
 			generateChart("Time measure per Epoch", "Epoch", "Time", "time(x)",
 				xValues.subList(1, xValues.size()),
-				calculationTimes, 0, Collections.max(xValues), 0,
-				Collections.max(calculationTimes)),
+				calculationTimes, 0, Collections.max(xValues), minTime(), maxTime()),
 			createChartPathFromBasePath(out, "TimeMeasureToEpochPlot") + "_" + getNow(),
 			BitmapFormat.PNG, 300);
 

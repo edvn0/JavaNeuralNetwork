@@ -41,11 +41,4 @@ public class ReluFunction implements ActivationFunction {
 		return NAME;
 	}
 
-	@Override
-	public String toString() {
-		final StringBuilder sb = new StringBuilder("ReluFunction{");
-		sb.append("name='").append(getName()).append('\'');
-		sb.append('}');
-		return sb.toString();
-	}
 }

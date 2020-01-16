@@ -42,11 +42,4 @@ public class TanhFunction implements ActivationFunction {
 		return NAME;
 	}
 
-	@Override
-	public String toString() {
-		final StringBuilder sb = new StringBuilder("TanhFunction{");
-		sb.append("name='").append(getName()).append('\'');
-		sb.append('}');
-		return sb.toString();
-	}
 }

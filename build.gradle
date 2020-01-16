@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.edwin.neural'
-version '5.1'
+version '5.2'
 
 sourceCompatibility = 1.8
 

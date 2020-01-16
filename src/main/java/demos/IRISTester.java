@@ -7,13 +7,13 @@ import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
 import math.errors.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
+import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NetworkInput;
 import neuralnetwork.NeuralNetwork;
-import neuralnetwork.NeuralNetwork.NetworkBuilder;
 import optimizers.ADAM;
 import utilities.NetworkUtilities;
-import utilities.NetworkUtilities.DataImport;
-import utilities.NetworkUtilities.DataImport.DataMethod;
+import utilities.data.DataImport;
+import utilities.data.DataImport.DataMethod;
 
 public class IRISTester {
 
@@ -45,7 +45,7 @@ public class IRISTester {
 
 		network.trainWithMetrics(training,
 			validation,
-			10_000,
+			70,
 			1, true, "/Users/edwincarlsson/Downloads");
 		System.out.println(network.evaluateTestData(testing, 1000));
 	}

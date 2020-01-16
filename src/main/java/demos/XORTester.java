@@ -13,9 +13,9 @@ import math.activations.SigmoidFunction;
 import math.activations.TanhFunction;
 import math.errors.MeanSquaredCostFunction;
 import math.evaluation.ThreshHoldEvaluationFunction;
+import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NetworkInput;
 import neuralnetwork.NeuralNetwork;
-import neuralnetwork.NeuralNetwork.NetworkBuilder;
 import optimizers.StochasticGradientDescent;
 import org.ujmp.core.DenseMatrix;
 
@@ -63,6 +63,8 @@ public class XORTester {
 				.setCostFunction(new MeanSquaredCostFunction())
 				.setEvaluationFunction(new ThreshHoldEvaluationFunction(0.025))
 				.setOptimizer(new StochasticGradientDescent(0.05)));
+
+		network.display();
 		//.setOptimizer(new ADAM(0.001, 0.999, 0.9)));
 
 		network.train(data.subList(0, 1000), data.subList(1000, 2000), 70, 64);
