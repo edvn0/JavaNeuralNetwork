@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
-import math.errors.CrossEntropyCostFunction;
+import math.error_functions.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NetworkInput;
@@ -23,54 +23,30 @@ public class MNISTTester {
 
 	public static void main(final String[] args) throws IOException {
 		long tMem, fMem;
+
+		if (args.length == 0)
+			throw new RuntimeException("Need to supply epochs, batches.");
+
 		final int epochs = Integer.parseInt(args[0]);
 		final int batch = Integer.parseInt(args[1]);
 
-		if (args[2] != null) {
-			final double learningRate = Double.parseDouble(args[2]);
-		}
-
-		NeuralNetwork network = new NeuralNetwork(
-			new NetworkBuilder(4)
-				.setFirstLayer(784)
-				.setLayer(35, new LeakyReluFunction(0.01))
-				.setLayer(35, new LeakyReluFunction(0.01))
-				.setLastLayer(10, new SoftmaxFunction())
-				.setCostFunction(new CrossEntropyCostFunction())
-				.setEvaluationFunction(new ArgMaxEvaluationFunction())
-				.setOptimizer(new ADAM(0.001, 0.9, 0.999))
-		);
+		NeuralNetwork network = NeuralNetwork.of(new NetworkBuilder(4).setFirstLayer(784)
+				.setLayer(35, new LeakyReluFunction(0.01)).setLayer(35, new LeakyReluFunction(0.01))
+				.setLastLayer(10, new SoftmaxFunction()).setCostFunction(new CrossEntropyCostFunction())
+				.setEvaluationFunction(new ArgMaxEvaluationFunction()).setOptimizer(new ADAM(0.001, 0.9, 0.999)));
 		System.out.println("Initialized network.");
 
 		tMem = Runtime.getRuntime().totalMemory();
 		fMem = Runtime.getRuntime().freeMemory();
 		System.out.println();
 		System.out.println("Memory information prior to file reading:");
-		System.out
-			.printf("Total Memory: %.3fMB%n", tMem / (1024.0 * 1024.0));
-		System.out
-			.printf("Free Memory: %.3fMB", fMem / (1024.0 * 1024.0));
+		System.out.printf("Total Memory: %.3fMB%n", tMem / (1024.0 * 1024.0));
+		System.out.printf("Free Memory: %.3fMB", fMem / (1024.0 * 1024.0));
 		System.out.println();
 
-		final boolean existsMac = Files
-			.exists(Paths.get("/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv"));
-		final boolean existsVM = Files
-			.exists(Paths.get("/home/edwin98carlsson/mnist-in-csv/mnist_train.csv"));
-		final boolean existsWindows;/*Files
-			.exists(Paths.get("/home/edwin98carlsson/mnist-in-csv/mnist_train.csv"))*/
-
-		String base = "";
-		String pathTrain = null;
-		String pathTest = null;
-		if (existsMac && !existsVM) {
-			pathTrain = "/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_train.csv";
-			pathTest = "/Users/edwincarlsson/Downloads/mnist-in-csv/mnist_test.csv";
-			base = "/Users/edwincarlsson/Downloads";
-		} else if (!existsMac && existsVM) {
-			pathTrain = "/home/edwin98carlsson/mnist-in-csv/mnist_train.csv";
-			pathTest = "/home/edwin98carlsson/mnist-in-csv/mnist_test.csv";
-			base = "/home/edwin98carlsson/";
-		}
+		String pathTest = "/Users/edwincarlsson/Downloads/mnist/mnist_test.csv";
+		String pathTrain = "/Users/edwincarlsson/Downloads/mnist/mnist_train.csv";
+		String base = "/Users/edwincarlsson/Downloads/mnist/";
 
 		imagesTrain = generateDataFromCSV(pathTrain);
 		imagesValidate = generateDataFromCSV(pathTest);
@@ -79,17 +55,14 @@ public class MNISTTester {
 		fMem = Runtime.getRuntime().freeMemory();
 		System.out.println();
 		System.out.println("Memory information after reading files:");
-		System.out
-			.printf("Total Memory: %.3fMB\n", tMem / (1024.0 * 1024.0));
-		System.out
-			.printf("Free Memory: %.3fMB\n", fMem / (1024.0 * 1024.0));
+		System.out.printf("Total Memory: %.3fMB\n", tMem / (1024.0 * 1024.0));
+		System.out.printf("Free Memory: %.3fMB\n", fMem / (1024.0 * 1024.0));
 		System.out.println();
 
 		Collections.shuffle(imagesTrain);
 		Collections.shuffle(imagesValidate);
 
-		final List<NetworkInput> imagesTest = imagesTrain
-			.subList(0, (int) (imagesTrain.size() * 0.1));
+		final List<NetworkInput> imagesTest = imagesTrain.subList(0, (int) (imagesTrain.size() * 0.1));
 
 		imagesTest.addAll(imagesValidate.subList(0, (int) (imagesValidate.size() * 0.1)));
 
@@ -104,11 +77,8 @@ public class MNISTTester {
 		network.writeObject(base);
 	}
 
-	private static List<NetworkInput> generateDataFromCSV(final String path) throws IOException {
-		return Files
-			.lines(Paths.get(path))
-			.map(e -> e.split(","))
-			.map(NetworkUtilities::MNISTApply)
-			.collect(Collectors.toList());
+	protected static List<NetworkInput> generateDataFromCSV(final String path) throws IOException {
+		return Files.lines(Paths.get(path)).map(e -> e.split(",")).map(NetworkUtilities::MNISTApply)
+				.collect(Collectors.toList());
 	}
 }

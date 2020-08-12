@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
-import math.errors.CrossEntropyCostFunction;
+import math.error_functions.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NetworkInput;

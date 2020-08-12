@@ -1,4 +1,4 @@
-package math.errors;
+package math.error_functions;
 
 import java.io.Serializable;
 import java.util.List;

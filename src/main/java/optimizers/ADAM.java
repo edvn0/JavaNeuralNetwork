@@ -26,7 +26,6 @@ public class ADAM implements Optimizer {
 		return getAdamDeltas(biases, deltas, this.biasM, this.biasN);
 	}
 
-	@NotNull
 	private DenseMatrix[] getAdamDeltas(final DenseMatrix[] inParams,
 		final DenseMatrix[] paramDeltas,
 		final DenseMatrix[] M,

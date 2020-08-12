@@ -11,7 +11,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import math.activations.SigmoidFunction;
 import math.activations.TanhFunction;
-import math.errors.MeanSquaredCostFunction;
+import math.error_functions.MeanSquaredCostFunction;
 import math.evaluation.ThreshHoldEvaluationFunction;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NetworkInput;

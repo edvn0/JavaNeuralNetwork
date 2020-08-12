@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import math.activations.ActivationFunction;
 import math.activations.LinearFunction;
-import math.errors.CostFunction;
+import math.error_functions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import optimizers.Optimizer;
 

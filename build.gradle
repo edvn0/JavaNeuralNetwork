@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id "com.github.johnrengelman.shadow" version "5.1.0"
+    id 'application'
 }
 
 group 'com.edwin.neural'
@@ -10,6 +11,12 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+}
+
+mainClassName = "demos.MNISTTester"
+
+run {
+    args = ["20","64"]
 }
 
 dependencies {

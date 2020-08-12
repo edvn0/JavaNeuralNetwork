@@ -5,6 +5,10 @@ import neuralnetwork.NetworkInput;
 import org.ujmp.core.DenseMatrix;
 import utilities.MatrixUtilities;
 
+/**
+ * Evaluation function which returns a correct value iff the argmax of the predicted data is the
+ * label
+ */
 public class ArgMaxEvaluationFunction implements EvaluationFunction {
 
 	/**

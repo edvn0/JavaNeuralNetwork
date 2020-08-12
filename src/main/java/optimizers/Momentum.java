@@ -26,7 +26,6 @@ public class Momentum implements Optimizer {
 		return getMomentumDeltas(biases, deltaBiases, lastDeltaBiases);
 	}
 
-	@NotNull
 	private DenseMatrix[] getMomentumDeltas(final DenseMatrix[] in, final DenseMatrix[] deltaIns,
 		final DenseMatrix[] lastDeltas) {
 		DenseMatrix[] newOut = new DenseMatrix[in.length];
