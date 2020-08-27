@@ -22,6 +22,11 @@ import utilities.data.DataImport;
 
 public class NetworkUtilities {
 
+	public static final Function<String[], NetworkInput> mnist = (e) -> {
+
+		return null;
+	};
+
 	/**
 	 * Maps a file input to {@link NetworkInput} objects to be used in the Neural
 	 * Network
@@ -44,15 +49,19 @@ public class NetworkUtilities {
 	 */
 	public static List<NetworkInput> importFromInputPath(String path, int offset, Function<String[], NetworkInput> f)
 			throws IOException {
-		return Files.lines(Paths.get(path)).skip(offset).map(line -> line.split(",")).map(f).collect(toList());
+		List<NetworkInput> output = new ArrayList<>();
+		try (var lines = Files.lines(Paths.get(path))) {
+			output = lines.skip(offset).map(line -> line.split(",")).map(f).collect(toList());
+		}
+		return output;
 	}
 
 	public static List<NetworkInput> importFromPath(String path, DataImport di) throws IOException {
-		return Files.lines(Paths.get(path)).map(e -> e.split(",")).map(di.function).collect(toList());
+		return NetworkUtilities.importFromInputPath(path, 0, di.function);
 	}
 
 	public static List<NetworkInput> importFromInputStream(final Stream<String> test, int size,
-			Function<String[], NetworkInput> f) throws IOException {
+			Function<String[], NetworkInput> f) {
 		return importFromInputStream(test, size, 0, f);
 	}
 
@@ -130,10 +139,9 @@ public class NetworkUtilities {
 	}
 
 	public static List<NetworkInput> importData(String path, DataImport dI, String splitOn) throws IOException {
-
-		Stream<String> lines = Files.lines(Paths.get(path));
-
-		return lines.map(e -> e.split(splitOn)).map(dI.function).collect(toList());
+		try (var lines = Files.lines(Paths.get(path))) {
+			return lines.map(e -> e.split(splitOn)).map(dI.function).collect(toList());
+		}
 	}
 
 }
