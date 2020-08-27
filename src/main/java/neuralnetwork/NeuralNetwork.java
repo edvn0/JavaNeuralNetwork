@@ -32,10 +32,13 @@ import me.tongfei.progressbar.ProgressBar;
 import optimizers.ADAM;
 import optimizers.Optimizer;
 import optimizers.StochasticGradientDescent;
+
+import org.apache.log4j.BasicConfigurator;
 import org.jetbrains.annotations.NotNull;
-import org.ujmp.core.DenseMatrix;
 import org.ujmp.core.Matrix;
 import org.ujmp.core.interfaces.Clearable;
+
+import lombok.extern.slf4j.Slf4j;
 import utilities.MatrixUtilities;
 import utilities.NetworkUtilities;
 
@@ -44,9 +47,11 @@ import utilities.NetworkUtilities;
  * artifical deep fully connected neural network. This implementation uses
  * matrices to solve the problem of learning and predicting on data.
  */
+@Slf4j
 public class NeuralNetwork implements Serializable {
 
 	private static final long serialVersionUID = 7008674899707436812L;
+	private static final String ERROR_MSG = "Something bad happened during deserialization";
 
 	// All activation functions for all layers
 	private final ActivationFunction[] functions;
@@ -57,13 +62,13 @@ public class NeuralNetwork implements Serializable {
 	// The optimizer to be used
 	private final Optimizer optimizer;
 	// Weights and biases of the network
-	private DenseMatrix[] weights;
-	private DenseMatrix[] biases;
+	private Matrix[] weights;
+	private Matrix[] biases;
 	// Deltas and gradients for back-propagation.
-	private DenseMatrix[] deltaWeights;
-	private DenseMatrix[] deltaBiases;
-	private DenseMatrix[] dW;
-	private DenseMatrix[] dB;
+	private Matrix[] deltaWeights;
+	private Matrix[] deltaBiases;
+	private Matrix[] dW;
+	private Matrix[] dB;
 	// Helper field to hold the total amount of layers
 	private final int totalLayers;
 	// The structure of the network
@@ -124,6 +129,8 @@ public class NeuralNetwork implements Serializable {
 		initialiseBiases(sizes);
 		this.deltaBiases = initializeMatrices(this.biases);
 		this.dB = initializeMatrices(this.biases);
+
+		BasicConfigurator.configure();
 	}
 
 	/**
@@ -154,8 +161,8 @@ public class NeuralNetwork implements Serializable {
 	 *
 	 * @return zero matrices with RowCount_iXColumnCount_i dimensions.
 	 */
-	private DenseMatrix[] initializeMatrices(final DenseMatrix[] toCopyFrom) {
-		final DenseMatrix[] deltas = new DenseMatrix[toCopyFrom.length];
+	private Matrix[] initializeMatrices(final Matrix[] toCopyFrom) {
+		final Matrix[] deltas = new Matrix[toCopyFrom.length];
 		for (int i = 0; i < deltas.length; i++) {
 			final int rows = (int) toCopyFrom[i].getRowCount();
 			final int cols = (int) toCopyFrom[i].getColumnCount();
@@ -165,7 +172,7 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	private void initialiseWeights(final int[] sizes) {
-		this.weights = new DenseMatrix[this.totalLayers - 1];
+		this.weights = new Matrix[this.totalLayers - 1];
 		for (int i = 0; i < this.totalLayers - 1; i++) {
 			final int size = sizes[i];
 			this.weights[i] = MatrixUtilities.map(Matrix.Factory.rand(sizes[i + 1], sizes[i]),
@@ -174,9 +181,9 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	private void initialiseBiases(final int[] sizes) {
-		this.biases = new DenseMatrix[this.totalLayers - 1];
+		this.biases = new Matrix[this.totalLayers - 1];
 		for (int i = 0; i < this.totalLayers - 1; i++) {
-			this.biases[i] = (DenseMatrix) Matrix.Factory.zeros(sizes[i + 1], 1).plus(0.01);
+			this.biases[i] = Matrix.Factory.zeros(sizes[i + 1], 1).plus(0.01);
 		}
 	}
 
@@ -202,32 +209,32 @@ public class NeuralNetwork implements Serializable {
 		final int size = subList.size();
 
 		for (final NetworkInput data : subList) {
-			final List<DenseMatrix[]> deltas = backPropagate(data);
-			final DenseMatrix[] deltaB = deltas.get(0);
-			final DenseMatrix[] deltaW = deltas.get(1);
+			final List<Matrix[]> deltas = backPropagate(data);
+			final Matrix[] deltaB = deltas.get(0);
+			final Matrix[] deltaW = deltas.get(1);
 
 			for (int j = 0; j < this.totalLayers - 1; j++) {
-				this.dW[j] = (DenseMatrix) this.dW[j].plus(deltaW[j].times(1d / size));
-				this.dB[j] = (DenseMatrix) this.dB[j].plus(deltaB[j].times(1d / size));
+				this.dW[j] = this.dW[j].plus(deltaW[j].times(1d / size));
+				this.dB[j] = this.dB[j].plus(deltaB[j].times(1d / size));
 			}
 		}
 	}
 
 	private void evaluateTrainingExample(Supplier<Stream<NetworkInput>> streamSupplier, int size) {
 		Stream<NetworkInput> stream = streamSupplier.get();
-		final DenseMatrix[] dBCopy = Arrays.copyOf(this.dB, this.dB.length);
-		final DenseMatrix[] dWCopy = Arrays.copyOf(this.dW, this.dW.length);
+		final Matrix[] dBCopy = Arrays.copyOf(this.dB, this.dB.length);
+		final Matrix[] dWCopy = Arrays.copyOf(this.dW, this.dW.length);
 		stream.forEach(ni -> {
-			final List<DenseMatrix[]> deltas = this.backPropagate(ni);
-			final DenseMatrix[] deltaB = deltas.get(0);
-			final DenseMatrix[] deltaW = deltas.get(1);
+			final List<Matrix[]> deltas = this.backPropagate(ni);
+			final Matrix[] deltaB = deltas.get(0);
+			final Matrix[] deltaW = deltas.get(1);
 
 			Stream.of(deltaW).forEach(e -> e.times(1d / size));
 			Stream.of(deltaB).forEach(e -> e.times(1d / size));
 
 			IntStream.range(0, this.totalLayers - 1).forEach(e -> {
-				dWCopy[e] = (DenseMatrix) dWCopy[e].plus(deltaW[e]);
-				dBCopy[e] = (DenseMatrix) dBCopy[e].plus(deltaB[e]);
+				dWCopy[e] = dWCopy[e].plus(deltaW[e]);
+				dBCopy[e] = dBCopy[e].plus(deltaB[e]);
 			});
 		});
 	}
@@ -236,13 +243,13 @@ public class NeuralNetwork implements Serializable {
 	 * Evaluates one example for multi threaded gradient descent.
 	 */
 	private void evaluateTrainingExample(final NetworkInput ni) {
-		final List<DenseMatrix[]> deltas = backPropagate(ni);
-		final DenseMatrix[] deltaB = deltas.get(0);
-		final DenseMatrix[] deltaW = deltas.get(1);
+		final List<Matrix[]> deltas = backPropagate(ni);
+		final Matrix[] deltaB = deltas.get(0);
+		final Matrix[] deltaW = deltas.get(1);
 
 		for (int j = 0; j < this.totalLayers - 1; j++) {
-			dW[j] = (DenseMatrix) dW[j].plus(deltaW[j]);
-			dB[j] = (DenseMatrix) dB[j].plus(deltaB[j]);
+			dW[j] = dW[j].plus(deltaW[j]);
+			dB[j] = dB[j].plus(deltaB[j]);
 		}
 	}
 
@@ -256,10 +263,10 @@ public class NeuralNetwork implements Serializable {
 		Stream.of(dW).forEach(Clearable::clear);
 	}
 
-	private List<DenseMatrix[]> backPropagate(NetworkInput in) {
+	private List<Matrix[]> backPropagate(NetworkInput in) {
 
-		final List<DenseMatrix[]> totalDeltas = new ArrayList<>();
-		final List<DenseMatrix> activations = new ArrayList<>();
+		final List<Matrix[]> totalDeltas = new ArrayList<>();
+		final List<Matrix> activations = new ArrayList<>();
 
 		Stream.of(this.deltaBiases).forEach(Clearable::clear);
 		Stream.of(this.deltaWeights).forEach(Clearable::clear);
@@ -268,19 +275,19 @@ public class NeuralNetwork implements Serializable {
 		this.feedForward(in.getData(), activations);
 		// End feedforward
 
-		DenseMatrix a = activations.get(activations.size() - 1);
-		DenseMatrix deltaError = costFunction.applyCostFunctionGradient(a, in.getLabel());
+		Matrix a = activations.get(activations.size() - 1);
+		Matrix deltaError = costFunction.applyCostFunctionGradient(a, in.getLabel());
 
 		// Iterate over all layers, they are indexed by the last layer (here given b
 		for (int k = deltaBiases.length - 1; k >= 0; k--) {
-			final DenseMatrix aCurr = activations.get(k + 1); // this layer
-			final DenseMatrix aNext = activations.get(k); // Previous layer
-			DenseMatrix differentiate = this.functions[k + 1].derivativeOnInput(aCurr, deltaError);
+			final Matrix aCurr = activations.get(k + 1); // this layer
+			final Matrix aNext = activations.get(k); // Previous layer
+			Matrix differentiate = this.functions[k + 1].derivativeOnInput(aCurr, deltaError);
 
 			this.deltaBiases[k] = differentiate;
-			this.deltaWeights[k] = (DenseMatrix) differentiate.mtimes(aNext.transpose());
+			this.deltaWeights[k] = differentiate.mtimes(aNext.transpose());
 
-			deltaError = (DenseMatrix) this.weights[k].transpose().mtimes(differentiate);
+			deltaError = this.weights[k].transpose().mtimes(differentiate);
 		}
 
 		totalDeltas.add(deltaBiases);
@@ -295,12 +302,12 @@ public class NeuralNetwork implements Serializable {
 	 * @param starter Input matrix
 	 * @param actives activations list
 	 */
-	private void feedForward(final DenseMatrix starter, final List<DenseMatrix> actives) {
-		DenseMatrix toPredict = starter;
+	private void feedForward(final Matrix starter, final List<Matrix> actives) {
+		Matrix toPredict = starter;
 
 		actives.add(toPredict);
 		for (int i = 0; i < this.totalLayers - 1; i++) {
-			final DenseMatrix x = (DenseMatrix) this.weights[i].mtimes(toPredict).plus(this.biases[i]);
+			final Matrix x = this.weights[i].mtimes(toPredict).plus(this.biases[i]);
 
 			toPredict = this.functions[i + 1].applyFunction(x);
 			actives.add(toPredict);
@@ -310,11 +317,11 @@ public class NeuralNetwork implements Serializable {
 	/**
 	 * Predict a single example input data.
 	 *
-	 * @param in {@link DenseMatrix} a Matrix to feed forward.
+	 * @param in {@link Matrix} a Matrix to feed forward.
 	 *
-	 * @return a classification of {@link DenseMatrix}
+	 * @return a classification of {@link Matrix}
 	 */
-	public DenseMatrix predict(final DenseMatrix in) {
+	public Matrix predict(final Matrix in) {
 		return feedForward(in);
 	}
 
@@ -325,10 +332,10 @@ public class NeuralNetwork implements Serializable {
 	 *
 	 * @return classified values.
 	 */
-	private DenseMatrix feedForward(final DenseMatrix in) {
-		DenseMatrix input = in;
+	private Matrix feedForward(final Matrix in) {
+		Matrix input = in;
 		for (int i = 0; i < this.totalLayers - 1; i++) {
-			input = functions[i + 1].applyFunction((DenseMatrix) this.weights[i].mtimes(input).plus(this.biases[i]));
+			input = functions[i + 1].applyFunction(this.weights[i].mtimes(input).plus(this.biases[i]));
 		}
 		return input;
 	}
@@ -338,7 +345,7 @@ public class NeuralNetwork implements Serializable {
 
 		for (final NetworkInput networkInput : test) {
 
-			final DenseMatrix out = this.feedForward(networkInput.getData());
+			final Matrix out = this.feedForward(networkInput.getData());
 			final NetworkInput newOut = new NetworkInput(out, networkInput.getLabel());
 			copy.add(newOut);
 		}
@@ -372,6 +379,7 @@ public class NeuralNetwork implements Serializable {
 	public void train(@NotNull final List<NetworkInput> training, @NotNull final List<NetworkInput> validation,
 			final int epochs, final int batchSize) {
 
+		int info = epochs / 10;
 		List<List<NetworkInput>> split = NetworkUtilities.splitData(training, batchSize);
 		for (int i = 0; i < epochs; i++) {
 			// Randomize training sample.
@@ -386,12 +394,13 @@ public class NeuralNetwork implements Serializable {
 				learnFromDeltas();
 			}
 
-			if (i % 10 == 0) {
+			if (i % info == 0) {
 				List<NetworkInput> l = this.feedForwardData(validation);
 				double loss = this.costFunction.calculateCostFunction(l);
-				double correct = this.evaluationFunction.evaluatePrediction(l);
-				System.out.printf("Epoch %d: Loss value of %f\n%f examples were classified correctly.\n\n", i, loss,
-						correct);
+				double correct = this.evaluationFunction.evaluatePrediction(l) * 100;
+				log.info(String.format(
+						"Epoch %d: Loss value of %f%n\tCorrect: %f%% examples were classified correctly.%n%n", i, loss,
+						correct));
 			}
 		}
 	}
@@ -420,26 +429,26 @@ public class NeuralNetwork implements Serializable {
 	 *                  https://stats.stackexchange.com/q/326663
 	 */
 	public void trainVerbose(@NotNull final List<NetworkInput> training, final int epochs, final int batchSize) {
-		System.out.println("Started stochastic gradient descent, verbose mode on.");
+		log.info("Started stochastic gradient descent, verbose mode on.%n");
 		// How many times will we decrease the learning rate?
 		List<List<NetworkInput>> split = NetworkUtilities.splitData(training, batchSize);
-		ProgressBar bar = new ProgressBar("Backpropagation", epochs);
-		for (int i = 0; i < epochs; i++) {
-			// Randomize training sample.
-			// TODO: is this necessary????
-			Collections.shuffle(split);
-			for (List<NetworkInput> networkInputs : split) {
-				Collections.shuffle(networkInputs);
-			}
+		try (ProgressBar bar = new ProgressBar("Backpropagation", epochs)) {
+			for (int i = 0; i < epochs; i++) {
+				// Randomize training sample.
+				// TODO: is this necessary????
+				Collections.shuffle(split);
+				for (List<NetworkInput> networkInputs : split) {
+					Collections.shuffle(networkInputs);
+				}
 
-			// Calculates a batch of training data and update the deltas.
-			for (int k = 0; k <= training.size() / batchSize; k++) {
-				getBatch(k, training, batchSize).parallelStream().forEach(this::evaluateTrainingExample);
-				learnFromDeltas();
+				// Calculates a batch of training data and update the deltas.
+				for (int k = 0; k <= training.size() / batchSize; k++) {
+					getBatch(k, training, batchSize).parallelStream().forEach(this::evaluateTrainingExample);
+					learnFromDeltas();
+				}
+				bar.step();
 			}
-			bar.step();
 		}
-		bar.close();
 	}
 
 	/**
@@ -506,18 +515,18 @@ public class NeuralNetwork implements Serializable {
 			metrics.addPlotData(i + 1, correct, loss, (double) (t2 - t1));
 
 			if ((i + 1) % (epochs / 8) == 0) {
-				System.out.printf("\n%d/%d epochs are finished.\n", (i + 1), epochs);
+				log.info("\n%d/%d epochs are finished.\n", (i + 1), epochs);
 			}
 		}
 
 		if (print) {
-			System.out.println("Outputting charts into " + path);
+			log.info("Outputting charts into " + path);
 			try {
 				metrics.present(path);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			System.out.println("Charts outputted.");
+			log.info("Charts outputted.");
 		}
 	}
 
@@ -554,21 +563,24 @@ public class NeuralNetwork implements Serializable {
 	}
 
 	public void display() {
-		System.out.println("======================================================================");
-		System.out.println("Network information and structure.");
-		System.out.printf("Input nodes: [%d]; Output nodes: [%d]\n\n", weightDimensions(0)[1],
-				weightDimensions(weights.length - 1)[0]);
+		StringBuilder b = new StringBuilder();
+		b.append("======================================================================").append("\n")
+				.append("Network information and structure.").append("\n")
+				.append(String.format("Input nodes: [%d]; Output nodes: [%d]%n%n", weightDimensions(0)[1],
+						weightDimensions(weights.length - 1)[0]));
 
 		for (int i = 0; i < weights.length; i++) {
 			int[] dims = weightDimensions(i);
-			System.out.printf("\t\tLayer %d : [%d X %d]\n", i, dims[0], dims[1]);
-			System.out.println("\t\tActivation function from this layer: " + functions[i]);
-			System.out.println();
+			b.append(String.format("\t\tLayer %d : [%d X %d]%n", i, dims[0], dims[1]))
+					.append(String.format("\t\tActivation function from this layer: %s", functions[i])).append("\n");
 		}
-		System.out.println("The error function: " + this.costFunction);
-		System.out.println("The evaluation function: " + this.evaluationFunction);
-		System.out.println("The optimizer: " + this.optimizer);
-		System.out.println("======================================================================");
+
+		b.append("\n").append("The error function: " + this.costFunction).append("\n")
+				.append("The evaluation function: " + this.evaluationFunction).append("\n")
+				.append("The optimizer: " + this.optimizer).append("\n")
+				.append("======================================================================");
+
+		log.info(b.toString());
 	}
 
 	private int[] weightDimensions(int i) {
@@ -607,14 +619,15 @@ public class NeuralNetwork implements Serializable {
 
 			network = (NeuralNetwork) os.readObject();
 
-			System.out.println("Completed deserialization from file: " + file.getPath());
+			log.info("Completed deserialization from file: " + file.getPath() + "%n");
 		} catch (final ClassNotFoundException e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 		if (null != network) {
 			return network;
 		} else {
-			throw new IOException("Something bad happened during deserialization.");
+			log.error(ERROR_MSG);
+			throw new IOException(ERROR_MSG);
 		}
 	}
 
@@ -636,14 +649,15 @@ public class NeuralNetwork implements Serializable {
 		try (FileInputStream fs = new FileInputStream(file); ObjectInputStream stream = new ObjectInputStream(fs)) {
 			neuralNetwork = (NeuralNetwork) stream.readObject();
 
-			System.out.println("Completed deserialization, see file: " + file.getAbsolutePath());
+			log.info("Completed deserialization, see file: " + file.getAbsolutePath() + "%n");
 		} catch (final ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		if (null != neuralNetwork) {
 			return neuralNetwork;
 		} else {
-			throw new IOException("Something bad happened during deserialization.");
+			log.error(ERROR_MSG);
+			throw new IOException(ERROR_MSG);
 		}
 	}
 
@@ -659,18 +673,14 @@ public class NeuralNetwork implements Serializable {
 		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.ENGLISH);
 		formattedDate = sdf.format(new Date());
 
-		try {
-			final FileOutputStream fs = new FileOutputStream(
-					file = new File(out + "/NeuralNetwork_" + formattedDate + "_.ser"));
-			final ObjectOutputStream os = new ObjectOutputStream(fs);
-			os.writeObject(this);
+		try (final ObjectOutputStream fs = new ObjectOutputStream(
+				new FileOutputStream(new File(out + "/NeuralNetwork_" + formattedDate + "_.ser")))) {
 
-			os.close();
-			fs.close();
+			fs.writeObject(this);
 
-			System.out.println("Completed serialisation, see file: " + file.getPath());
+			log.info("Completed serialisation. %n");
 		} catch (final IOException e) {
-			e.printStackTrace();
+			log.error(e.getMessage());
 		}
 	}
 

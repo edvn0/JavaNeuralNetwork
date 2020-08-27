@@ -18,6 +18,7 @@ import neuralnetwork.NetworkInput;
 import neuralnetwork.NeuralNetwork;
 import optimizers.StochasticGradientDescent;
 import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 
 public class XORTester {
 
@@ -25,8 +26,8 @@ public class XORTester {
 
 	private BufferedImage[] images;
 
-	private double[][] xorData = new double[][]{{0, 1}, {0, 0}, {1, 1}, {1, 0}};
-	private double[][] xorLabel = new double[][]{{1}, {0}, {0}, {1}};
+	private double[][] xorData = new double[][] { { 0, 1 }, { 0, 0 }, { 1, 1 }, { 1, 0 } };
+	private double[][] xorLabel = new double[][] { { 1 }, { 0 }, { 0 }, { 1 } };
 
 	private NeuralNetwork network;
 	private String path;
@@ -44,32 +45,25 @@ public class XORTester {
 		data = new ArrayList<>();
 		SecureRandom r = new SecureRandom();
 		for (int i = 0; i < 10000; i++) {
-			double[][] cData, cLabel;
+			double[][] cData;
+			double[][] cLabel;
 			int rd = r.nextInt(xorData.length);
-			cData = new double[][]{xorData[rd]};
-			cLabel = new double[][]{xorLabel[rd]};
-			data.add(new NetworkInput(
-				(DenseMatrix) DenseMatrix.Factory.importFromArray(cData).transpose(),
-				(DenseMatrix) DenseMatrix.Factory.importFromArray(cLabel).transpose()));
+			cData = new double[][] { xorData[rd] };
+			cLabel = new double[][] { xorLabel[rd] };
+			data.add(new NetworkInput(Matrix.Factory.importFromArray(cData).transpose(),
+					Matrix.Factory.importFromArray(cLabel).transpose()));
 		}
 		Collections.shuffle(data);
 
 		network = new NeuralNetwork(
-			new NetworkBuilder(4)
-				.setFirstLayer(2)
-				.setLayer(10, new TanhFunction())
-				.setLayer(10, new TanhFunction())
-				.setLastLayer(1, new SigmoidFunction())
-				.setCostFunction(new MeanSquaredCostFunction())
-				.setEvaluationFunction(new ThreshHoldEvaluationFunction(0.025))
-				.setOptimizer(new StochasticGradientDescent(0.05)));
+				new NetworkBuilder(4).setFirstLayer(2).setLayer(10, new TanhFunction()).setLayer(10, new TanhFunction())
+						.setLastLayer(1, new SigmoidFunction()).setCostFunction(new MeanSquaredCostFunction())
+						.setEvaluationFunction(new ThreshHoldEvaluationFunction(0.025))
+						.setOptimizer(new StochasticGradientDescent(0.05)));
 
 		network.display();
-		//.setOptimizer(new ADAM(0.001, 0.999, 0.9)));
-
 		network.train(data.subList(0, 1000), data.subList(1000, 2000), 70, 64);
 	}
-
 
 	private void run(int in) throws IOException {
 		if (w % in != 0 && h % in != 0) {
@@ -104,12 +98,11 @@ public class XORTester {
 		}
 	}
 
-	private DenseMatrix toInputMatrix(final double col, final double row) {
-		return DenseMatrix.Factory.importFromArray(new double[][]{{(double) col}, {(double) row}});
+	private Matrix toInputMatrix(final double col, final double row) {
+		return Matrix.Factory.importFromArray(new double[][] { { (double) col }, { (double) row } });
 	}
 
-
 	public static void main(String[] args) throws IOException {
-		new XORTester("/Users/edwincarlsson/Downloads/XORImages", 3).run(1);
+		new XORTester("C:\\Users\\edvin\\Downloads", 3).run(1);
 	}
 }

@@ -1,16 +1,16 @@
 package math.activations;
 
 import java.io.Serializable;
-import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 
 public interface ActivationFunction extends Serializable {
 
-	DenseMatrix applyFunction(DenseMatrix input);
+	Matrix applyFunction(Matrix input);
 
-	DenseMatrix applyDerivative(DenseMatrix input);
+	Matrix applyDerivative(Matrix input);
 
-	default DenseMatrix derivativeOnInput(DenseMatrix input, DenseMatrix out) {
-		return (DenseMatrix) out.times(applyDerivative(input));
+	default Matrix derivativeOnInput(Matrix input, Matrix out) {
+		return out.times(applyDerivative(input));
 	}
 
 	String getName();

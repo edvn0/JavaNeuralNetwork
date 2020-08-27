@@ -1,9 +1,13 @@
 package optimizers;
 
-import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 
 public class StochasticGradientDescent implements Optimizer {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 3872768343431121671L;
 	private double learningRate;
 
 	public StochasticGradientDescent(double l) {
@@ -11,27 +15,27 @@ public class StochasticGradientDescent implements Optimizer {
 	}
 
 	@Override
-	public DenseMatrix[] changeWeights(final DenseMatrix[] weights, final DenseMatrix[] deltas) {
-		DenseMatrix[] out = new DenseMatrix[weights.length];
+	public Matrix[] changeWeights(final Matrix[] weights, final Matrix[] deltas) {
+		Matrix[] out = new Matrix[weights.length];
 		for (int i = 0; i < weights.length; i++) {
-			deltas[i] = (DenseMatrix) deltas[i].times(this.learningRate);
-			out[i] = (DenseMatrix) weights[i].minus(deltas[i]);
+			deltas[i] = deltas[i].times(this.learningRate);
+			out[i] = weights[i].minus(deltas[i]);
 		}
 		return out;
 	}
 
 	@Override
-	public DenseMatrix[] changeBiases(final DenseMatrix[] biases, final DenseMatrix[] deltas) {
-		DenseMatrix[] out = new DenseMatrix[biases.length];
+	public Matrix[] changeBiases(final Matrix[] biases, final Matrix[] deltas) {
+		Matrix[] out = new Matrix[biases.length];
 		for (int i = 0; i < biases.length; i++) {
-			deltas[i] = (DenseMatrix) deltas[i].times(this.learningRate);
-			out[i] = (DenseMatrix) biases[i].minus(deltas[i]);
+			deltas[i] = deltas[i].times(this.learningRate);
+			out[i] = biases[i].minus(deltas[i]);
 		}
 		return out;
 	}
-
 
 	@Override
 	public void initializeOptimizer(final int layers) {
+		// We need no intialisation for this optimiser.
 	}
 }

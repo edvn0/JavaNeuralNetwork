@@ -24,19 +24,12 @@ public class FashionMNISTTester {
 	public static void main(final String[] args) throws IOException {
 		long tMem, fMem;
 
-		NeuralNetwork network = new NeuralNetwork(
-			new NetworkBuilder(7)
-				.setFirstLayer(784)
-				.setLayer(35, new LeakyReluFunction(0.01))
-				.setLayer(35, new LeakyReluFunction(0.01))
-				.setLayer(35, new LeakyReluFunction(0.01))
-				.setLayer(35, new LeakyReluFunction(0.01))
-				.setLayer(35, new LeakyReluFunction(0.01))
-				.setLastLayer(10, new SoftmaxFunction())
-				.setCostFunction(new CrossEntropyCostFunction())
-				.setEvaluationFunction(new ArgMaxEvaluationFunction())
-				.setOptimizer(new ADAM(0.001, 0.9, 0.999))
-		);
+		NeuralNetwork network = new NeuralNetwork(new NetworkBuilder(7).setFirstLayer(784)
+				.setLayer(35, new LeakyReluFunction(0.01)).setLayer(35, new LeakyReluFunction(0.01))
+				.setLayer(35, new LeakyReluFunction(0.01)).setLayer(35, new LeakyReluFunction(0.01))
+				.setLayer(35, new LeakyReluFunction(0.01)).setLastLayer(10, new SoftmaxFunction())
+				.setCostFunction(new CrossEntropyCostFunction()).setEvaluationFunction(new ArgMaxEvaluationFunction())
+				.setOptimizer(new ADAM(0.001, 0.9, 0.999)));
 
 		network.display();
 		System.out.println("Initialized network.");
@@ -45,19 +38,17 @@ public class FashionMNISTTester {
 		fMem = Runtime.getRuntime().freeMemory();
 		System.out.println();
 		System.out.println("Memory information prior to file reading:");
-		System.out
-			.printf("Total Memory: %.3fMB%n", tMem / (1024.0 * 1024.0));
-		System.out
-			.printf("Free Memory: %.3fMB", fMem / (1024.0 * 1024.0));
+		System.out.printf("Total Memory: %.3fMB%n", tMem / (1024.0 * 1024.0));
+		System.out.printf("Free Memory: %.3fMB", fMem / (1024.0 * 1024.0));
 		System.out.println();
 
 		final boolean existsMac = Files
-			.exists(
-				Paths.get("/Users/edwincarlsson/Downloads/fashionmnist/fashion-mnist_train.csv"));
-		final boolean existsVM = Files
-			.exists(Paths.get("/home/edwin98carlsson/fashionmnist/fashion-mnist_train.csv"));
-		final boolean existsWindows;/*Files
-			.exists(Paths.get("/home/edwin98carlsson/mnist-in-csv/mnist_train.csv"))*/
+				.exists(Paths.get("/Users/edwincarlsson/Downloads/fashionmnist/fashion-mnist_train.csv"));
+		final boolean existsVM = Files.exists(Paths.get("/home/edwin98carlsson/fashionmnist/fashion-mnist_train.csv"));
+		final boolean existsWindows;/*
+									 * Files
+									 * .exists(Paths.get("/home/edwin98carlsson/mnist-in-csv/mnist_train.csv"))
+									 */
 
 		String base = "";
 		String pathTrain = null;
@@ -79,17 +70,14 @@ public class FashionMNISTTester {
 		fMem = Runtime.getRuntime().freeMemory();
 		System.out.println();
 		System.out.println("Memory information after reading files:");
-		System.out
-			.printf("Total Memory: %.3fMB\n", tMem / (1024.0 * 1024.0));
-		System.out
-			.printf("Free Memory: %.3fMB\n", fMem / (1024.0 * 1024.0));
+		System.out.printf("Total Memory: %.3fMB%n", tMem / (1024.0 * 1024.0));
+		System.out.printf("Free Memory: %.3fMB%n", fMem / (1024.0 * 1024.0));
 		System.out.println();
 
 		Collections.shuffle(imagesTrain);
 		Collections.shuffle(imagesValidate);
 
-		final List<NetworkInput> imagesTest = imagesTrain
-			.subList(0, (int) (imagesTrain.size() * 0.1));
+		final List<NetworkInput> imagesTest = imagesTrain.subList(0, (int) (imagesTrain.size() * 0.1));
 
 		imagesTest.addAll(imagesValidate.subList(0, (int) (imagesValidate.size() * 0.1)));
 
@@ -105,12 +93,12 @@ public class FashionMNISTTester {
 	}
 
 	private static List<NetworkInput> generateDataFromCSV(final String path) throws IOException {
-		return Files
-			.lines(Paths.get(path))
-			.map(e -> e.split(","))
-			.map(NetworkUtilities::MNISTApply)
-			.collect(Collectors.toList());
+		try (var out = Files.lines(Paths.get(path))) {
+			return out.map(e -> e.split(",")).map(NetworkUtilities::MNISTApply).collect(Collectors.toList());
+		} catch (IOException e) {
+			System.out.println(e);
+		}
+		return Collections.emptyList();
 	}
-
 
 }

@@ -1,6 +1,6 @@
 package math.activations;
 
-import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
 
 public class SigmoidFunction implements ActivationFunction {
@@ -19,20 +19,16 @@ public class SigmoidFunction implements ActivationFunction {
 		return a * (1 - a);
 	}
 
-	public SigmoidFunction() {
-
-	}
-
 	@Override
-	public DenseMatrix applyFunction(DenseMatrix input) {
-		DenseMatrix returnDenseMatrix = input;
+	public Matrix applyFunction(Matrix input) {
+		Matrix returnDenseMatrix = input;
 		returnDenseMatrix = MatrixUtilities.map(returnDenseMatrix, this::sigmoid);
 		return returnDenseMatrix;
 	}
 
 	@Override
-	public DenseMatrix applyDerivative(DenseMatrix input) {
-		DenseMatrix returnDenseMatrix = input;
+	public Matrix applyDerivative(Matrix input) {
+		Matrix returnDenseMatrix = input;
 		returnDenseMatrix = MatrixUtilities.map(returnDenseMatrix, this::sigmoidDerivative);
 		return returnDenseMatrix;
 	}

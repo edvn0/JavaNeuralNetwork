@@ -2,12 +2,12 @@ package math.evaluation;
 
 import java.util.List;
 import neuralnetwork.NetworkInput;
-import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
 
 /**
- * Evaluation function which returns a correct value iff the argmax of the predicted data is the
- * label
+ * Evaluation function which returns a correct value iff the argmax of the
+ * predicted data is the label
  */
 public class ArgMaxEvaluationFunction implements EvaluationFunction {
 
@@ -16,9 +16,6 @@ public class ArgMaxEvaluationFunction implements EvaluationFunction {
 	 */
 	private static final long serialVersionUID = 3730260463010183881L;
 
-	public ArgMaxEvaluationFunction() {
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -26,8 +23,7 @@ public class ArgMaxEvaluationFunction implements EvaluationFunction {
 	public double evaluatePrediction(List<NetworkInput> toEvaluate) {
 		int correct = 0;
 		for (NetworkInput networkInput : toEvaluate) {
-			// data[i] = {data, correctLabels}
-			DenseMatrix data = networkInput.getData();
+			Matrix data = networkInput.getData();
 			int correctLabels = MatrixUtilities.argMax(networkInput.getLabel());
 			int val = MatrixUtilities.argMax(data);
 

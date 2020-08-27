@@ -1,6 +1,6 @@
 package math.activations;
 
-import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
 
 public class TanhFunction implements ActivationFunction {
@@ -19,20 +19,16 @@ public class TanhFunction implements ActivationFunction {
 		return 1 - (a * a);
 	}
 
-	public TanhFunction() {
-
-	}
-
 	@Override
-	public DenseMatrix applyFunction(DenseMatrix input) {
-		DenseMatrix returnDenseMatrix = input;
+	public Matrix applyFunction(Matrix input) {
+		Matrix returnDenseMatrix = input;
 		returnDenseMatrix = MatrixUtilities.map(returnDenseMatrix, this::tanh);
 		return returnDenseMatrix;
 	}
 
 	@Override
-	public DenseMatrix applyDerivative(DenseMatrix input) {
-		DenseMatrix returnDenseMatrix = input;
+	public Matrix applyDerivative(Matrix input) {
+		Matrix returnDenseMatrix = input;
 		returnDenseMatrix = MatrixUtilities.map(returnDenseMatrix, this::tanhDerivative);
 		return returnDenseMatrix;
 	}

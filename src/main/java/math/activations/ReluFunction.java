@@ -1,6 +1,6 @@
 package math.activations;
 
-import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
 
 public class ReluFunction implements ActivationFunction {
@@ -19,19 +19,16 @@ public class ReluFunction implements ActivationFunction {
 		return a > 0 ? 1 : 0;
 	}
 
-	public ReluFunction() {
-	}
-
 	@Override
-	public DenseMatrix applyFunction(DenseMatrix input) {
-		DenseMatrix returnMatrix = input;
+	public Matrix applyFunction(Matrix input) {
+		Matrix returnMatrix = input;
 		returnMatrix = MatrixUtilities.map(returnMatrix, this::relu);
 		return returnMatrix;
 	}
 
 	@Override
-	public DenseMatrix applyDerivative(DenseMatrix input) {
-		DenseMatrix returnMatrix = input;
+	public Matrix applyDerivative(Matrix input) {
+		Matrix returnMatrix = input;
 		returnMatrix = MatrixUtilities.map(returnMatrix, this::reluDerivative);
 		return returnMatrix;
 	}

@@ -2,6 +2,7 @@ package neuralnetwork;
 
 import java.io.Serializable;
 import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 
 /**
  * A wrapper to contain a input to a Neural Network, with both the label and the
@@ -13,19 +14,19 @@ public class NetworkInput implements Serializable {
 	 *
 	 */
 	private static final long serialVersionUID = -8743845031383184256L;
-	private DenseMatrix data;
-	private DenseMatrix label;
+	private Matrix data;
+	private Matrix label;
 
-	public NetworkInput(DenseMatrix data, DenseMatrix label) {
+	public NetworkInput(Matrix data, Matrix label) {
 		this.data = data;
 		this.label = label;
 	}
 
-	public DenseMatrix getData() {
+	public Matrix getData() {
 		return data;
 	}
 
-	public DenseMatrix getLabel() {
+	public Matrix getLabel() {
 		return label;
 	}
 

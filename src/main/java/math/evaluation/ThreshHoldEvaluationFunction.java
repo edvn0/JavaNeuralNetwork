@@ -2,7 +2,7 @@ package math.evaluation;
 
 import java.util.List;
 import neuralnetwork.NetworkInput;
-import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 
 public class ThreshHoldEvaluationFunction implements EvaluationFunction {
 
@@ -24,8 +24,8 @@ public class ThreshHoldEvaluationFunction implements EvaluationFunction {
 	public double evaluatePrediction(List<NetworkInput> toEvaluate) {
 		int correct = 0;
 		for (NetworkInput matrices : toEvaluate) {
-			DenseMatrix fed = matrices.getData();
-			DenseMatrix corr = matrices.getLabel();
+			Matrix fed = matrices.getData();
+			Matrix corr = matrices.getLabel();
 
 			double fedEl = fed.getValueSum();
 			double corrEl = corr.getValueSum();

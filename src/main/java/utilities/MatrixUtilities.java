@@ -1,30 +1,30 @@
 package utilities;
 
 import java.util.function.UnaryOperator;
-import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 import org.ujmp.core.Matrix;
 import org.ujmp.core.calculation.Calculation.Ret;
 
 public class MatrixUtilities {
 
-	public static double[] toArray(DenseMatrix b) {
+	public static double[] toArray(Matrix b) {
 		return b.transpose().toDoubleArray()[0];
 	}
 
-	public static DenseMatrix toMatrix(double[][] doubles) {
+	public static Matrix toMatrix(double[][] doubles) {
 		return Matrix.Factory.importFromArray(doubles);
 	}
 
 	/**
-	 * Creates a vector, either row or column based on the dim. If dim is true, a column vector will
-	 * be create, else a row vector.
+	 * Creates a vector, either row or column based on the dim. If dim is true, a
+	 * column vector will be create, else a row vector.
 	 *
-	 * @param doubles the data from which the {@link DenseMatrix} will be created.
+	 * @param doubles the data from which the {@link Matrix} will be created.
 	 * @param dim     column or row vector?
 	 *
-	 * @return a new {@link DenseMatrix} based in doubles.
+	 * @return a new {@link Matrix} based in doubles.
 	 */
-	public static DenseMatrix toMatrix(double[] doubles, boolean dim) {
+	public static Matrix toMatrix(double[] doubles, boolean dim) {
 		if (dim) {
 			double[][] from = new double[doubles.length][1];
 			int i = 0;
@@ -37,7 +37,7 @@ public class MatrixUtilities {
 		}
 	}
 
-	public static DenseMatrix map(DenseMatrix in, UnaryOperator<Double> t) {
+	public static Matrix map(Matrix in, UnaryOperator<Double> t) {
 		double[][] values = in.toDoubleArray();
 		double[][] out = new double[values.length][values[0].length];
 		for (int i = 0; i < values.length; i++) {
@@ -50,10 +50,8 @@ public class MatrixUtilities {
 		return Matrix.Factory.importFromArray(out);
 	}
 
-
-	public static int argMax(DenseMatrix input) {
+	public static int argMax(Matrix input) {
 		Matrix argMax = input.indexOfMax(Ret.NEW, 0);
 		return argMax.intValue();
-
 	}
 }

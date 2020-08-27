@@ -1,6 +1,6 @@
 package math.activations;
 
-import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
 
 public class LinearFunction implements ActivationFunction {
@@ -10,25 +10,23 @@ public class LinearFunction implements ActivationFunction {
 	 */
 	private static final long serialVersionUID = 5919973604842732692L;
 
+	private static final int LIN_DER = 1;
+
 	public double linear(double a) {
 		return a;
 	}
 
 	public double linearDerivative(double a) {
-		return 1;
-	}
-
-	public LinearFunction() {
-
+		return LIN_DER;
 	}
 
 	@Override
-	public DenseMatrix applyFunction(DenseMatrix input) {
-		return MatrixUtilities.map(input, this::linear);// input.map(this::linear);
+	public Matrix applyFunction(Matrix input) {
+		return MatrixUtilities.map(input, this::linear);
 	}
 
 	@Override
-	public DenseMatrix applyDerivative(DenseMatrix input) {
+	public Matrix applyDerivative(Matrix input) {
 		return MatrixUtilities.map(input, this::linearDerivative);
 	}
 

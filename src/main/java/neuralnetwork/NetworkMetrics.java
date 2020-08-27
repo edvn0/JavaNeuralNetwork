@@ -25,8 +25,7 @@ public class NetworkMetrics {
 	private final ArrayList<Double> correctValues = new ArrayList<>();
 	private final ArrayList<Double> calculationTimes = new ArrayList<>();
 
-	public NetworkMetrics() {
-	}
+	private static final String EPOCH = "Epoch";
 
 	/**
 	 * Adds plot data from the neural network.
@@ -97,14 +96,14 @@ public class NetworkMetrics {
 
 	private void chartForLoss(String out) throws IOException {
 		BitmapEncoder.saveBitmapWithDPI(
-				generateChart("Loss per Epoch", "Epoch", "Loss", "loss(x)", xValues, lossValues, 0,
+				generateChart("Loss per Epoch", EPOCH, "Loss", "loss(x)", xValues, lossValues, 0,
 						Collections.max(xValues), 0, Collections.max(lossValues)),
 				createChartPathFromBasePath(out, "LossToEpochPlot") + "_" + getNow(), BitmapFormat.PNG, 300);
 	}
 
 	private void chartForAccuracy(String out) throws IOException {
 		BitmapEncoder.saveBitmapWithDPI(
-				generateChart("Accuracy per Epoch", "Epoch", "Accuracy", "acc(x)", xValues, correctValues, 0,
+				generateChart("Accuracy per Epoch", EPOCH, "Accuracy", "acc(x)", xValues, correctValues, 0,
 						Collections.max(xValues), 0, 1),
 				createChartPathFromBasePath(out, "AccuracyToEpochPlot") + "_" + getNow(), BitmapFormat.PNG, 300);
 
@@ -112,7 +111,7 @@ public class NetworkMetrics {
 
 	private void chartForTimes(String out) throws IOException {
 		BitmapEncoder.saveBitmapWithDPI(
-				generateChart("Time measure per Epoch", "Epoch", "Time", "time(x)", xValues.subList(1, xValues.size()),
+				generateChart("Time measure per Epoch", EPOCH, "Time", "time(x)", xValues.subList(1, xValues.size()),
 						calculationTimes.stream().map(e -> 1e-6 * e).collect(Collectors.toList()), 0,
 						Collections.max(xValues), minTime(), maxTime()),
 				createChartPathFromBasePath(out, "TimeMeasureToEpochPlot") + "_" + getNow(), BitmapFormat.PNG, 300);

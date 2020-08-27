@@ -1,10 +1,11 @@
 package math.activations;
 
-import org.ujmp.core.DenseMatrix;
+import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
 
 public class LeakyReluFunction implements ActivationFunction {
 
+	private static final long serialVersionUID = 1L;
 	private double alpha;
 
 	public LeakyReluFunction(double alpha) {
@@ -20,15 +21,15 @@ public class LeakyReluFunction implements ActivationFunction {
 	}
 
 	@Override
-	public DenseMatrix applyFunction(final DenseMatrix input) {
-		DenseMatrix returnMatrix = input;
+	public Matrix applyFunction(final Matrix input) {
+		Matrix returnMatrix = input;
 		returnMatrix = MatrixUtilities.map(returnMatrix, this::leakyRelu);
 		return returnMatrix;
 	}
 
 	@Override
-	public DenseMatrix applyDerivative(final DenseMatrix input) {
-		DenseMatrix returnMatrix = input;
+	public Matrix applyDerivative(final Matrix input) {
+		Matrix returnMatrix = input;
 		returnMatrix = MatrixUtilities.map(returnMatrix, this::leakyReluDerivative);
 		return returnMatrix;
 	}

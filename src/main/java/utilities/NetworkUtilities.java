@@ -2,7 +2,11 @@ package utilities;
 
 import static java.util.stream.Collectors.toList;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -10,6 +14,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
+
 import neuralnetwork.NetworkInput;
 import org.ujmp.core.Matrix;
 import utilities.data.DataImport;
@@ -58,6 +64,20 @@ public class NetworkUtilities {
 		fromStream = path.limit(size).skip(offset).map(line -> line.split(",")).map(f).collect(toList());
 
 		return fromStream;
+	}
+
+	public static List<NetworkInput> readGzip(final String fileName) {
+		List<NetworkInput> output = new ArrayList<>();
+		try (BufferedReader is = new BufferedReader(
+				new InputStreamReader(new GZIPInputStream(new FileInputStream(fileName))))) {
+			String line;
+			while ((line = is.readLine()) != null) {
+				System.out.println(line);
+			}
+		} catch (IOException e) {
+
+		}
+		return output;
 	}
 
 	public static NetworkInput MNISTApply(String[] e) {
