@@ -277,3 +277,5 @@ local.properties
 /src/test/java/neuralnetwork
 /src/test/java/resources
 /src/main/resources/graphoutput
+
+.idea
