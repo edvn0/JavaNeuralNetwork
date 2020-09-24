@@ -274,5 +274,6 @@ local.properties
 
 # End of https://www.gitignore.io/api/git
 
-/test/java/neuralnetwork
-/test/java/resources
+/src/test/java/neuralnetwork
+/src/test/java/resources
+/src/main/resources/graphoutput

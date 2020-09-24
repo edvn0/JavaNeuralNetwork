@@ -1,160 +1,189 @@
 package neuralnetwork;
 
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-
-import org.knowm.xchart.BitmapEncoder;
+import lombok.extern.slf4j.Slf4j;
+import org.knowm.xchart.*;
 import org.knowm.xchart.BitmapEncoder.BitmapFormat;
-import org.knowm.xchart.CategoryChart;
-import org.knowm.xchart.CategoryChartBuilder;
-import org.knowm.xchart.QuickChart;
-import org.knowm.xchart.XYChart;
 import org.knowm.xchart.style.Styler.LegendPosition;
 
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+@Slf4j
 public class NetworkMetrics {
 
-	private final ArrayList<Double> xValues = new ArrayList<>();
-	private final ArrayList<Double> lossValues = new ArrayList<>();
-	private final ArrayList<Double> correctValues = new ArrayList<>();
-	private final ArrayList<Double> calculationTimes = new ArrayList<>();
+    private static final String EPOCH = "Epoch";
+    private final List<Integer> epochs;
+    private final List<Double> lossValues;
+    private final List<Double> correctValues;
+    private final List<Double> calculationTimes;
 
-	private static final String EPOCH = "Epoch";
+    public NetworkMetrics(int epochs) {
+        this.epochs = new ArrayList<>(epochs);
+        this.lossValues = new ArrayList<>();
+        this.correctValues = new ArrayList<>();
+        this.calculationTimes = new ArrayList<>();
+    }
 
-	/**
-	 * Adds plot data from the neural network.
-	 *
-	 * @param i       which epoch?
-	 * @param correct accuracy on validation
-	 * @param loss    loss on validation
-	 * @param time    time taken for validation
-	 */
-	protected void addPlotData(int i, Double correct, Double loss, Double time) {
-		xValues.add((double) i);
-		correctValues.add(correct);
-		lossValues.add(loss);
-		calculationTimes.add(time * 10E-6);
-	}
+    public NetworkMetrics() {
+        this.epochs = new ArrayList<>();
+        this.calculationTimes = new ArrayList<>();
+        this.lossValues = new ArrayList<>();
+        this.correctValues = new ArrayList<>();
+    }
 
-	/**
-	 * Adds plot data from the neural network.
-	 *
-	 * @param i       which epoch
-	 * @param correct accuracy on validation
-	 * @param loss    loss on validation
-	 */
-	protected void addPlotData(final int i, final double correct, final double loss) {
-		xValues.add((double) i);
-		correctValues.add(correct);
-		lossValues.add(loss);
-	}
+    /**
+     * Adds plot data from the neural network.
+     *
+     * @param i       which epoch?
+     * @param correct accuracy on validation
+     * @param loss    loss on validation
+     * @param time    time taken for validation
+     */
+    protected void addPlotData(int i, double correct, double loss, long time) {
+        epochs.add(i);
+        correctValues.add(correct);
+        lossValues.add(loss);
+        calculationTimes.add(time * 1e-9);
+    }
 
-	public void present(final String path) throws IOException {
-		chartForLoss(path);
-		chartForTimes(path);
-		chartForAccuracy(path);
-		chartForTimeMetrics(path);
-	}
+    /**
+     * Adds plot data from the neural network.
+     *
+     * @param correct accuracy on validation
+     * @param loss    loss on validation
+     */
+    protected void initialPlotData(final double correct, final double loss) {
+        epochs.add(0);
+        correctValues.add(correct);
+        lossValues.add(loss);
+    }
 
-	private double maxTime() {
-		return Collections.max(calculationTimes.stream().map(e -> 1e-9).collect(Collectors.toList()));
-	}
+    public void present(final String path) throws IOException {
+        chartForLoss(path);
+        chartForTimes(path);
+        chartForAccuracy(path);
+        chartForTimeMetrics(path);
+    }
 
-	private double minTime() {
-		return Collections.min(calculationTimes.stream().map(e -> 1e-9).collect(Collectors.toList()));
-	}
+    private double maxTime() {
+        return calculationTimes
+                .stream()
+                .max(Double::compare)
+                .orElseThrow(() -> new RuntimeException("Could not find a maximum of this list."));
+    }
 
-	private double avgTime() {
-		double sum = 0;
-		for (Double k : calculationTimes) {
-			sum += k;
-		}
-		return sum / calculationTimes.size();
-	}
+    private double minTime() {
+        return calculationTimes
+                .stream()
+                .min(Double::compare)
+                .orElseThrow(() -> new RuntimeException("Could not find a minimum of this list."));
+    }
 
-	public void appendEpochValues(Double k) {
-		xValues.add(k);
-	}
+    private double avgTime() {
+        double sum = 0;
+        for (double k : calculationTimes) {
+            sum += k;
+        }
+        return sum / calculationTimes.size();
+    }
 
-	public void appendLossValues(Double k) {
-		lossValues.add(k);
-	}
+    private double getStandardDeviation() {
+        double meanOfDiffs = getVariance();
+        return Math.sqrt(meanOfDiffs);
+    }
 
-	public void appendCorrectValues(Double k) {
-		correctValues.add(k);
-	}
+    private double getVariance() {
+        double mean = avgTime();
+        double temp = 0;
 
-	public void appendCalculationTimes(Double k) {
-		calculationTimes.add(k);
-	}
+        for (double val : calculationTimes) {
+            // Step 2:
+            double squrDiffToMean = Math.pow(val - mean, 2);
 
-	private void chartForLoss(String out) throws IOException {
-		BitmapEncoder.saveBitmapWithDPI(
-				generateChart("Loss per Epoch", EPOCH, "Loss", "loss(x)", xValues, lossValues, 0,
-						Collections.max(xValues), 0, Collections.max(lossValues)),
-				createChartPathFromBasePath(out, "LossToEpochPlot") + "_" + getNow(), BitmapFormat.PNG, 300);
-	}
+            // Step 3:
+            temp += squrDiffToMean;
+        }
 
-	private void chartForAccuracy(String out) throws IOException {
-		BitmapEncoder.saveBitmapWithDPI(
-				generateChart("Accuracy per Epoch", EPOCH, "Accuracy", "acc(x)", xValues, correctValues, 0,
-						Collections.max(xValues), 0, 1),
-				createChartPathFromBasePath(out, "AccuracyToEpochPlot") + "_" + getNow(), BitmapFormat.PNG, 300);
+        return temp / (double) calculationTimes.size();
+    }
 
-	}
+    private void chartForLoss(String out) throws IOException {
 
-	private void chartForTimes(String out) throws IOException {
-		BitmapEncoder.saveBitmapWithDPI(
-				generateChart("Time measure per Epoch", EPOCH, "Time", "time(x)", xValues.subList(1, xValues.size()),
-						calculationTimes.stream().map(e -> 1e-6 * e).collect(Collectors.toList()), 0,
-						Collections.max(xValues), minTime(), maxTime()),
-				createChartPathFromBasePath(out, "TimeMeasureToEpochPlot") + "_" + getNow(), BitmapFormat.PNG, 300);
+        double min = Collections.min(lossValues);
+        double max = Collections.max(lossValues);
+        XYChart lossChart =
+                generateChart("Loss per Epoch", "Loss", "loss(x)", epochs, lossValues,
+                        Collections.max(epochs), min, max);
 
-	}
+        String chartPath = createChartPathFromBasePath(out, "LossToEpochPlot");
 
-	private void chartForTimeMetrics(final String path) throws IOException {
-		CategoryChart cg = new CategoryChartBuilder().width(800).height(500).title("Time Metrics")
-				.xAxisTitle("Time Categories").yAxisTitle("Time Taken").build();
+        log.info("Potential errors: {} , {}, {}, {}, {}, {}, {}", lossChart, chartPath, out, lossValues, epochs, min, max);
 
-		cg.getStyler().setLegendPosition(LegendPosition.InsideNW);
-		cg.getStyler().setHasAnnotations(true);
+        BitmapEncoder.saveBitmapWithDPI(lossChart,
+                chartPath, BitmapFormat.PNG, 300);
+    }
 
-		cg.addSeries("Measures", Arrays.asList("Average", "Max", "Min"),
-				Arrays.asList(avgTime(), maxTime(), minTime()));
+    private void chartForAccuracy(String out) throws IOException {
+        XYChart accuracyChart =
+                generateChart("Accuracy per Epoch", "Accuracy", "acc(x)", epochs, correctValues,
+                        Collections.max(epochs), 0, 1);
 
-		BitmapEncoder.saveBitmapWithDPI(cg, createChartPathFromBasePath(path, "TimeMetricsPlot") + "_" + getNow(),
-				BitmapFormat.PNG, 300);
+        BitmapEncoder.saveBitmapWithDPI(accuracyChart,
+                createChartPathFromBasePath(out, "AccuracyToEpochPlot"), BitmapFormat.PNG, 300);
 
-	}
+    }
 
-	private String createChartPathFromBasePath(String in, String out) {
-		final String use = in.endsWith("/") ? in : in + "/";
-		return use + out;
-	}
+    private void chartForTimes(String out) throws IOException {
+        XYChart timeChart = generateChart("Time measure per Epoch", "Time", "time(x)", epochs.subList(1, epochs.size()),
+                calculationTimes,
+                Collections.max(epochs), minTime(), maxTime());
 
-	private String getNow() {
-		String formattedDate;
-		final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.ENGLISH);
-		formattedDate = sdf.format(new Date());
+        BitmapEncoder.saveBitmapWithDPI(timeChart,
+                createChartPathFromBasePath(out, "TimeMeasureToEpochPlot"), BitmapFormat.PNG, 300);
 
-		return formattedDate;
-	}
+    }
 
-	private XYChart generateChart(final String heading, final String xLabel, final String yLabel, final String function,
-			final List<Double> xValues, final List<Double> yValues, double minX, double maxX, double minY,
-			double maxY) {
-		final XYChart chart = QuickChart.getChart(heading, xLabel, yLabel, function, xValues, yValues);
-		chart.getStyler().setXAxisMin(minX);
-		chart.getStyler().setXAxisMax(maxX);
-		chart.getStyler().setYAxisMin(minY);
-		chart.getStyler().setYAxisMax(maxY);
-		return chart;
-	}
+    private void chartForTimeMetrics(final String path) throws IOException {
+        CategoryChart cg = new CategoryChartBuilder().width(800).height(500).title("Time Metrics, for each epoch (s)")
+                .xAxisTitle("Statistical measures").yAxisTitle("Time Taken").build();
+
+        cg.getStyler().setLegendPosition(LegendPosition.InsideNW);
+        cg.getStyler().setHasAnnotations(true);
+
+        cg.addSeries("Measures", Arrays.asList("Average", "Max", "Min", "Stdev", "Var"),
+                Arrays.asList(avgTime(), maxTime(), minTime(), getStandardDeviation(), getVariance()));
+
+        BitmapEncoder.saveBitmapWithDPI(cg, createChartPathFromBasePath(path, "TimeMetricsPlot") + "_" + getNow(),
+                BitmapFormat.PNG, 300);
+
+    }
+
+    private String createChartPathFromBasePath(String in, String out) {
+        String use = in.endsWith("\\") ? in : in + "\\";
+
+        return use + out + "_" + getNow();
+    }
+
+    private String getNow() {
+        String formattedDate;
+        final DateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
+        formattedDate = sdf.format(new Date());
+        formattedDate = formattedDate.replace("/", "-");
+        return formattedDate;
+    }
+
+    private XYChart generateChart(final String heading, final String yLabel, final String function,
+                                  final List<Integer> xValues, final List<Double> yValues, double maxX, double minY,
+                                  double maxY) {
+
+        final XYChart chart = QuickChart.getChart(heading, NetworkMetrics.EPOCH, yLabel, function, xValues, yValues);
+        chart.getStyler().setXAxisMin((double) 0);
+        chart.getStyler().setXAxisMax(maxX);
+        chart.getStyler().setYAxisMin(minY);
+        chart.getStyler().setYAxisMax(maxY);
+        return chart;
+    }
 
 }

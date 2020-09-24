@@ -16,7 +16,7 @@ repositories {
 mainClassName = "demos.MNISTTester"
 
 run {
-    args = ["20","64"]
+    args = ["200", "32", "C:\\Users\\edvin\\IdeaProjects\\JavaNeuralNetwork\\src\\main\\resources\\graphoutput"]
 }
 
 dependencies {
@@ -30,11 +30,11 @@ dependencies {
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
 
-	compileOnly 'org.projectlombok:lombok:1.18.12'
-	annotationProcessor 'org.projectlombok:lombok:1.18.12'
-	
-	testCompileOnly 'org.projectlombok:lombok:1.18.12'
-	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+    compileOnly 'org.projectlombok:lombok:1.18.12'
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.12'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
 }
 
 jar {

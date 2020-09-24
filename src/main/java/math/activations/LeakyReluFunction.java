@@ -6,7 +6,7 @@ import utilities.MatrixUtilities;
 public class LeakyReluFunction implements ActivationFunction {
 
 	private static final long serialVersionUID = 1L;
-	private double alpha;
+	private final double alpha;
 
 	public LeakyReluFunction(double alpha) {
 		this.alpha = alpha;

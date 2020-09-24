@@ -1,9 +1,10 @@
 package utilities;
 
-import static java.util.stream.Collectors.toList;
+import neuralnetwork.NetworkInput;
+import org.ujmp.core.Matrix;
+import utilities.data.DataImport;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,132 +17,135 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
-import neuralnetwork.NetworkInput;
-import org.ujmp.core.Matrix;
-import utilities.data.DataImport;
+import static java.util.stream.Collectors.toList;
 
 public class NetworkUtilities {
 
-	public static final Function<String[], NetworkInput> mnist = (e) -> {
+    public static final Function<String[], NetworkInput> mnist = (e) -> {
 
-		return null;
-	};
+        return null;
+    };
 
-	/**
-	 * Maps a file input to {@link NetworkInput} objects to be used in the Neural
-	 * Network
-	 *
-	 * Splits every line in the file on a comma, and then applies the
-	 * {@link Function} on that array.
-	 *
-	 * Example: "1.1,1.3,0.13,0.01,TRUE"->["1.1","1.3",0.13","0.01","TRUE"]->
-	 * Vector(1.1,1.3,0.13,0.01), Vector(0,0,1,0), if TRUE in some represents a one
-	 * hot vector. Vector here is not some class in this project, rather a
-	 * representation of what the function should do.
-	 *
-	 * @param path   Path to the file
-	 * @param offset should a header line be skipped? Or even more lines?
-	 * @param f      a map from a split string to a NetworkInput.
-	 *
-	 * @return a {@link List} with objects that can be used with the Neural Network
-	 *
-	 * @throws IOException if the file associated with the path does not exist.
-	 */
-	public static List<NetworkInput> importFromInputPath(String path, int offset, Function<String[], NetworkInput> f)
-			throws IOException {
-		List<NetworkInput> output = new ArrayList<>();
-		try (var lines = Files.lines(Paths.get(path))) {
-			output = lines.skip(offset).map(line -> line.split(",")).map(f).collect(toList());
-		}
-		return output;
-	}
+    /**
+     * Maps a file input to {@link NetworkInput} objects to be used in the Neural
+     * Network
+     * <p>
+     * Splits every line in the file on a comma, and then applies the
+     * {@link Function} on that array.
+     * <p>
+     * Example: "1.1,1.3,0.13,0.01,TRUE"->["1.1","1.3",0.13","0.01","TRUE"]->
+     * Vector(1.1,1.3,0.13,0.01), Vector(0,0,1,0), if TRUE in some represents a one
+     * hot vector. Vector here is not some class in this project, rather a
+     * representation of what the function should do.
+     *
+     * @param path   Path to the file
+     * @param offset should a header line be skipped? Or even more lines?
+     * @param f      a map from a split string to a NetworkInput.
+     * @return a {@link List} with objects that can be used with the Neural Network
+     * @throws IOException if the file associated with the path does not exist.
+     */
+    public static List<NetworkInput> importFromInputPath(String path, int offset, Function<String[], NetworkInput> f)
+            throws IOException {
+        List<NetworkInput> output = new ArrayList<>();
+        try (var lines = Files.lines(Paths.get(path))) {
+            output = lines.skip(offset).map(line -> line.split(",")).map(f).collect(toList());
+        }
+        return output;
+    }
 
-	public static List<NetworkInput> importFromPath(String path, DataImport di) throws IOException {
-		return NetworkUtilities.importFromInputPath(path, 0, di.function);
-	}
+    public static List<NetworkInput> importFromPath(String path, DataImport di) throws IOException {
+        return NetworkUtilities.importFromInputPath(path, 0, di.function);
+    }
 
-	public static List<NetworkInput> importFromInputStream(final Stream<String> test, int size,
-			Function<String[], NetworkInput> f) {
-		return importFromInputStream(test, size, 0, f);
-	}
+    public static List<NetworkInput> importFromInputStream(final Stream<String> test, int size,
+                                                           Function<String[], NetworkInput> f) {
+        return importFromInputStream(test, size, 0, f);
+    }
 
-	public static List<NetworkInput> importFromInputStream(Stream<String> path, int size, int offset,
-			Function<String[], NetworkInput> f) {
+    public static List<NetworkInput> importFromInputStream(Stream<String> path, int size, int offset,
+                                                           Function<String[], NetworkInput> f) {
 
-		List<NetworkInput> fromStream;
+        List<NetworkInput> fromStream;
 
-		fromStream = path.limit(size).skip(offset).map(line -> line.split(",")).map(f).collect(toList());
+        fromStream = path.limit(size).skip(offset).map(line -> line.split(",")).map(f).collect(toList());
 
-		return fromStream;
-	}
+        return fromStream;
+    }
 
-	public static List<NetworkInput> readGzip(final String fileName) {
-		List<NetworkInput> output = new ArrayList<>();
-		try (BufferedReader is = new BufferedReader(
-				new InputStreamReader(new GZIPInputStream(new FileInputStream(fileName))))) {
-			String line;
-			while ((line = is.readLine()) != null) {
-				System.out.println(line);
-			}
-		} catch (IOException e) {
+    public static List<NetworkInput> readGzip(final String fileName) {
+        List<NetworkInput> output = new ArrayList<>();
+        try (BufferedReader is = new BufferedReader(
+                new InputStreamReader(new GZIPInputStream(new FileInputStream(fileName))))) {
+            String line;
+            while ((line = is.readLine()) != null) {
+                System.out.println(line);
+            }
+        } catch (IOException e) {
 
-		}
-		return output;
-	}
+        }
+        return output;
+    }
 
-	public static NetworkInput MNISTApply(String[] e) {
-		return constructDataFromDoubleArray(normalizeData(e));
-	}
+    public static NetworkInput MNISTApply(String[] e) {
+        return constructDataFromDoubleArray(normalizeData(e));
+    }
 
-	private static double[][] normalizeData(String[] split) {
-		double[][] d = new double[1 + 28 * 28][1];
-		for (int i = 1; i < split.length; i++) {
-			if (Double.parseDouble(split[i]) > 1) {
-				d[i][0] = 1;
-			} else {
-				d[i][0] = 0;
-			}
-		}
-		d[0][0] = Integer.parseInt(split[0]);
-		return d;
-	}
+    private static double[][] normalizeData(String[] split) {
+        double[][] d = new double[1 + 28 * 28][1];
+        for (int i = 1; i < split.length; i++) {
+            if (Double.parseDouble(split[i]) > 1) {
+                d[i][0] = 1;
+            } else {
+                d[i][0] = 0;
+            }
+        }
+        d[0][0] = Integer.parseInt(split[0]);
+        return d;
+    }
 
-	private static NetworkInput constructDataFromDoubleArray(double[][] in) {
-		double[][] corr = new double[10][1];
-		int index = (int) in[0][0];
-		corr[index][0] = 1;
-		double[][] data = new double[28 * 28][1];
+    private static NetworkInput constructDataFromDoubleArray(double[][] in) {
+        double[][] corr = new double[10][1];
+        int index = (int) in[0][0];
+        corr[index][0] = 1;
+        double[][] data = new double[28 * 28][1];
 
-		int dataSize = data.length;
-		for (int j = 1; j < dataSize; j++) {
-			data[j - 1][0] = in[j][0];
-		}
-		return new NetworkInput(Matrix.Factory.importFromArray(data), Matrix.Factory.importFromArray(corr));
-	}
+        int dataSize = data.length;
+        for (int j = 1; j < dataSize; j++) {
+            data[j - 1][0] = in[j][0];
+        }
+        return new NetworkInput(Matrix.Factory.importFromArray(data), Matrix.Factory.importFromArray(corr));
+    }
 
-	public static List<List<NetworkInput>> splitData(final List<NetworkInput> training, final int batchSize) {
-		List<List<NetworkInput>> d = new ArrayList<>();
-		for (int i = 0; i < training.size() - batchSize; i += batchSize) {
-			d.add(training.subList(i, i + batchSize));
-		}
-		return d;
-	}
+    /**
+     * Splits the data into batches of training data.
+     *
+     * @param training  data to split
+     * @param batchSize by what batch size
+     * @return list of list of size batch with data
+     */
+    public static List<List<NetworkInput>> batchSplitData(final List<NetworkInput> training, final int batchSize) {
+        List<List<NetworkInput>> d = new ArrayList<>();
+        for (int i = 0; i < training.size() - batchSize; i += batchSize) {
+            d.add(training.subList(i, i + batchSize));
+        }
+        return d;
+    }
 
-	public static List<Supplier<Stream<NetworkInput>>> streamSplit(final List<NetworkInput> training,
-			final int batchSize) {
-		List<Supplier<Stream<NetworkInput>>> output = new ArrayList<>();
-		for (int i = 0; i < training.size() - batchSize; i += batchSize) {
-			final int index = i;
-			final int nextIndex = index + batchSize;
-			output.add(() -> training.subList(index, nextIndex).parallelStream());
-		}
-		return output;
-	}
+    public static List<Supplier<Stream<NetworkInput>>> streamSplit(final List<NetworkInput> training,
+                                                                   final int batchSize) {
+        List<Supplier<Stream<NetworkInput>>> output = new ArrayList<>();
+        for (int i = 0; i < training.size() - batchSize; i += batchSize) {
+            final int index = i;
+            final int nextIndex = index + batchSize;
+            output.add(() -> training.subList(index, nextIndex).parallelStream());
+        }
+        return output;
+    }
 
-	public static List<NetworkInput> importData(String path, DataImport dI, String splitOn) throws IOException {
-		try (var lines = Files.lines(Paths.get(path))) {
-			return lines.map(e -> e.split(splitOn)).map(dI.function).collect(toList());
-		}
-	}
+    public static List<NetworkInput> importData(String path, DataImport dI, String splitOn) throws IOException {
+        try (var lines = Files.lines(Paths.get(path))) {
+            return lines.map(e -> e.split(splitOn)).map(dI.function).collect(toList());
+        }
+    }
 
 }
