@@ -3,35 +3,26 @@ package math.activations;
 import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
 
-public class LinearFunction implements ActivationFunction {
+public class LinearFunction extends ActivationFunction {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 5919973604842732692L;
+    private final double value;
 
-	private static final int LIN_DER = 1;
+    public LinearFunction(double value) {
+        this.value = value;
+    }
 
-	public double linear(double a) {
-		return a;
-	}
+    @Override
+    public String getName() {
+        return "Linear";
+    }
 
-	public double linearDerivative(double a) {
-		return LIN_DER;
-	}
+    @Override
+    public Matrix function(Matrix m) {
+        return MatrixUtilities.map(m.clone(), (e) -> e * value);
+    }
 
-	@Override
-	public Matrix applyFunction(Matrix input) {
-		return MatrixUtilities.map(input, this::linear);
-	}
-
-	@Override
-	public Matrix applyDerivative(Matrix input) {
-		return MatrixUtilities.map(input, this::linearDerivative);
-	}
-
-	@Override
-	public String getName() {
-		return "LIN";
-	}
+    @Override
+    public Matrix derivative(Matrix m) {
+        return MatrixUtilities.map(m.clone(), (e) -> value);
+    }
 }

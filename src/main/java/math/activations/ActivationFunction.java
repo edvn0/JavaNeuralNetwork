@@ -1,19 +1,19 @@
 package math.activations;
 
-import java.io.Serializable;
+import math.activations.functional.DifferentiableFunction;
 import org.ujmp.core.Matrix;
 
-public interface ActivationFunction extends Serializable {
+import java.io.Serializable;
 
-	Matrix applyFunction(Matrix input);
+public abstract class ActivationFunction implements DifferentiableFunction, Serializable {
 
-	Matrix applyDerivative(Matrix input);
+    public ActivationFunction() {
 
-	default Matrix derivativeOnInput(Matrix input, Matrix out) {
-		return out.times(applyDerivative(input));
-	}
+    }
 
-	String getName();
+    public Matrix derivativeOnInput(Matrix input, Matrix out) {
+        return out.times(derivative(input));
+    }
 
-	String toString();
+    public abstract String getName();
 }

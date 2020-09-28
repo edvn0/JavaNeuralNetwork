@@ -1,7 +1,7 @@
 package utilities.data;
 
 import java.util.function.Function;
-import neuralnetwork.NetworkInput;
+import neuralnetwork.inputs.NetworkInput;
 import org.ujmp.core.DenseMatrix;
 
 // TODO: Implement DataImport thingie

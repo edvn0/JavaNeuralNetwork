@@ -3,38 +3,28 @@ package math.activations;
 import org.ujmp.core.Matrix;
 import utilities.MatrixUtilities;
 
-public class SigmoidFunction implements ActivationFunction {
+public class SigmoidFunction extends ActivationFunction {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 8268667665334669223L;
-	private static final String NAME = "SIGMOID";
+    @Override
+    public String getName() {
+        return "Sigmoid";
+    }
 
-	private double sigmoid(double in) {
-		return 1 / (1 + Math.exp(-in));
-	}
+    private double sigmoid(double input) {
+        return 1 / (1 + Math.exp(-input));
+    }
 
-	private double sigmoidDerivative(double a) {
-		return a * (1 - a);
-	}
+    private double sigmoidDerivative(double input) {
+        return input * (1 - input);
+    }
 
-	@Override
-	public Matrix applyFunction(Matrix input) {
-		Matrix returnDenseMatrix = input;
-		returnDenseMatrix = MatrixUtilities.map(returnDenseMatrix, this::sigmoid);
-		return returnDenseMatrix;
-	}
+    @Override
+    public Matrix function(Matrix m) {
+        return MatrixUtilities.map(m.clone(), this::sigmoid);
+    }
 
-	@Override
-	public Matrix applyDerivative(Matrix input) {
-		Matrix returnDenseMatrix = input;
-		returnDenseMatrix = MatrixUtilities.map(returnDenseMatrix, this::sigmoidDerivative);
-		return returnDenseMatrix;
-	}
-
-	@Override
-	public String getName() {
-		return NAME;
-	}
+    @Override
+    public Matrix derivative(Matrix m) {
+        return MatrixUtilities.map(m.clone(), this::sigmoidDerivative);
+    }
 }

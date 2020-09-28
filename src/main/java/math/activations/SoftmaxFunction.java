@@ -1,65 +1,60 @@
 package math.activations;
 
-import java.util.Arrays;
-import java.util.stream.DoubleStream;
-import org.ujmp.core.Matrix;
 import org.ujmp.core.Matrix;
 import org.ujmp.core.calculation.Calculation.Ret;
-import utilities.MatrixUtilities;
 
-public class SoftmaxFunction implements ActivationFunction {
+import static utilities.MatrixUtilities.map;
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -5298468440584699205L;
+public class SoftmaxFunction extends ActivationFunction {
 
-	/**
-	 * Takes as input a vector of size NX1 and returns a SoftMax Vector of that
-	 * input.
-	 *
-	 * @param input input vector.
-	 *
-	 * @return softmax vector.
-	 */
-	private Matrix softMax(Matrix input) {
-		if (input.getColumnCount() != 1) {
-			throw new IllegalArgumentException("You can only perform SoftMax on a vector.");
-		}
+    /**
+     *
+     */
+    private static final long serialVersionUID = -5298468440584699205L;
 
-		Matrix max = this.max(input);
-		Matrix z = input.minus(max);
-		double sum = DoubleStream.of(MatrixUtilities.toArray(z)).map(Math::exp).sum();
+    /**
+     * Takes as input a vector of size NX1 and returns a SoftMax Vector of that
+     * input.
+     *
+     * @param input input vector.
+     * @return softmax vector.
+     */
+    private Matrix softMax(Matrix input) {
+        if (input.getColumnCount() != 1) {
+            throw new IllegalArgumentException("You can only perform SoftMax on a vector.");
+        }
 
-		return MatrixUtilities.map(z, (e) -> Math.exp(e) / sum);
-	}
+        Matrix max = this.max(input);
+        Matrix z = input.minus(max);
+        double sum = map(z.clone(), Math::exp).getValueSum();
 
-	private Matrix max(Matrix input) {
-		double[] out = new double[(int) input.getRowCount()];
-		int max = input.indexOfMax(Ret.NEW, 0).intValue();
-		Arrays.fill(out, max);
-		return Matrix.Factory.importFromArray(out).transpose();
-	}
+        return map(z.clone(), (e) -> Math.exp(e) / sum);
+    }
 
-	@Override
-	public Matrix applyFunction(Matrix input) {
-		return this.softMax(input);
-	}
+    private Matrix max(Matrix input) {
+        double max = input.max(Ret.NEW, 0).doubleValue();
+        return Matrix.Factory.zeros(input.getRowCount(), 1).plus(max);
+    }
 
-	@Override
-	public Matrix applyDerivative(Matrix input) {
-		return null;
-	}
+    @Override
+    public Matrix derivativeOnInput(final Matrix input, final Matrix out) {
+        double xOut = input.times(out).getValueSum();
+        Matrix derive = out.minus(xOut);
+        return input.times(derive);
+    }
 
-	@Override
-	public Matrix derivativeOnInput(final Matrix input, final Matrix out) {
-		double xOut = input.times(out).getValueSum();
-		Matrix derive = out.minus(xOut);
-		return input.times(derive);
-	}
+    @Override
+    public String getName() {
+        return "SOFTMAX";
+    }
 
-	@Override
-	public String getName() {
-		return "SOFTMAX";
-	}
+    @Override
+    public Matrix function(Matrix m) {
+        return this.softMax(m.clone());
+    }
+
+    @Override
+    public Matrix derivative(Matrix m) {
+        return null;
+    }
 }

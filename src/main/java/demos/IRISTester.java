@@ -8,7 +8,7 @@ import math.activations.SoftmaxFunction;
 import math.error_functions.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import neuralnetwork.NetworkBuilder;
-import neuralnetwork.NetworkInput;
+import neuralnetwork.inputs.NetworkInput;
 import neuralnetwork.NeuralNetwork;
 import optimizers.ADAM;
 import utilities.NetworkUtilities;
@@ -46,7 +46,7 @@ public class IRISTester {
 		network.trainWithMetrics(training,
 			validation,
 			70,
-			1, true, "/Users/edwincarlsson/Downloads");
+			1, "/Users/edwincarlsson/Downloads");
 		System.out.println(network.evaluateTestData(testing, 1000));
 	}
 }

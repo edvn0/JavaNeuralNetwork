@@ -1,7 +1,7 @@
 package math.error_functions;
 
 import java.util.List;
-import neuralnetwork.NetworkInput;
+import neuralnetwork.inputs.NetworkInput;
 import org.ujmp.core.Matrix;
 
 public class MeanSquaredCostFunction implements CostFunction {
@@ -19,8 +19,8 @@ public class MeanSquaredCostFunction implements CostFunction {
 	}
 
 	@Override
-	public Matrix applyCostFunctionGradient(final Matrix in, final Matrix label) {
-		return (Matrix) in.minus(label).times(2);
+	public Matrix applyCostFunctionGradient(final Matrix in, final Matrix correct) {
+		return in.minus(correct).times(2);
 	}
 
 }

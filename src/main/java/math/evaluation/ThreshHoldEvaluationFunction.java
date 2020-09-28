@@ -1,7 +1,7 @@
 package math.evaluation;
 
 import java.util.List;
-import neuralnetwork.NetworkInput;
+import neuralnetwork.inputs.NetworkInput;
 import org.ujmp.core.Matrix;
 
 public class ThreshHoldEvaluationFunction implements EvaluationFunction {

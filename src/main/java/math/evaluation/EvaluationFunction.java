@@ -3,7 +3,7 @@ package math.evaluation;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
-import neuralnetwork.NetworkInput;
+import neuralnetwork.inputs.NetworkInput;
 
 /**
  * Evaluate a set of test data against some strategy, like thresholds or ArgMaxing.

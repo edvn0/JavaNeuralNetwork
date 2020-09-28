@@ -1,7 +1,7 @@
 package math.error_functions;
 
 import java.util.List;
-import neuralnetwork.NetworkInput;
+import neuralnetwork.inputs.NetworkInput;
 import org.ujmp.core.Matrix;
 import org.ujmp.core.calculation.Calculation.Ret;
 
@@ -20,8 +20,8 @@ public class CrossEntropyCostFunction implements CostFunction {
 	}
 
 	@Override
-	public Matrix applyCostFunctionGradient(final Matrix input, final Matrix label) {
-		return input.minus(label);
+	public Matrix applyCostFunctionGradient(final Matrix input, final Matrix correct) {
+		return input.minus(correct);
 	}
 
 }

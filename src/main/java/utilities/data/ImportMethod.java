@@ -2,7 +2,7 @@ package utilities.data;
 
 import java.io.IOException;
 import java.util.List;
-import neuralnetwork.NetworkInput;
+import neuralnetwork.inputs.NetworkInput;
 
 public interface ImportMethod {
 

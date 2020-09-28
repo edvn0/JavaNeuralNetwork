@@ -16,25 +16,26 @@ repositories {
 mainClassName = "demos.MNISTTester"
 
 run {
-    args = ["20","64"]
+    args = ["200", "32", "C:\\Users\\edvin\\IdeaProjects\\JavaNeuralNetwork\\src\\main\\resources\\graphoutput"]
 }
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile 'com.google.code.gson:gson:2.8.6'
-    compile 'org.jetbrains:annotations:18.0.0'
-    compile 'org.ujmp:ujmp-core:0.3.0'
-    compile 'org.knowm.xchart:xchart:3.6.0'
-    compile 'me.tongfei:progressbar:0.7.4'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'org.jetbrains:annotations:18.0.0'
+    implementation 'org.ujmp:ujmp-core:0.3.0'
+    implementation 'org.ojalgo:ojalgo:48.3.0'
+    implementation 'org.knowm.xchart:xchart:3.6.0'
+    implementation 'me.tongfei:progressbar:0.7.4'
+    implementation 'org.slf4j:slf4j-api:1.7.25'
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12
-    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
+    implementation group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
 
-	compileOnly 'org.projectlombok:lombok:1.18.12'
-	annotationProcessor 'org.projectlombok:lombok:1.18.12'
-	
-	testCompileOnly 'org.projectlombok:lombok:1.18.12'
-	testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
+    compileOnly 'org.projectlombok:lombok:1.18.12'
+    annotationProcessor 'org.projectlombok:lombok:1.18.12'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.12'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.12'
 }
 
 jar {
