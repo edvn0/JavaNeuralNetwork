@@ -4,6 +4,7 @@ import math.activations.ActivationFunction;
 import math.activations.DoNothingFunction;
 import math.error_functions.CostFunction;
 import math.evaluation.EvaluationFunction;
+import math.linearalgebra.Matrix;
 import optimizers.Optimizer;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class NetworkBuilder {
      */
     protected int[] structure;
     protected int index;
-    protected List<ActivationFunction> functions;
+    protected List<ActivationFunction<Matrix<?>>> functions;
     protected CostFunction costFunction;
     protected EvaluationFunction evaluationFunction;
     protected Optimizer optimizer;
@@ -47,7 +48,7 @@ public class NetworkBuilder {
         return this;
     }
 
-    public NetworkBuilder setLayer(final int i, final ActivationFunction f) {
+    public NetworkBuilder setLayer(final int i, final ActivationFunction<Matrix<?>> f) {
 
         structure[index] = i;
         this.index++;
@@ -55,7 +56,7 @@ public class NetworkBuilder {
         return this;
     }
 
-    public NetworkBuilder setActivationFunction(ActivationFunction f) {
+    public NetworkBuilder setActivationFunction(ActivationFunction<Matrix<?>> f) {
         this.functions.add(f);
         this.index++;
         return this;
@@ -71,9 +72,9 @@ public class NetworkBuilder {
         return this;
     }
 
-    protected ActivationFunction[] getActivationFunctions() {
-        ActivationFunction[] f;
-        f = new ActivationFunction[this.index];
+    protected ActivationFunction<Matrix<?>>[] getActivationFunctions() {
+        ActivationFunction<Matrix<?>>[] f;
+        f = new ActivationFunction<Matrix<?>>[this.index];
 
         if (this.functions.size() == this.structure.length) {
             // We have one too many functions, one associated with the "first layer"
@@ -95,7 +96,7 @@ public class NetworkBuilder {
         return f;
     }
 
-    public NetworkBuilder setLastLayer(final int i, final ActivationFunction f) {
+    public NetworkBuilder setLastLayer(final int i, final ActivationFunction<Matrix<?>> f) {
         this.structure[index] = i;
         this.index++;
         this.functions.add(f);

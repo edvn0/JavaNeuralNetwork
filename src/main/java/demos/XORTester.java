@@ -3,6 +3,7 @@ package demos;
 import math.activations.TanhFunction;
 import math.error_functions.MeanSquaredCostFunction;
 import math.evaluation.EvaluationFunction;
+import math.linearalgebra.MatrixSupplier;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.inputs.NetworkInput;
@@ -54,7 +55,7 @@ public class XORTester {
         }
         Collections.shuffle(data);
 
-        network = new NeuralNetwork(
+        network = new NeuralNetwork(MatrixSupplier.UJMP,
                 new NetworkBuilder(4).setFirstLayer(2).setLayer(10, new TanhFunction()).setLayer(10, new TanhFunction())
                         .setLastLayer(1, new TanhFunction()).setCostFunction(new MeanSquaredCostFunction())
                         .setEvaluationFunction((EvaluationFunction) toEvaluate -> {

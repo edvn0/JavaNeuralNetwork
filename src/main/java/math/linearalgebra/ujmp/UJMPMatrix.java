@@ -1,22 +1,22 @@
 package math.linearalgebra.ujmp;
 
 import lombok.extern.slf4j.Slf4j;
-import math.linearalgebra.NeuralNetworkMatrix;
-import org.ujmp.core.Matrix;
+import math.linearalgebra.Matrix;
+import utilities.MatrixUtilities;
 
 import java.util.function.Function;
 
 @Slf4j
-public class UJMPMatrix implements NeuralNetworkMatrix<UJMPMatrix, Double> {
+public class UJMPMatrix implements Matrix<UJMPMatrix> {
 
-    private final Matrix delegate;
+    private final org.ujmp.core.Matrix delegate;
 
-    public UJMPMatrix(Matrix m) {
+    public UJMPMatrix(org.ujmp.core.Matrix m) {
         this.delegate = m;
     }
 
     public UJMPMatrix(UJMPMatrix in) {
-        this.delegate = Matrix.Factory.importFromArray(in.delegate.toDoubleArray());
+        this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(in.delegate.toDoubleArray());
     }
 
     public UJMPMatrix(double[] values, int rows, int cols) {
@@ -24,13 +24,12 @@ public class UJMPMatrix implements NeuralNetworkMatrix<UJMPMatrix, Double> {
             throw new IllegalArgumentException("The size of input array does not match rows and columns");
         }
 
-        double[][] matrix = new double[rows][cols];
-        for (int x = 0; x < rows; x++) {
-            for (int y = 0; y < cols; y++) {
-                matrix[x][y] = values[y * rows + x];
-            }
-        }
-        this.delegate = Matrix.Factory.importFromArray(matrix);
+        double[][] matrix = MatrixUtilities.fromFlat(values, rows, cols);
+        this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(matrix);
+    }
+
+    public static UJMPMatrix identity(int rows, int cols) {
+        return new UJMPMatrix(org.ujmp.core.Matrix.Factory.eye(rows, cols));
     }
 
     @Override
@@ -42,17 +41,13 @@ public class UJMPMatrix implements NeuralNetworkMatrix<UJMPMatrix, Double> {
         return (int) this.delegate.getColumnCount();
     }
 
-    public Matrix getDelegate() {
-        return delegate;
-    }
-
     @Override
     public UJMPMatrix multiply(UJMPMatrix otherMatrix) {
         return new UJMPMatrix(this.delegate.mtimes(otherMatrix.delegate));
     }
 
     @Override
-    public UJMPMatrix multiply(Double scalar) {
+    public UJMPMatrix multiply(double scalar) {
         return new UJMPMatrix(this.delegate.times(scalar));
     }
 
@@ -62,22 +57,27 @@ public class UJMPMatrix implements NeuralNetworkMatrix<UJMPMatrix, Double> {
     }
 
     @Override
-    public UJMPMatrix add(Double in) {
+    public UJMPMatrix add(double in) {
         return new UJMPMatrix(this.delegate.plus(in));
     }
 
     @Override
-    public UJMPMatrix subtract(Double in) {
+    public UJMPMatrix subtract(double in) {
         return new UJMPMatrix(this.delegate.minus(in));
     }
 
     @Override
-    public UJMPMatrix divide(Double in) {
+    public UJMPMatrix subtract(UJMPMatrix in) {
+        return new UJMPMatrix(this.delegate.minus(in.delegate));
+    }
+
+    @Override
+    public UJMPMatrix divide(double in) {
         return new UJMPMatrix(this.delegate.divide(in));
     }
 
     @Override
-    public Double map(Function<UJMPMatrix, Double> mapping) {
+    public double map(Function<UJMPMatrix, Double> mapping) {
         return mapping.apply(this);
     }
 

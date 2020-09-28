@@ -3,7 +3,6 @@ package neuralnetwork;
 import lombok.extern.slf4j.Slf4j;
 import math.activations.ActivationFunction;
 import math.activations.LeakyReluFunction;
-import math.activations.SoftmaxFunction;
 import math.activations.TanhFunction;
 import math.error_functions.CostFunction;
 import math.error_functions.CrossEntropyCostFunction;
@@ -11,15 +10,19 @@ import math.error_functions.MeanSquaredCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import math.evaluation.EvaluationFunction;
 import math.evaluation.ThreshHoldEvaluationFunction;
+import math.linearalgebra.MatrixSupplier;
+import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import me.tongfei.progressbar.ProgressBar;
+import neuralnetwork.initialiser.BiasInitialiser;
+import neuralnetwork.initialiser.InitialisationMethod;
+import neuralnetwork.initialiser.Initialiser;
+import neuralnetwork.initialiser.WeightInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import optimizers.ADAM;
 import optimizers.Optimizer;
-import optimizers.StochasticGradientDescent;
 import org.apache.log4j.BasicConfigurator;
 import org.jetbrains.annotations.NotNull;
-import org.ujmp.core.Matrix;
-import utilities.MatrixUtilities;
 import utilities.NetworkUtilities;
 
 import java.io.*;
@@ -56,48 +59,16 @@ public class NeuralNetwork implements Serializable {
     // The structure of the network
     private final int[] sizes;
 
+    private final Initialiser wInitialiser;
+    private final Initialiser bInitialiser;
+
     // Weights and biases of the network
-    private volatile Matrix[] weights;
-    private volatile Matrix[] biases;
-    private volatile Matrix[] dW;
-    private volatile Matrix[] dB;
+    private volatile OjAlgoMatrix[] weights;
+    private volatile OjAlgoMatrix[] biases;
+    private volatile OjAlgoMatrix[] dW;
+    private volatile OjAlgoMatrix[] dB;
 
-    /**
-     * Create a Neural Network with a learning rate, all the activation functions
-     * for all layers, the error function and the function to evaluate the network,
-     * and also the sizes of the layers, for example:
-     * <p>
-     * int[] sizes = {3,4,4,1} is a 4-layered fully connected network with 3 input
-     * nodes, 1 output nodes, 2 hidden layers with 4 nodes in each of them.
-     *
-     * @param functions     the activation functions for all layers
-     * @param errorFunction the error function to calculate error of last layers
-     * @param eval          the evaluation function to compare the network to the
-     *                      data's labels
-     * @param sizes         the table to initialize layers and weights.
-     */
-    @Deprecated
-    public NeuralNetwork(final double learning, final ActivationFunction[] functions, final CostFunction errorFunction,
-                         final EvaluationFunction eval, final int[] sizes) {
-        this.functions = functions;
-        this.costFunction = errorFunction;
-        this.totalLayers = sizes.length;
-        this.evaluationFunction = eval;
-        this.sizes = sizes;
-        this.optimizer = new StochasticGradientDescent(learning);
-
-        initialiseBiases(sizes);
-        initialiseWeights(sizes);
-
-        if (errorFunction instanceof CrossEntropyCostFunction
-                && !(functions[functions.length - 1] instanceof SoftmaxFunction)) {
-            throw new IllegalArgumentException(
-                    "To properly function, back-propagation needs the activation function of the last "
-                            + "layer to be differentiable with respect to the error function.");
-        }
-    }
-
-    public NeuralNetwork(NetworkBuilder b) {
+    public NeuralNetwork(MatrixSupplier s, NetworkBuilder b) {
         this.sizes = b.structure;
         this.functions = b.getActivationFunctions();
         this.costFunction = b.costFunction;
@@ -108,11 +79,17 @@ public class NeuralNetwork implements Serializable {
         this.optimizer = b.optimizer;
         this.optimizer.initializeOptimizer(this.totalLayers);
 
-        // Initialize weights, deltas and gradients.
-        initialiseWeights(sizes);
-        this.dW = initializeMatrices(this.weights);
-        initialiseBiases(sizes);
-        this.dB = initializeMatrices(this.biases);
+        this.wInitialiser = new WeightInitialiser(this.sizes, InitialisationMethod.XAVIER);
+        this.bInitialiser = new BiasInitialiser(this.sizes, InitialisationMethod.SCALAR);
+
+        var weights = wInitialiser.createMatrices();
+        var biases = bInitialiser.createMatrices();
+
+        this.weights =  weights.getParameters();
+        this.dW = weights.getDeltaParameters();
+
+        this.biases = biases.getParameters();
+        this.dB = biases.getDeltaParameters();
     }
 
     /**
@@ -126,8 +103,8 @@ public class NeuralNetwork implements Serializable {
      * @param regressionOrClassification classification or regression? I.e, threshold or cross
      *                                   entropy
      */
-    public static NeuralNetwork standardLearner(int in, int out, boolean regressionOrClassification) {
-        return new NeuralNetwork(new NetworkBuilder(in).setFirstLayer(out).setLayer(35, new LeakyReluFunction(0.01))
+    public static NeuralNetwork standardLearner(MatrixSupplier s, int in, int out, boolean regressionOrClassification) {
+        return new NeuralNetwork(s, new NetworkBuilder(in).setFirstLayer(out).setLayer(35, new LeakyReluFunction(0.01))
                 .setLayer(35, new LeakyReluFunction(0.01)).setLastLayer(10, new TanhFunction())
                 .setCostFunction(
                         regressionOrClassification ? new MeanSquaredCostFunction() : new CrossEntropyCostFunction())
@@ -136,101 +113,8 @@ public class NeuralNetwork implements Serializable {
                 .setOptimizer(new ADAM(0.001, 0.9, 0.999)));
     }
 
-    public static NeuralNetwork of(NetworkBuilder b) {
-        return new NeuralNetwork(b);
-    }
-
-    /**
-     * Reads a .ser file or a path to a .ser file (with the extension excluded) to a
-     * NeuralNetwork object.
-     * <p>
-     * E.g. /Users/{other paths}/NeuralNetwork_{LONG}_.ser works as well as
-     * /Users/{other paths}/NeuralNetwork_{LONG}_
-     *
-     * @param path the full path to the file. does not require the .ser extension.
-     * @return a deserialised object.
-     * @throws IOException if file could not be found.
-     */
-    public static NeuralNetwork readObject(String path) throws IOException {
-        NeuralNetwork network = null;
-        File file;
-        path = (path.endsWith(".ser") ? path : path + ".ser");
-
-        try (FileInputStream fs = new FileInputStream(file = new File(path));
-             ObjectInputStream os = new ObjectInputStream(fs)) {
-
-            network = (NeuralNetwork) os.readObject();
-
-            log.info("Completed deserialization from file:{}\n", file.getPath());
-        } catch (final ClassNotFoundException e) {
-            log.error(e.getMessage());
-        }
-        if (null != network) {
-            return network;
-        } else {
-            log.error(ERROR_MSG);
-            throw new IOException(ERROR_MSG);
-        }
-    }
-
-    /**
-     * Reads a .ser file or a path to a .ser file (with the extension excluded) to a
-     * NeuralNetwork object.
-     * <p>
-     * E.g. /Users/{other paths}/NeuralNetwork_{LONG}_.ser works as well as
-     * /Users/{other paths}/NeuralNetwork_{LONG}_
-     *
-     * @param file the file to read-
-     * @return a deserialised network.
-     * @throws IOException if file is not readable.
-     */
-    public static NeuralNetwork readObject(final File file) throws IOException {
-        NeuralNetwork neuralNetwork = null;
-        try (FileInputStream fs = new FileInputStream(file); ObjectInputStream stream = new ObjectInputStream(fs)) {
-            neuralNetwork = (NeuralNetwork) stream.readObject();
-
-            log.info("Completed deserialization, see file: {} \n", file.getAbsolutePath());
-        } catch (final ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (null != neuralNetwork) {
-            return neuralNetwork;
-        } else {
-            log.error(ERROR_MSG);
-            throw new IOException(ERROR_MSG);
-        }
-    }
-
-    /**
-     * Returns matrices of zeroes of similar dimensions as provided input.
-     *
-     * @param toCopyFrom input matrices of RowCount_iXColumnCount_i
-     * @return zero matrices with RowCount_iXColumnCount_i dimensions.
-     */
-    private Matrix[] initializeMatrices(final Matrix[] toCopyFrom) {
-        final Matrix[] deltas = new Matrix[toCopyFrom.length];
-        for (int i = 0; i < deltas.length; i++) {
-            final int rows = (int) toCopyFrom[i].getRowCount();
-            final int cols = (int) toCopyFrom[i].getColumnCount();
-            deltas[i] = Matrix.Factory.zeros(rows, cols);
-        }
-        return deltas;
-    }
-
-    private void initialiseWeights(final int[] sizes) {
-        this.weights = new Matrix[this.totalLayers - 1];
-        for (int i = 0; i < this.totalLayers - 1; i++) {
-            final int size = sizes[i];
-            this.weights[i] = MatrixUtilities.map(Matrix.Factory.rand(sizes[i + 1], sizes[i]),
-                    (e) -> this.xavierInitialization(size));
-        }
-    }
-
-    private void initialiseBiases(final int[] sizes) {
-        this.biases = new Matrix[this.totalLayers - 1];
-        for (int i = 0; i < this.totalLayers - 1; i++) {
-            this.biases[i] = Matrix.Factory.zeros(sizes[i + 1], 1).plus(0.01);
-        }
+    public static NeuralNetwork of(MatrixSupplier s, NetworkBuilder b) {
+        return new NeuralNetwork(s,b);
     }
 
     private double xavierInitialization(final int prev) {
@@ -255,13 +139,13 @@ public class NeuralNetwork implements Serializable {
         final int size = trainingExamples.size();
 
         for (final var data : trainingExamples) {
-            final List<Matrix[]> deltas = backPropagate(data);
-            final Matrix[] deltaB = deltas.get(0);
-            final Matrix[] deltaW = deltas.get(1);
+            final List<OjAlgoMatrix[]> deltas = backPropagate(data);
+            final OjAlgoMatrix[] deltaB = deltas.get(0);
+            final OjAlgoMatrix[] deltaW = deltas.get(1);
 
             for (int j = 0; j < this.totalLayers - 1; j++) {
-                this.dW[j] = this.dW[j].plus(deltaW[j].times(1d / size));
-                this.dB[j] = this.dB[j].plus(deltaB[j].times(1d / size));
+                this.dW[j] = this.dW[j].add(deltaW[j].multiply(1d / size));
+                this.dB[j] = this.dB[j].add(deltaB[j].multiply(1d / size));
             }
         }
     }
@@ -270,13 +154,13 @@ public class NeuralNetwork implements Serializable {
      * Evaluates one example for multi threaded gradient descent.
      */
     private void evaluateTrainingExample(final NetworkInput ni) {
-        final List<Matrix[]> deltas = backPropagate(ni);
-        final Matrix[] deltaB = deltas.get(0);
-        final Matrix[] deltaW = deltas.get(1);
+        final List<OjAlgoMatrix[]> deltas = backPropagate(ni);
+        final OjAlgoMatrix[] deltaB = deltas.get(0);
+        final OjAlgoMatrix[] deltaW = deltas.get(1);
 
         for (int j = 0; j < this.totalLayers - 1; j++) {
-            dW[j] = dW[j].plus(deltaW[j]);
-            dB[j] = dB[j].plus(deltaB[j]);
+            dW[j] = dW[j].add(deltaW[j]);
+            dB[j] = dB[j].add(deltaB[j]);
         }
     }
 
@@ -287,36 +171,36 @@ public class NeuralNetwork implements Serializable {
         this.weights = this.optimizer.changeWeights(this.weights, this.dW);
         this.biases = this.optimizer.changeBiases(this.biases, this.dB);
 
-        this.dB = initializeMatrices(this.biases);
-        this.dW = initializeMatrices(this.weights);
+        this.dB = bInitialiser.clearDeltas();
+        this.dW = wInitialiser.clearDeltas();
 
     }
 
-    private synchronized List<Matrix[]> backPropagate(NetworkInput in) {
+    private synchronized List<OjAlgoMatrix[]> backPropagate(NetworkInput in) {
 
-        final List<Matrix[]> totalDeltas = new ArrayList<>();
-        final List<Matrix> activations = new ArrayList<>();
+        final List<OjAlgoMatrix[]> totalDeltas = new ArrayList<>();
+        final List<OjAlgoMatrix> activations = new ArrayList<>();
 
-        Matrix[] deltaBiases = initializeMatrices(this.biases);
-        Matrix[] deltaWeights = initializeMatrices(this.weights);
+        OjAlgoMatrix[] deltaBiases = bInitialiser.deltaParameters(this.biases);
+        OjAlgoMatrix[] deltaWeights = wInitialiser.deltaParameters(this.weights);
 
         // Alters all arrays and lists.
         this.feedForward(in.getData(), activations);
         // End feedforward
 
-        Matrix a = activations.get(activations.size() - 1);
-        Matrix deltaError = costFunction.applyCostFunctionGradient(a, in.getLabel());
+        OjAlgoMatrix a = activations.get(activations.size() - 1);
+        OjAlgoMatrix deltaError = costFunction.applyCostFunctionGradient(a, in.getLabel());
 
         // Iterate over all layers, they are indexed by the last layer (here given b
         for (int k = deltaBiases.length - 1; k >= 0; k--) {
-            final Matrix aCurr = activations.get(k + 1); // this layer
-            final Matrix aNext = activations.get(k); // Previous layer
-            Matrix differentiate = this.functions[k + 1].derivativeOnInput(aCurr, deltaError);
+            final OjAlgoMatrix aCurr = activations.get(k + 1); // this layer
+            final OjAlgoMatrix aNext = activations.get(k); // Previous layer
+            OjAlgoMatrix differentiate = this.functions[k + 1].derivativeOnInput(aCurr, deltaError);
 
             deltaBiases[k] = differentiate;
-            deltaWeights[k] = differentiate.mtimes(aNext.transpose());
+            deltaWeights[k] = differentiate.multiply(aNext.transpose());
 
-            deltaError = this.weights[k].transpose().mtimes(differentiate);
+            deltaError = this.weights[k].transpose().multiply(differentiate);
         }
 
         totalDeltas.add(deltaBiases);
@@ -328,15 +212,15 @@ public class NeuralNetwork implements Serializable {
     /**
      * Feed forward inside the back propagation, mutates the actives list.
      *
-     * @param starter Input matrix
+     * @param starter Input NeuralNetworkMatrix<Matrix>
      * @param actives activations list
      */
-    private void feedForward(final Matrix starter, final List<Matrix> actives) {
-        Matrix toPredict = starter;
+    private void feedForward(final OjAlgoMatrix starter, final List<OjAlgoMatrix> actives) {
+        OjAlgoMatrix toPredict = starter;
 
         actives.add(toPredict);
         for (int i = 0; i < this.totalLayers - 1; i++) {
-            final Matrix x = this.weights[i].mtimes(toPredict).plus(this.biases[i]);
+            final OjAlgoMatrix x = this.weights[i].multiply(toPredict).add(this.biases[i]);
 
             toPredict = this.functions[i + 1].function(x);
             actives.add(toPredict);
@@ -346,10 +230,10 @@ public class NeuralNetwork implements Serializable {
     /**
      * Predict a single example input data.
      *
-     * @param in {@link Matrix} a Matrix to feed forward.
-     * @return a classification of {@link Matrix}
+     * @param in {@link Matrix <Matrix>} a NeuralNetworkMatrix<Matrix> to feed forward.
+     * @return a classification of {@link Matrix <Matrix>}
      */
-    public Matrix predict(final Matrix in) {
+    public OjAlgoMatrix predict(final OjAlgoMatrix in) {
         return feedForward(in);
     }
 
@@ -359,10 +243,10 @@ public class NeuralNetwork implements Serializable {
      * @param in values to predict
      * @return classified values.
      */
-    private Matrix feedForward(final Matrix in) {
-        Matrix input = in;
+    private OjAlgoMatrix feedForward(final OjAlgoMatrix in) {
+        OjAlgoMatrix input = in;
         for (int i = 0; i < this.totalLayers - 1; i++) {
-            input = functions[i + 1].function(this.weights[i].mtimes(input).plus(this.biases[i]));
+            input = functions[i + 1].function(this.weights[i].multiply(input).add(this.biases[i]));
         }
         return input;
     }
@@ -372,7 +256,7 @@ public class NeuralNetwork implements Serializable {
 
         for (final NetworkInput networkInput : test) {
 
-            final Matrix out = this.feedForward(networkInput.getData());
+            final OjAlgoMatrix out = this.feedForward(networkInput.getData());
             final NetworkInput newOut = new NetworkInput(out, networkInput.getLabel());
             copy.add(newOut);
         }
@@ -528,9 +412,9 @@ public class NeuralNetwork implements Serializable {
 
     }
 
-    // -------------------------------------------------------------
-    // HERE STARTS AUXILIARIES, I/O for Plots, and for serialisation.
-    // -------------------------------------------------------------
+    private int[] weightDimensions(int i) {
+        return new int[]{(this.weights[i].rows()), (this.weights[i].cols())};
+    }
 
     /**
      * A helper method to construct a batch of a List, "indexed" by the batch size.
@@ -596,9 +480,65 @@ public class NeuralNetwork implements Serializable {
         log.info(b.toString());
     }
 
-    private int[] weightDimensions(int i) {
-        return new int[]{(int) (this.weights[i].getSize()[0]),
-                (int) (this.weights[i].getSize()[1])};
+    /**
+     * Reads a .ser file or a path to a .ser file (with the extension excluded) to a
+     * NeuralNetwork object.
+     * <p>
+     * E.g. /Users/{other paths}/NeuralNetwork_{LONG}_.ser works as well as
+     * /Users/{other paths}/NeuralNetwork_{LONG}_
+     *
+     * @param path the full path to the file. does not require the .ser extension.
+     * @return a deserialised object.
+     * @throws IOException if file could not be found.
+     */
+    public static NeuralNetwork readObject(String path) throws IOException {
+        NeuralNetwork network = null;
+        File file;
+        path = (path.endsWith(".ser") ? path : path + ".ser");
+
+        try (FileInputStream fs = new FileInputStream(file = new File(path));
+             ObjectInputStream os = new ObjectInputStream(fs)) {
+
+            network = (NeuralNetwork) os.readObject();
+
+            log.info("Completed deserialization from file:{}\n", file.getPath());
+        } catch (final ClassNotFoundException e) {
+            log.error(e.getMessage());
+        }
+        if (null != network) {
+            return network;
+        } else {
+            log.error(ERROR_MSG);
+            throw new IOException(ERROR_MSG);
+        }
+    }
+
+    /**
+     * Reads a .ser file or a path to a .ser file (with the extension excluded) to a
+     * NeuralNetwork object.
+     * <p>
+     * E.g. /Users/{other paths}/NeuralNetwork_{LONG}_.ser works as well as
+     * /Users/{other paths}/NeuralNetwork_{LONG}_
+     *
+     * @param file the file to read-
+     * @return a deserialised network.
+     * @throws IOException if file is not readable.
+     */
+    public static NeuralNetwork readObject(final File file) throws IOException {
+        NeuralNetwork neuralNetwork = null;
+        try (FileInputStream fs = new FileInputStream(file); ObjectInputStream stream = new ObjectInputStream(fs)) {
+            neuralNetwork = (NeuralNetwork) stream.readObject();
+
+            log.info("Completed deserialization, see file: {} \n", file.getAbsolutePath());
+        } catch (final ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        if (null != neuralNetwork) {
+            return neuralNetwork;
+        } else {
+            log.error(ERROR_MSG);
+            throw new IOException(ERROR_MSG);
+        }
     }
 
     /**
@@ -623,20 +563,4 @@ public class NeuralNetwork implements Serializable {
         }
     }
 
-    private class MultithreadedNeuralNetworkRunnable implements Runnable {
-
-        private final List<List<NetworkInput>> subList;
-
-        public MultithreadedNeuralNetworkRunnable(List<List<NetworkInput>> subList) {
-            this.subList = subList;
-        }
-
-        @Override
-        public void run() {
-            for (var l : subList) {
-                evaluateTrainingExample(l);
-                learnFromDeltas();
-            }
-        }
-    }
 }

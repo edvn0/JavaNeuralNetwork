@@ -1,7 +1,7 @@
 package math.activations;
 
 import math.activations.functional.DifferentiableFunction;
-import org.ujmp.core.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 import java.io.Serializable;
 
@@ -11,8 +11,8 @@ public abstract class ActivationFunction implements DifferentiableFunction, Seri
 
     }
 
-    public Matrix derivativeOnInput(Matrix input, Matrix out) {
-        return out.times(derivative(input));
+    public OjAlgoMatrix derivativeOnInput(OjAlgoMatrix input, OjAlgoMatrix out) {
+        return out.multiply(derivative(input));
     }
 
     public abstract String getName();

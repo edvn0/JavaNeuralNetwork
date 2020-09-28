@@ -1,7 +1,6 @@
 package math.activations;
 
-import org.ujmp.core.Matrix;
-import utilities.MatrixUtilities;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class LeakyReluFunction extends ReluFunction {
 
@@ -18,12 +17,12 @@ public class LeakyReluFunction extends ReluFunction {
     }
 
     @Override
-    public Matrix derivative(Matrix in) {
-        return MatrixUtilities.map(in, (e) -> e > 0 ? e : alpha);
+    public OjAlgoMatrix derivative(OjAlgoMatrix in) {
+        return in.mapElements((e) -> e > 0 ? e : alpha);
     }
 
     @Override
-    public Matrix function(Matrix in) {
-        return MatrixUtilities.map(in, (e) -> e > 0 ? 1 : alpha);
+    public OjAlgoMatrix function(OjAlgoMatrix in) {
+        return in.mapElements((e) -> e > 0 ? 1 : alpha);
     }
 }

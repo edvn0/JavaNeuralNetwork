@@ -1,4 +1,4 @@
-package math.linearalgebra;
+package math.linearalgebra.ujmp;
 
 import lombok.extern.slf4j.Slf4j;
 import math.linearalgebra.ujmp.UJMPMatrix;
@@ -38,7 +38,7 @@ public class UJMPMatrixTest {
     @Test
     public void multiply() {
 
-        UJMPMatrix id = new UJMPMatrix(Matrix.Factory.eye(2, 2));
+        UJMPMatrix id = UJMPMatrix.identity(2,2);
         UJMPMatrix out = new UJMPMatrix(new double[]{2, 3, 1, 5}, 2, 2);
         UJMPMatrix expectedIdOut = new UJMPMatrix(out);
 

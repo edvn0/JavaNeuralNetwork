@@ -5,6 +5,7 @@ import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
 import math.error_functions.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
+import math.linearalgebra.MatrixSupplier;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.inputs.NetworkInput;
@@ -29,7 +30,7 @@ public class MNISTTester {
         final int batch = 64;//;Integer.parseInt(args[1]);
         final String output = "E:\\Programming\\Git\\JavaNeuralNetwork\\src\\main\\resources\\output";//args[2];
 
-        NeuralNetwork network = NeuralNetwork.of(
+        NeuralNetwork network = NeuralNetwork.of(MatrixSupplier.UJMP,
                 new NetworkBuilder(3)
                         .setFirstLayer(784)
                         .setLayer(35, new LeakyReluFunction(0.01))

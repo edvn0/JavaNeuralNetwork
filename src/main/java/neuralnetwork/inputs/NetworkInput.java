@@ -1,6 +1,6 @@
 package neuralnetwork.inputs;
 
-import org.ujmp.core.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 import java.io.Serializable;
 
@@ -14,19 +14,19 @@ public class NetworkInput implements Serializable {
      *
      */
     private static final long serialVersionUID = -8743845031383184256L;
-    private final Matrix data;
-    private final Matrix label;
+    private final OjAlgoMatrix data;
+    private final OjAlgoMatrix label;
 
-    public NetworkInput(Matrix data, Matrix label) {
+    public NetworkInput(OjAlgoMatrix data, OjAlgoMatrix label) {
         this.data = data;
         this.label = label;
     }
 
-    public Matrix getData() {
+    public OjAlgoMatrix getData() {
         return data;
     }
 
-    public Matrix getLabel() {
+    public OjAlgoMatrix getLabel() {
         return label;
     }
 

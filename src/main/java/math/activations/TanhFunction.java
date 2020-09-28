@@ -1,7 +1,6 @@
 package math.activations;
 
-import org.ujmp.core.Matrix;
-import utilities.MatrixUtilities;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class TanhFunction extends ActivationFunction {
 
@@ -20,12 +19,12 @@ public class TanhFunction extends ActivationFunction {
     }
 
     @Override
-    public Matrix function(Matrix m) {
-        return MatrixUtilities.map(m.clone(), this::tanh);
+    public OjAlgoMatrix function(OjAlgoMatrix m) {
+        return m.mapElements(this::tanh);
     }
 
     @Override
-    public Matrix derivative(Matrix m) {
-        return MatrixUtilities.map(m.clone(), this::tanhDerivative);
+    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
+        return m.mapElements(this::tanhDerivative);
     }
 }

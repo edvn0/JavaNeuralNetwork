@@ -5,14 +5,14 @@ import org.ujmp.core.Matrix;
 
 public class NetworkLayer {
 
-    private final ActivationFunction activationFunction;
+    private final ActivationFunction<math.linearalgebra.Matrix<?>> activationFunction;
     private final int layerIndex;
     // Represents the data after activating this layer
     private final ThreadLocal<Matrix> activation;
     private Matrix weights;
     private Matrix bias;
 
-    public NetworkLayer(ActivationFunction activationFunction,
+    public NetworkLayer(ActivationFunction<math.linearalgebra.Matrix<?>> activationFunction,
                         int layerIndex) {
         this.activationFunction = activationFunction;
         this.layerIndex = layerIndex;

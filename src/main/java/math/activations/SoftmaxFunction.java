@@ -1,9 +1,6 @@
 package math.activations;
 
-import org.ujmp.core.Matrix;
-import org.ujmp.core.calculation.Calculation.Ret;
-
-import static utilities.MatrixUtilities.map;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class SoftmaxFunction extends ActivationFunction {
 
@@ -19,28 +16,28 @@ public class SoftmaxFunction extends ActivationFunction {
      * @param input input vector.
      * @return softmax vector.
      */
-    private Matrix softMax(Matrix input) {
-        if (input.getColumnCount() != 1) {
+    private OjAlgoMatrix softMax(OjAlgoMatrix input) {
+        if (input.cols() != 1) {
             throw new IllegalArgumentException("You can only perform SoftMax on a vector.");
         }
 
-        Matrix max = this.max(input);
-        Matrix z = input.minus(max);
-        double sum = map(z.clone(), Math::exp).getValueSum();
+        OjAlgoMatrix max = this.max(input);
+        OjAlgoMatrix z = input.subtract(max);
+        double sum = z.mapElements(Math::exp).sum();
 
-        return map(z.clone(), (e) -> Math.exp(e) / sum);
+        return z.mapElements((e) -> Math.exp(e) / sum);
     }
 
-    private Matrix max(Matrix input) {
-        double max = input.max(Ret.NEW, 0).doubleValue();
-        return Matrix.Factory.zeros(input.getRowCount(), 1).plus(max);
+    private OjAlgoMatrix max(OjAlgoMatrix input) {
+        double max = input.max();
+        return OjAlgoMatrix.zeroes(input.cols(), 1).add(max);
     }
 
     @Override
-    public Matrix derivativeOnInput(final Matrix input, final Matrix out) {
-        double xOut = input.times(out).getValueSum();
-        Matrix derive = out.minus(xOut);
-        return input.times(derive);
+    public OjAlgoMatrix derivativeOnInput(final OjAlgoMatrix input, final OjAlgoMatrix out) {
+        double xOut = input.multiply(out).sum();
+        OjAlgoMatrix derive = out.subtract(xOut);
+        return input.multiply(derive);
     }
 
     @Override
@@ -49,12 +46,12 @@ public class SoftmaxFunction extends ActivationFunction {
     }
 
     @Override
-    public Matrix function(Matrix m) {
-        return this.softMax(m.clone());
+    public OjAlgoMatrix function(OjAlgoMatrix m) {
+        return this.softMax(m);
     }
 
     @Override
-    public Matrix derivative(Matrix m) {
+    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
         return null;
     }
 }

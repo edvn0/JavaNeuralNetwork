@@ -1,7 +1,7 @@
 package math.error_functions;
 
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.inputs.NetworkInput;
-import org.ujmp.core.Matrix;
 
 import java.io.Serializable;
 import java.util.List;
@@ -29,6 +29,6 @@ public interface CostFunction extends Serializable {
      * @param correct the correct vector
      * @return the gradient of the cost function
      */
-    Matrix applyCostFunctionGradient(Matrix in, Matrix correct);
+    OjAlgoMatrix applyCostFunctionGradient(OjAlgoMatrix in, OjAlgoMatrix correct);
 
 }

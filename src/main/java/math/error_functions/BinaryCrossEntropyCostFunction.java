@@ -1,9 +1,11 @@
 package math.error_functions;
 
 import java.util.List;
+
+import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.inputs.NetworkInput;
-import org.ujmp.core.Matrix;
-import org.ujmp.core.calculation.Calculation.Ret;
+import org.ujmp.core.calculation.Calculation;
 
 public class BinaryCrossEntropyCostFunction implements CostFunction {
 
@@ -15,28 +17,28 @@ public class BinaryCrossEntropyCostFunction implements CostFunction {
 	@Override
 	public double calculateCostFunction(final List<NetworkInput> tData) {
 
-		Matrix onesData = Matrix.Factory.ones(tData.get(0).getData().getRowCount(), 1);
-		Matrix onesLabel = Matrix.Factory.ones(tData.get(0).getLabel().getRowCount(), 1);
+		OjAlgoMatrix onesData = OjAlgoMatrix.ones(tData.get(0).getData().rows(), 1);
+		OjAlgoMatrix onesLabel = OjAlgoMatrix.ones(tData.get(0).getLabel().rows(), 1);
 
 		double total = 0;
 		for (NetworkInput s : tData) {
 
-			Matrix label = s.getLabel();
-			Matrix data = s.getData();
+			OjAlgoMatrix label = s.getLabel();
+			OjAlgoMatrix data = s.getData();
 
-			Matrix log2Data = label.times(data.log2(Ret.NEW));
-			Matrix onesMinusLabel = onesLabel.minus(label);
-			Matrix onesMinusData = onesData.minus(data);
-			Matrix partTwo = onesMinusLabel.times(onesMinusData.log2(Ret.NEW));
+			OjAlgoMatrix log2Data = label.multiply(data.mapElements(e -> Math.log(e)/Math.log(2)));
+			OjAlgoMatrix onesMinusLabel = onesLabel.subtract(label);
+			OjAlgoMatrix onesMinusData = onesData.subtract(data);
+			OjAlgoMatrix partTwo = onesMinusLabel.multiply(onesMinusData.mapElements(e -> Math.log(e)/Math.log(2)));
 
-			Matrix out = log2Data.plus(partTwo);
-			total += out.doubleValue() / data.getRowCount();
+			OjAlgoMatrix out = log2Data.add(partTwo);
+			total += out.sum() / data.rows();
 		}
 		return (total * -1) / tData.size();
 	}
 
 	@Override
-	public Matrix applyCostFunctionGradient(final Matrix in, final Matrix correct) {
-		return in.minus(correct);
+	public OjAlgoMatrix applyCostFunctionGradient(final OjAlgoMatrix in, final OjAlgoMatrix correct) {
+		return in.subtract(correct);
 	}
 }

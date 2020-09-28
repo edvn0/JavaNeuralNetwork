@@ -1,9 +1,8 @@
 package math.linearalgebra;
 
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
-public interface NeuralNetworkMatrix<M, T extends Number> {
+public interface Matrix<M> {
 
     int rows();
 
@@ -24,19 +23,25 @@ public interface NeuralNetworkMatrix<M, T extends Number> {
      * @param scalar to multiply with
      * @return scaled with scalar
      */
-    M multiply(T scalar);
+    M multiply(double scalar);
 
     M add(M in);
 
-    M add(T in);
+    M add(double in);
 
-    M subtract(T in);
+    M subtract(double in);
 
-    M divide(T in);
+    M subtract(M in);
 
-    T map(Function<M, T> mapping);
+    M divide(double in);
 
-    M mapElements(Function<double[][], M> mapping);
+    double map(Function<M, Double> mapping);
 
+    M mapElements(Function<Double, Double> mapping);
 
+    double sum();
+
+    double max();
+
+    M transpose();
 }

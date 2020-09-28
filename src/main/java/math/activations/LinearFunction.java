@@ -1,7 +1,6 @@
 package math.activations;
 
-import org.ujmp.core.Matrix;
-import utilities.MatrixUtilities;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class LinearFunction extends ActivationFunction {
 
@@ -17,12 +16,12 @@ public class LinearFunction extends ActivationFunction {
     }
 
     @Override
-    public Matrix function(Matrix m) {
-        return MatrixUtilities.map(m.clone(), (e) -> e * value);
+    public OjAlgoMatrix function(OjAlgoMatrix m) {
+        return m.mapElements((e) -> e * value);
     }
 
     @Override
-    public Matrix derivative(Matrix m) {
-        return MatrixUtilities.map(m.clone(), (e) -> value);
+    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
+        return m.mapElements((e) -> value);
     }
 }
