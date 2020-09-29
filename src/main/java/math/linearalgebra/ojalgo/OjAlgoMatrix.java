@@ -143,7 +143,15 @@ public class OjAlgoMatrix implements Matrix<OjAlgoMatrix> {
 
     @Override
     public Matrix<OjAlgoMatrix> mapElements(Function<Double, Double> mapping) {
-        return null;
+        double[][] elements = this.delegate.toRawCopy2D();
+        double[][] out = new double[elements.length][elements[0].length];
+        for (int i = 0; i < elements.length; i++) {
+            for (int j = 0; j < elements[0].length; j++) {
+                out[i][j] = mapping.apply(elements[i][j]);
+            }
+        }
+        OjAlgoMatrix m = new OjAlgoMatrix(out, rows(), cols());
+        return m;
     }
 
     @Override
@@ -236,4 +244,24 @@ public class OjAlgoMatrix implements Matrix<OjAlgoMatrix> {
     public Matrix<OjAlgoMatrix> identity(int rows, int cols) {
         return new OjAlgoMatrix(Primitive64Matrix.FACTORY.makeEye(rows, cols));
     }
+
+    @Override
+    public double square() {
+        if (cols() != 1) throw new IllegalArgumentException("Trying to take the norm of matrix... sus.");
+
+        return this.mapElements(e -> e*e).map(e -> e.sum());
+    }
+
+	@Override
+	public Matrix<OjAlgoMatrix> hadamard(Matrix<OjAlgoMatrix> otherMatrix) {
+        double[][] elements = this.delegate.toRawCopy2D();
+        double[][] out = new double[elements.length][elements[0].length];
+        for (int i = 0; i < elements.length; i++) {
+            for (int j = 0; j < elements[0].length; j++) {
+                out[i][j] *= (elements[i][j]);
+            }
+        }
+        OjAlgoMatrix m = new OjAlgoMatrix(out, rows(), cols());
+        return m;
+	}
 }

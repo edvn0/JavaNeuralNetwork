@@ -214,5 +214,24 @@ public class UJMPMatrix implements Matrix<UJMPMatrix> {
         return delegate.hashCode();
     }
 
+    @Override
+    public double square() {
+        if (cols() != 1) throw new IllegalArgumentException("Trying to take the vector norm of a matrix...");
+        return this.mapElements(e -> e*e).map(e -> e.sum());
+    }
+
+    @Override
+    public Matrix<UJMPMatrix> hadamard(Matrix<UJMPMatrix> otherMatrix) {
+        double[][] elements = this.delegate.toDoubleArray();
+        double[][] out = new double[elements.length][elements[0].length];
+        for (int i = 0; i < elements.length; i++) {
+            for (int j = 0; j < elements[0].length; j++) {
+                out[i][j] =  out[i][j]*elements[i][j];
+            }
+        }
+        UJMPMatrix m = new UJMPMatrix(out, rows(), cols());
+        return m;
+    }
+
 
 }

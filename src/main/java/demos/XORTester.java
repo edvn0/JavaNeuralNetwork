@@ -8,8 +8,10 @@ import math.linearalgebra.ujmp.UJMPMatrix;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.InitialisationMethod;
+import neuralnetwork.initialiser.OjAlgoFactory;
 import neuralnetwork.initialiser.UJMPFactory;
 import neuralnetwork.inputs.NetworkInput;
+import optimizers.ADAM;
 import optimizers.StochasticGradientDescent;
 import org.apache.log4j.BasicConfigurator;
 
@@ -55,7 +57,7 @@ public class XORTester {
             int rd = r.nextInt(xorData.length);
             cData = xorData[rd];
             cLabel = xorLabel[rd];
-            data.add(new NetworkInput<>(new UJMPMatrix(cData, 2, 1),
+            data.add(new NetworkInput<UJMPMatrix>(new UJMPMatrix(cData, 2, 1),
                     new UJMPMatrix(cLabel, 1, 1)));
         }
         Collections.shuffle(data);
@@ -64,9 +66,10 @@ public class XORTester {
                 new NetworkBuilder<UJMPMatrix>(4).setFirstLayer(2)
                         .setLayer(3, new TanhFunction<>())
                         .setLayer(3, new TanhFunction<>())
-                        .setLastLayer(1, new TanhFunction<>()).setCostFunction(new MeanSquaredCostFunction<>())
+                        .setLastLayer(1, new TanhFunction<>())
+                        .setCostFunction(new MeanSquaredCostFunction<>())
                         .setEvaluationFunction(new ThresholdEvaluationFunction<>(0.01))
-                        .setOptimizer(new StochasticGradientDescent<>(0.05)),
+                        .setOptimizer(new StochasticGradientDescent<>(0.001)),
                 new UJMPFactory(new int[]{2, 3, 3, 1}, InitialisationMethod.XAVIER, InitialisationMethod.SCALAR));
 
         network.display();

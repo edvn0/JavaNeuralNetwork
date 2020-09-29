@@ -31,7 +31,7 @@ public class SoftmaxFunction<M> extends ActivationFunction<M> {
 
     @Override
     public Matrix<M> derivativeOnInput(final Matrix<M> input, final Matrix<M> out) {
-        double xOut = input.multiply(out).sum();
+        double xOut = input.hadamard(out).sum();
         Matrix<M> derive = out.subtract(xOut);
         return input.multiply(derive);
     }

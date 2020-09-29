@@ -5,6 +5,12 @@ import math.linearalgebra.Matrix;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jline.utils.Log;
+
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
 public class StochasticGradientDescent<M> implements Optimizer<M> {
 
     /**
@@ -23,8 +29,7 @@ public class StochasticGradientDescent<M> implements Optimizer<M> {
         List<Matrix<M>> matrixList = new ArrayList<>();
         for (int i = 0; i < weights.size(); i++) {
             Matrix<M> newValue = deltas.get(i).multiply(this.learningRate);
-            deltas.set(i, newValue);
-            matrixList.add(i, weights.get(i).subtract(deltas.get(i)));
+            matrixList.add(i, weights.get(i).subtract(newValue));
         }
         return matrixList;
     }
@@ -33,8 +38,8 @@ public class StochasticGradientDescent<M> implements Optimizer<M> {
     public List<Matrix<M>> changeBiases(final List<Matrix<M>> biases, final List<Matrix<M>> deltas) {
         List<Matrix<M>> matrixList = new ArrayList<>();
         for (int i = 0; i < biases.size(); i++) {
-            deltas.set(i, deltas.get(i).multiply(this.learningRate));
-            matrixList.add(i, biases.get(i).multiply(deltas.get(i)));
+            Matrix<M> newValue = deltas.get(i).multiply(this.learningRate);
+            matrixList.add(i, biases.get(i).subtract(newValue));
         }
         return matrixList;
     }

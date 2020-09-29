@@ -20,8 +20,7 @@ public abstract class ActivationFunction<M> implements DifferentiableFunction<M>
     }
 
     public Matrix<M> derivativeOnInput(Matrix<M> input, Matrix<M> out) {
-        Matrix<M> ret = out.multiply(derivative(input));
-        return ret;
+        return out.hadamard(derivative(input));
     }
 
     public abstract String getName();

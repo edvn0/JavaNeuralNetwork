@@ -5,8 +5,15 @@ import math.linearalgebra.Matrix;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ADAM<M> implements Optimizer<M> {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = -1433313645095435888L;
     private static final String NAME = "Adaptive Moment Estimation";
     private final double lR;
     private final double beta1;
@@ -22,6 +29,7 @@ public class ADAM<M> implements Optimizer<M> {
 
     @Override
     public List<Matrix<M>> changeWeights(final List<Matrix<M>> weights, final List<Matrix<M>> deltas) {
+        log.info("{}",getAdamDeltas(weights, deltas, this.weightM, this.weightN));
         return getAdamDeltas(weights, deltas, this.weightM, this.weightN);
     }
 

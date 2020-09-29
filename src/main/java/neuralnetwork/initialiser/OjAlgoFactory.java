@@ -14,14 +14,14 @@ public class OjAlgoFactory extends ParameterFactory<OjAlgoMatrix> {
         super(sizes, weightMethod, biasMethod);
     }
 
+
     @Override
     public List<Matrix<OjAlgoMatrix>> getWeightParameters() {
-
         List<Matrix<OjAlgoMatrix>> weights = new ArrayList<>();
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             int next = this.sizes[i];
-            weights.add(new OjAlgoMatrix(this.wM.initialisationValues(0, next, current), next, current));
+            weights.add(new OjAlgoMatrix(this.wM.initialisationValues(0, current, next), current, next));
         }
         return weights;
     }
@@ -30,8 +30,8 @@ public class OjAlgoFactory extends ParameterFactory<OjAlgoMatrix> {
     public List<Matrix<OjAlgoMatrix>> getBiasParameters() {
         List<Matrix<OjAlgoMatrix>> biases = new ArrayList<>();
         for (int i = 0; i < this.sizes.length - 1; i++) {
-            int next = this.sizes[i + 1];
-            biases.add(new OjAlgoMatrix(this.bM.initialisationValues(0, next, 1), next, 1));
+            int current = this.sizes[i + 1];
+            biases.add(new OjAlgoMatrix(this.bM.initialisationValues(0, current, 1), current, 1));
         }
         return biases;
     }
@@ -52,10 +52,9 @@ public class OjAlgoFactory extends ParameterFactory<OjAlgoMatrix> {
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             int next = this.sizes[i];
-
-            deltaBiases.add(new OjAlgoMatrix(ZERO.initialisationValues(0, next, isBias ? 1 : current
-            ), next, isBias ? 1 : current));
+            deltaBiases.add(new OjAlgoMatrix(ZERO.initialisationValues(0, current, isBias ? 1 : next), current, isBias ? 1 : next));
         }
         return deltaBiases;
     }
+
 }

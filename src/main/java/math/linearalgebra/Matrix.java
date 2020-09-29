@@ -4,6 +4,10 @@ import java.util.function.Function;
 
 public interface Matrix<M> {
 
+    default Matrix<M> squareMatrix() {
+        return this.multiply(this);
+    }
+
     /**
      * Cols or this matrix
      *
@@ -26,6 +30,9 @@ public interface Matrix<M> {
      * @return new matrix multiplied
      */
     Matrix<M> multiply(Matrix<M> otherMatrix);
+
+    Matrix<M> hadamard(Matrix<M> otherMatrix);
+    
 
     /**
      * Multiply each element with this scalar
@@ -136,4 +143,6 @@ public interface Matrix<M> {
     enum MatrixType {
         VECTOR, SQUARE, ZEROES, ONES, IDENTITY
     }
+
+	double square();
 }

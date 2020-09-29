@@ -2,6 +2,7 @@ package neuralnetwork;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import math.activations.ActivationFunction;
 import math.error_functions.CostFunction;
@@ -44,10 +45,10 @@ public class NeuralNetwork<M> implements Serializable {
     private final int[] sizes;
     private final ParameterFactory<M> initialiser;
     // Weights and biases of the network
-    private List<Matrix<M>> weights;
-    private List<Matrix<M>> biases;
-    private List<Matrix<M>> dW;
-    private List<Matrix<M>> dB;
+    private volatile List<Matrix<M>> weights;
+    private volatile  List<Matrix<M>> biases;
+    private volatile  List<Matrix<M>> dW;
+    private volatile  List<Matrix<M>> dB;
 
     public NeuralNetwork(final NetworkBuilder<M> b, final ParameterFactory<M> factory) {
 
@@ -55,12 +56,12 @@ public class NeuralNetwork<M> implements Serializable {
         this.functions = b.getActivationFunctions();
         this.costFunction = b.costFunction;
         this.evaluationFunction = b.evaluationFunction;
-        this.totalLayers = sizes.length;
+        this.totalLayers = b.total - 1;
 
         // Initialize the optimizer and the parameters.
         this.initialiser = factory;
         this.optimizer = b.optimizer;
-        this.optimizer.initializeOptimizer(this.totalLayers, null, null);
+        this.optimizer.initializeOptimizer(totalLayers, null, null);
 
         this.weights = factory.getWeightParameters();
         this.dW = factory.getDeltaWeightParameters();
@@ -146,6 +147,7 @@ public class NeuralNetwork<M> implements Serializable {
      */
     private void evaluateTrainingExample(final List<NetworkInput<M>> trainingExamples) {
         final int size = trainingExamples.size();
+        final double inverse = 1d/ size;
 
         for (final var data : trainingExamples) {
             final BackPropContainer<M> deltas = backPropagate(data);
@@ -153,23 +155,9 @@ public class NeuralNetwork<M> implements Serializable {
             final List<Matrix<M>> deltaW = deltas.getDeltaWeights();
 
             for (int j = 0; j < this.totalLayers - 1; j++) {
-                this.dW.set(j, this.dW.get(j).add(deltaW.get(j).multiply(1d / size)));
-                this.dB.set(j, this.dB.get(j).add(deltaB.get(j).multiply(1d / size)));
+                this.dW.set(j, this.dW.get(j).add(deltaW.get(j).multiply(inverse)));
+                this.dB.set(j, this.dB.get(j).add(deltaB.get(j).multiply(inverse)));
             }
-        }
-    }
-
-    /**
-     * Evaluates one example for multi threaded gradient descent.
-     */
-    private void evaluateTrainingExample(final NetworkInput<M> ni) {
-        final BackPropContainer<M> deltas = backPropagate(ni);
-        final List<Matrix<M>> deltaB = deltas.getDeltaBiases();
-        final List<Matrix<M>> deltaW = deltas.getDeltaWeights();
-
-        for (int j = 0; j < this.totalLayers - 1; j++) {
-            dW.set(j, dW.get(j).add(deltaW.get(j)));
-            dB.set(j, dB.get(j).add(deltaB.get(j)));
         }
     }
 
@@ -180,8 +168,8 @@ public class NeuralNetwork<M> implements Serializable {
         this.weights = this.optimizer.changeWeights(this.weights, this.dW);
         this.biases = this.optimizer.changeBiases(this.biases, this.dB);
 
-        this.dB = this.initialiser.getDeltaBiasParameters();
         this.dW = this.initialiser.getDeltaWeightParameters();
+        this.dB = this.initialiser.getDeltaBiasParameters();
 
     }
 
@@ -201,11 +189,14 @@ public class NeuralNetwork<M> implements Serializable {
             final Matrix<M> aNext = activations.get(k); // Previous layer
 
             final Matrix<M> differentiate = this.functions.get(k + 1).derivativeOnInput(aCurr, deltaError);
-
-            deltaBiases.set(k, differentiate);
-            deltaWeights.set(k, differentiate.multiply(aNext.transpose()));
-
-            deltaError = this.weights.get(k).transpose().multiply(differentiate).transpose();
+            
+            final Matrix<M> dB = differentiate;
+            final Matrix<M> dW = differentiate.multiply(aNext.transpose());
+            
+            deltaBiases.set(k, dB);
+            deltaWeights.set(k, dW);
+            
+            deltaError = this.weights.get(k).transpose().multiply(differentiate);
         }
 
         return new BackPropContainer<>(deltaWeights, deltaBiases);
@@ -215,7 +206,6 @@ public class NeuralNetwork<M> implements Serializable {
      * Feed forward inside the back propagation, mutates the actives list.
      *
      * @param starter Input NeuralNetworkMatrix<Matrix>
-     * @param actives activations list
      * @return
      */
     private List<Matrix<M>> feedForward(final Matrix<M> starter) {
@@ -301,10 +291,11 @@ public class NeuralNetwork<M> implements Serializable {
             }
 
             if (i % info == 0) {
+                Collections.shuffle(validation);
                 final List<NetworkInput<M>> l = this.feedForwardData(validation);
                 final double loss = this.costFunction.calculateCostFunction(l);
                 final double correct = this.evaluationFunction.evaluatePrediction(l) * 100;
-                log.info("Epoch {}: Loss value of {}\n\tCorrect: {}% examples were classified correctly.\n\n", i, loss,
+                log.info("\nEpoch {}: Loss value of {}\n\tCorrect: {}% examples were classified correctly.\n\n", i, loss,
                         correct);
             }
         }

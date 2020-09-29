@@ -5,6 +5,9 @@ import neuralnetwork.inputs.NetworkInput;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class MeanSquaredCostFunction<M> implements CostFunction<M> {
 
     /**
@@ -16,7 +19,7 @@ public class MeanSquaredCostFunction<M> implements CostFunction<M> {
     @Override
     public double calculateCostFunction(final List<NetworkInput<M>> tData) {
         return tData.parallelStream().map((e) -> e.getData().subtract(e.getLabel()))
-                .map(e -> e.multiply(e)).map(Matrix::sum).reduce(Double::sum).get() / tData.size();
+                .mapToDouble(e -> e.square()).sum() / tData.size();
 
     }
 
