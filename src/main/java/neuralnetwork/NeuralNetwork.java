@@ -204,12 +204,10 @@ public class NeuralNetwork<M> implements Serializable {
             final Matrix<M> aCurr = activations.get(k + 1); // this layer
             final Matrix<M> aNext = activations.get(k); // Previous layer
 
-            log.info("aCurr : {} X {} \n deltaError: {} X {}", aCurr.rows(), aCurr.cols(), deltaError.rows(), deltaError.cols());
-
             Matrix<M> differentiate = this.functions.get(k + 1).derivativeOnInput(aCurr, deltaError);
 
-            deltaBiases.add(k, differentiate);
-            deltaWeights.add(k, differentiate.multiply(aNext.transpose()));
+            deltaBiases.set(k, differentiate);
+            deltaWeights.set(k, differentiate.multiply(aNext.transpose()));
 
             deltaError = this.weights.get(k).transpose().multiply(differentiate);
         }
