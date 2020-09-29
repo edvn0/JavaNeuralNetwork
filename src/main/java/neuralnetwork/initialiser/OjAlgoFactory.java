@@ -1,0 +1,61 @@
+package neuralnetwork.initialiser;
+
+import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static neuralnetwork.initialiser.InitialisationMethod.ZERO;
+
+public class OjAlgoFactory extends ParameterFactory<OjAlgoMatrix> {
+    public OjAlgoFactory(int[] sizes, InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
+        super(sizes, weightMethod, biasMethod);
+    }
+
+    @Override
+    public List<Matrix<OjAlgoMatrix>> getWeightParameters() {
+
+        List<Matrix<OjAlgoMatrix>> weights = new ArrayList<>();
+        for (int i = 0; i < this.sizes.length - 1; i++) {
+            int current = this.sizes[i + 1];
+            int next = this.sizes[i];
+            weights.add(new OjAlgoMatrix(this.wM.initialisationValues(0, next, current), next, current));
+        }
+        return weights;
+    }
+
+    @Override
+    public List<Matrix<OjAlgoMatrix>> getBiasParameters() {
+        List<Matrix<OjAlgoMatrix>> biases = new ArrayList<>();
+        for (int i = 0; i < this.sizes.length - 1; i++) {
+            int next = this.sizes[i + 1];
+            biases.add(new OjAlgoMatrix(this.bM.initialisationValues(0, next, 1), next, 1));
+        }
+        return biases;
+    }
+
+    @Override
+    public List<Matrix<OjAlgoMatrix>> getDeltaWeightParameters() {
+        return getDeltaParameters(false);
+    }
+
+    @Override
+    public List<Matrix<OjAlgoMatrix>> getDeltaBiasParameters() {
+        return getDeltaParameters(true);
+    }
+
+    @NotNull
+    private List<Matrix<OjAlgoMatrix>> getDeltaParameters(boolean isBias) {
+        List<Matrix<OjAlgoMatrix>> deltaBiases = new ArrayList<>();
+        for (int i = 0; i < this.sizes.length - 1; i++) {
+            int current = this.sizes[i + 1];
+            int next = this.sizes[i];
+
+            deltaBiases.add(new OjAlgoMatrix(ZERO.initialisationValues(0, next, isBias ? 1 : current
+            ), next, isBias ? 1 : current));
+        }
+        return deltaBiases;
+    }
+}

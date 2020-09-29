@@ -1,12 +1,12 @@
 package neuralnetwork.inputs;
 
-import org.ujmp.core.Matrix;
+import math.linearalgebra.Matrix;
 
-public class LabeledNetworkInput<T> extends NetworkInput {
+public class LabeledNetworkInput<T, M> extends NetworkInput<M> {
 
     private final T inputLabel;
 
-    public LabeledNetworkInput(T inputLabel, Matrix data, Matrix label) {
+    public LabeledNetworkInput(T inputLabel, Matrix<M> data, Matrix<M> label) {
         super(data, label);
         this.inputLabel = inputLabel;
     }
@@ -14,7 +14,6 @@ public class LabeledNetworkInput<T> extends NetworkInput {
     public T getInputLabel() {
         return inputLabel;
     }
-
 
 
 }

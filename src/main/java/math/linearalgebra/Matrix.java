@@ -4,8 +4,18 @@ import java.util.function.Function;
 
 public interface Matrix<M> {
 
+    /**
+     * Cols or this matrix
+     *
+     * @return columns
+     */
     int rows();
 
+    /**
+     * Rows of this matrix
+     *
+     * @return rows
+     */
     int cols();
 
     /**
@@ -15,7 +25,7 @@ public interface Matrix<M> {
      * @param otherMatrix right operand
      * @return new matrix multiplied
      */
-    M multiply(M otherMatrix);
+    Matrix<M> multiply(Matrix<M> otherMatrix);
 
     /**
      * Multiply each element with this scalar
@@ -23,25 +33,107 @@ public interface Matrix<M> {
      * @param scalar to multiply with
      * @return scaled with scalar
      */
-    M multiply(double scalar);
+    Matrix<M> multiply(double scalar);
 
-    M add(M in);
+    /**
+     * Add in to this matrix
+     *
+     * @param in right operand
+     * @return this + in
+     */
+    Matrix<M> add(Matrix<M> in);
 
-    M add(double in);
+    /**
+     * Add in to all elements of this.
+     *
+     * @param in scalar operand
+     * @return this.map(e - > e + in)
+     */
+    Matrix<M> add(double in);
 
-    M subtract(double in);
+    /**
+     * Subtract in from all elements of this
+     *
+     * @param in scalar operand
+     * @return this.map(e - > e - in);
+     */
+    Matrix<M> subtract(double in);
 
-    M subtract(M in);
+    /**
+     * Substract in from this matrix
+     *
+     * @param in right operand
+     * @return this[i][j] -= in[i][j]
+     */
+    Matrix<M> subtract(Matrix<M> in);
 
-    M divide(double in);
+    /**
+     * Divide all elements by in
+     *
+     * @param in scalar operand
+     * @return in.map(e - > e / in);
+     */
+    Matrix<M> divide(double in);
 
-    double map(Function<M, Double> mapping);
+    /**
+     * Map this matrix to a double, useful for reduce or trace implementations
+     *
+     * @param mapping f: This -> double
+     * @return a double value
+     */
+    double map(Function<Matrix<M>, Double> mapping);
 
-    M mapElements(Function<Double, Double> mapping);
+    /**
+     * Map each element with this function
+     *
+     * @param mapping f: Double -> Double each element
+     * @return this.map(e - > mapping ( e));
+     */
+    Matrix<M> mapElements(Function<Double, Double> mapping);
 
+    /**
+     * Sum this matrix over all entries.
+     *
+     * @return sum of this
+     */
     double sum();
 
+    /**
+     * Max of this matrix over all entries.
+     *
+     * @return max of this
+     */
     double max();
 
-    M transpose();
+    /**
+     * Index along a column of max, should only be used for vectors.
+     *
+     * @return index of max
+     */
+    int argMax();
+
+    /**
+     * Transpose this matrix.
+     *
+     * @return transpose.
+     */
+    Matrix<M> transpose();
+
+    M delegate();
+
+    Matrix<M> divide(Matrix<M> right);
+
+    Matrix<M> maxVector();
+
+    Matrix<M> zeroes(int rows, int cols);
+
+    Matrix<M> ones(int rows, int cols);
+
+    Matrix<M> identity(int rows, int cols);
+
+    String toString();
+
+    enum MatrixType {
+        VECTOR, SQUARE, ZEROES, ONES, IDENTITY
+    }
 }

@@ -1,6 +1,6 @@
 package math.activations;
 
-public class DoNothingFunction extends LinearFunction {
+public class DoNothingFunction<M> extends LinearFunction<M> {
 
     public DoNothingFunction() {
         super(1);

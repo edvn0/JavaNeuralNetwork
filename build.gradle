@@ -13,7 +13,7 @@ repositories {
     mavenCentral()
 }
 
-mainClassName = "demos.MNISTTester"
+mainClassName = "demos.XORTester"
 
 run {
     args = ["200", "32", "C:\\Users\\edvin\\IdeaProjects\\JavaNeuralNetwork\\src\\main\\resources\\graphoutput"]

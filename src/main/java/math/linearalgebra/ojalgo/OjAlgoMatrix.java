@@ -1,14 +1,18 @@
 package math.linearalgebra.ojalgo;
 
+import lombok.extern.slf4j.Slf4j;
 import math.linearalgebra.Matrix;
+import org.ojalgo.function.aggregator.Aggregator;
 import org.ojalgo.matrix.Primitive64Matrix;
+import utilities.MathUtilities;
 import utilities.MatrixUtilities;
 
 import java.util.function.Function;
 
+@Slf4j
 public class OjAlgoMatrix implements Matrix<OjAlgoMatrix> {
 
-    private final Primitive64Matrix delegate;
+    protected Primitive64Matrix delegate;
 
     public OjAlgoMatrix(Primitive64Matrix in) {
         this.delegate = in;
@@ -20,39 +24,58 @@ public class OjAlgoMatrix implements Matrix<OjAlgoMatrix> {
     }
 
     public OjAlgoMatrix(double[][] values, int rows, int cols) {
-        double[] flat = MatrixUtilities.fromNested(values, rows, cols);
-        this.delegate = Primitive64Matrix.FACTORY.rows(flat);
+        this.delegate = Primitive64Matrix.FACTORY.rows(values);
     }
 
     public OjAlgoMatrix(OjAlgoMatrix out) {
         this.delegate = out.delegate.copy().build();
     }
 
-    public static OjAlgoMatrix identity(int rows, int cols) {
-        return new OjAlgoMatrix(Primitive64Matrix.FACTORY.makeEye(rows, cols));
-    }
-
-    public static OjAlgoMatrix zeroes(int cols, int rows) {
-        return new OjAlgoMatrix(Primitive64Matrix.FACTORY.make(cols, rows));
-    }
-
-    public static OjAlgoMatrix ones(int rows, int cols) {
-        double[][] data = new double[rows][cols];
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < rows; j++) {
-                data[i][j] = 1d;
-            }
+    public OjAlgoMatrix(double[] values, MatrixType type, int rows, int cols) {
+        switch (type) {
+            case VECTOR:
+                this.delegate = Primitive64Matrix.FACTORY.rows(values);
+                break;
+            case SQUARE:
+                if (!MathUtilities.isSquare(values.length)) {
+                    throw new IllegalArgumentException("Need to provide values of size NXN");
+                }
+                int sqrt = (int) Math.sqrt(values.length);
+                this.delegate = Primitive64Matrix.FACTORY.rows(MatrixUtilities.fromFlat(values, sqrt, sqrt));
+                break;
+            case ONES:
+                double[][] ones = new double[rows][cols];
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < rows; j++) {
+                        ones[i][j] = 1;
+                    }
+                }
+                this.delegate = Primitive64Matrix.FACTORY.rows(ones);
+                break;
+            case ZEROES:
+                double[][] zeroes = new double[rows][cols];
+                for (int i = 0; i < rows; i++) {
+                    for (int j = 0; j < rows; j++) {
+                        zeroes[i][j] = 0;
+                    }
+                }
+                this.delegate = Primitive64Matrix.FACTORY.rows(zeroes);
+                break;
+            case IDENTITY:
+                this.delegate = Primitive64Matrix.FACTORY.makeEye(rows, cols);
+                break;
+            default:
+                throw new IllegalArgumentException("Need to supply a matrix type");
         }
-
-        return new OjAlgoMatrix(data, rows, cols);
     }
 
+    public OjAlgoMatrix(Primitive64Matrix matrix, int rows, int cols) {
+        this.delegate = matrix;
+    }
 
     @Override
     public String toString() {
-        return "Matrix<OjAlgoMatrix>{" +
-                "delegate=" + delegate.toString() +
-                '}';
+        return delegate.toString();
     }
 
     @Override
@@ -70,66 +93,147 @@ public class OjAlgoMatrix implements Matrix<OjAlgoMatrix> {
 
     @Override
     public int rows() {
-        return 0;
+        return (int) this.delegate.countRows();
     }
 
     @Override
     public int cols() {
-        return 0;
+        return (int) this.delegate.countColumns();
     }
 
     @Override
-    public OjAlgoMatrix multiply(OjAlgoMatrix otherMatrix) {
-        return null;
+    public Matrix<OjAlgoMatrix> multiply(Matrix<OjAlgoMatrix> otherMatrix) {
+        return new OjAlgoMatrix(this.delegate.multiply(otherMatrix.delegate().delegate));
     }
 
     @Override
-    public OjAlgoMatrix multiply(double scalar) {
-        return null;
+    public Matrix<OjAlgoMatrix> multiply(double scalar) {
+        return new OjAlgoMatrix(this.delegate.multiply(scalar));
     }
 
     @Override
-    public OjAlgoMatrix add(OjAlgoMatrix in) {
-        return null;
+    public Matrix<OjAlgoMatrix> add(Matrix<OjAlgoMatrix> in) {
+        return new OjAlgoMatrix(this.delegate.add(in.delegate().delegate));
     }
 
     @Override
-    public OjAlgoMatrix add(double in) {
-        return null;
+    public Matrix<OjAlgoMatrix> add(double in) {
+        return new OjAlgoMatrix(this.delegate.add(in));
     }
 
     @Override
-    public OjAlgoMatrix subtract(double in) {
-        return null;
+    public Matrix<OjAlgoMatrix> subtract(double in) {
+        return new OjAlgoMatrix(this.delegate.subtract(in));
     }
 
     @Override
-    public OjAlgoMatrix subtract(OjAlgoMatrix in) {
-        return null;
+    public Matrix<OjAlgoMatrix> subtract(Matrix<OjAlgoMatrix> in) {
+        return new OjAlgoMatrix(this.delegate.subtract(in.delegate().delegate));
     }
 
     @Override
-    public OjAlgoMatrix divide(double in) {
-        return null;
+    public Matrix<OjAlgoMatrix> divide(double in) {
+        return new OjAlgoMatrix(this.delegate.divide(in));
     }
 
     @Override
-    public double map(Function<OjAlgoMatrix, Double> mapping) {
-        return 0;
+    public double map(Function<Matrix<OjAlgoMatrix>, Double> mapping) {
+        return mapping.apply(this);
     }
 
     @Override
-    public OjAlgoMatrix mapElements(Function<Double, Double> mapping) {
+    public Matrix<OjAlgoMatrix> mapElements(Function<Double, Double> mapping) {
         return null;
     }
 
     @Override
     public double sum() {
-        return 0;
+        return this.delegate.aggregateAll(Aggregator.SUM);
     }
 
     @Override
     public double max() {
-        return 0;
+        return this.delegate.aggregateAll(Aggregator.MAXIMUM);
+    }
+
+    /**
+     * TODO: IMPLEMENT
+     *
+     * @return
+     */
+    @Override
+    public int argMax() {
+        double[] array = this.delegate.toRawCopy2D()[0];
+        int argMax = -1;
+        double best = Double.MIN_VALUE;
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] > best) {
+                best = array[i];
+                argMax = i;
+            }
+        }
+
+        return argMax;
+    }
+
+    @Override
+    public Matrix<OjAlgoMatrix> transpose() {
+        return new OjAlgoMatrix(this.delegate.transpose());
+    }
+
+    @Override
+    public OjAlgoMatrix delegate() {
+        return this;
+    }
+
+    @Override
+    public Matrix<OjAlgoMatrix> divide(Matrix<OjAlgoMatrix> right) {
+        double[][] array = this.delegate.toRawCopy2D();
+        double[][] other = right.delegate().delegate.toRawCopy2D();
+        for (int i = 0; i < rows(); i++) {
+            for (int j = 0; j < cols(); j++) {
+                array[i][j] /= other[i][j];
+            }
+        }
+        return new OjAlgoMatrix(array, rows(), cols());
+    }
+
+    @Override
+    public Matrix<OjAlgoMatrix> maxVector() {
+        double max = this.max();
+
+        double[][] vector = new double[cols()][1];
+        for (int i = 0; i < cols(); i++) {
+            vector[i][0] = max;
+        }
+
+        return new OjAlgoMatrix(vector, cols(), 1);
+    }
+
+    @Override
+    public Matrix<OjAlgoMatrix> zeroes(int rows, int cols) {
+        double[][] zeroes = new double[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < rows; j++) {
+                zeroes[i][j] = 0;
+            }
+        }
+        return new OjAlgoMatrix(Primitive64Matrix.FACTORY.rows(zeroes));
+    }
+
+    @Override
+    public Matrix<OjAlgoMatrix> ones(int rows, int cols) {
+        double[][] ones = new double[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < rows; j++) {
+                ones[i][j] = 1;
+            }
+        }
+        return new OjAlgoMatrix(Primitive64Matrix.FACTORY.rows(ones));
+    }
+
+    @Override
+    public Matrix<OjAlgoMatrix> identity(int rows, int cols) {
+        return new OjAlgoMatrix(Primitive64Matrix.FACTORY.makeEye(rows, cols));
     }
 }

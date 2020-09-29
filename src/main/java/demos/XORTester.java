@@ -1,14 +1,17 @@
 package demos;
 
+import lombok.extern.slf4j.Slf4j;
 import math.activations.TanhFunction;
 import math.error_functions.MeanSquaredCostFunction;
-import math.evaluation.EvaluationFunction;
-import math.linearalgebra.MatrixSupplier;
+import math.evaluation.ThresholdEvaluationFunction;
+import math.linearalgebra.ujmp.UJMPMatrix;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
+import neuralnetwork.initialiser.InitialisationMethod;
+import neuralnetwork.initialiser.UJMPFactory;
 import neuralnetwork.inputs.NetworkInput;
 import optimizers.StochasticGradientDescent;
-import org.ujmp.core.Matrix;
+import org.apache.log4j.BasicConfigurator;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -20,22 +23,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 public class XORTester {
 
-    private List<NetworkInput> data;
+    private List<NetworkInput<UJMPMatrix>> data;
 
     private BufferedImage[] images;
 
     private double[][] xorData = new double[][]{{0, 1}, {0, 0}, {1, 1}, {1, 0}};
     private double[][] xorLabel = new double[][]{{1}, {0}, {0}, {1}};
 
-    private NeuralNetwork network;
+    private NeuralNetwork<UJMPMatrix> network;
     private String path;
 
     private int imagesSize;
     private int w, h;
 
     XORTester(String path, int size) {
+        BasicConfigurator.configure();
         this.path = path;
         this.imagesSize = size;
         w = 600;
@@ -45,35 +50,28 @@ public class XORTester {
         data = new ArrayList<>();
         SecureRandom r = new SecureRandom();
         for (int i = 0; i < 10000; i++) {
-            double[][] cData;
-            double[][] cLabel;
+            double[] cData;
+            double[] cLabel;
             int rd = r.nextInt(xorData.length);
-            cData = new double[][]{xorData[rd]};
-            cLabel = new double[][]{xorLabel[rd]};
-            data.add(new NetworkInput(Matrix.Factory.importFromArray(cData).transpose(),
-                    Matrix.Factory.importFromArray(cLabel).transpose()));
+            cData = xorData[rd];
+            cLabel = xorLabel[rd];
+            data.add(new NetworkInput<>(new UJMPMatrix(cData, 2, 1),
+                    new UJMPMatrix(cLabel, 1, 1)));
         }
         Collections.shuffle(data);
 
-        network = new NeuralNetwork(MatrixSupplier.UJMP,
-                new NetworkBuilder(4).setFirstLayer(2).setLayer(10, new TanhFunction()).setLayer(10, new TanhFunction())
-                        .setLastLayer(1, new TanhFunction()).setCostFunction(new MeanSquaredCostFunction())
-                        .setEvaluationFunction((EvaluationFunction) toEvaluate -> {
-                            double perc = 0;
-                            for (var i : toEvaluate) {
-                                double data = i.getData().doubleValue();
-                                double label = i.getLabel().doubleValue();
-
-                                System.out.println(data + " " + label);
-
-                                perc += Math.abs(data - label) < 0.1 ? 1 : 0;
-                            }
-                            return perc / toEvaluate.size();
-                        })
-                        .setOptimizer(new StochasticGradientDescent(0.05)));
+        network = new NeuralNetwork<>(
+                new NetworkBuilder<UJMPMatrix>(4).setFirstLayer(2)
+                        .setLayer(3, new TanhFunction<>())
+                        .setLayer(3, new TanhFunction<>())
+                        .setLastLayer(1, new TanhFunction<>()).setCostFunction(new MeanSquaredCostFunction<>())
+                        .setEvaluationFunction(new ThresholdEvaluationFunction<>(0.01))
+                        .setOptimizer(new StochasticGradientDescent<>(0.05)),
+                new UJMPFactory(new int[]{2, 3, 3, 1}, InitialisationMethod.XAVIER, InitialisationMethod.SCALAR));
 
         network.display();
-        network.trainWithMetrics(data.subList(0, 1000), data.subList(1000, 2000), 70, 64, "E:\\Programming\\Git\\JavaNeuralNetwork\\src\\main\\resources\\output");
+        network.train(data.subList(0, 1000), data.subList(1000, 2000), 70, 64);
+        //network.trainWithMetrics(data.subList(0, 1000), data.subList(1000, 2000), 70, 64, "E:\\Programming\\Git\\JavaNeuralNetwork\\src\\main\\resources\\output");
     }
 
     public static void main(String[] args) throws IOException {
@@ -96,7 +94,7 @@ public class XORTester {
                     double row = (double) j / rows;
                     double out = 0;
                     if (i % (in) == 0) {
-                        out = network.predict(toInputMatrix(col, row)).doubleValue();
+                        out = network.predict(toInputMatrix(col, row)).sum();
                     }
                     out *= 255;
                     int colors = (int) out;
@@ -113,7 +111,7 @@ public class XORTester {
         }
     }
 
-    private Matrix toInputMatrix(final double col, final double row) {
-        return Matrix.Factory.importFromArray(new double[][]{{(double) col}, {(double) row}});
+    private UJMPMatrix toInputMatrix(final double col, final double row) {
+        return new UJMPMatrix(new double[][]{{col}, {row}}, 2, 1);
     }
 }

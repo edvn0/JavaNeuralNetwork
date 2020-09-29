@@ -2,9 +2,9 @@ package neuralnetwork.layer;
 
 import math.activations.LinearFunction;
 
-public class FirstNetworkLayer extends NetworkLayer {
+public class FirstNetworkLayer<M> extends NetworkLayer<M> {
 
-    public FirstNetworkLayer(LinearFunction activationFunction) {
+    public FirstNetworkLayer(LinearFunction<M> activationFunction) {
         super(activationFunction, 0);
 
     }

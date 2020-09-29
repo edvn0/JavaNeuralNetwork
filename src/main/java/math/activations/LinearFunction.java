@@ -1,8 +1,8 @@
 package math.activations;
 
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
+import math.linearalgebra.Matrix;
 
-public class LinearFunction extends ActivationFunction {
+public class LinearFunction<M> extends ActivationFunction<M> {
 
     private final double value;
 
@@ -16,12 +16,12 @@ public class LinearFunction extends ActivationFunction {
     }
 
     @Override
-    public OjAlgoMatrix function(OjAlgoMatrix m) {
+    public Matrix<M> function(Matrix<M> m) {
         return m.mapElements((e) -> e * value);
     }
 
     @Override
-    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
+    public Matrix<M> derivative(Matrix<M> m) {
         return m.mapElements((e) -> value);
     }
 }

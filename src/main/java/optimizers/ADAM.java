@@ -1,15 +1,18 @@
 package optimizers;
 
 import math.linearalgebra.Matrix;
-import org.ujmp.core.calculation.Calculation;
 
-public class ADAM implements Optimizer {
+import java.util.ArrayList;
+import java.util.List;
 
+public class ADAM<M> implements Optimizer<M> {
+
+    private static final String NAME = "Adaptive Moment Estimation";
     private final double lR;
     private final double beta1;
     private final double beta2;
-    private Matrix<Matrix<Matrix>>[] weightM, weightN;
-    private Matrix<Matrix<Matrix>>[] biasM, biasN;
+    private List<Matrix<M>> weightM, weightN;
+    private List<Matrix<M>> biasM, biasN;
 
     public ADAM(double alpha, double beta1, double beta2) {
         this.lR = alpha;
@@ -18,47 +21,52 @@ public class ADAM implements Optimizer {
     }
 
     @Override
-    public Matrix<Matrix<Matrix>>[] changeWeights(final Matrix<Matrix<Matrix>>[] weights, final Matrix<Matrix<Matrix<?>>>[] deltas) {
+    public List<Matrix<M>> changeWeights(final List<Matrix<M>> weights, final List<Matrix<M>> deltas) {
         return getAdamDeltas(weights, deltas, this.weightM, this.weightN);
     }
 
     @Override
-    public Matrix<Matrix<Matrix>>[] changeBiases(final Matrix<Matrix<Matrix>>[] biases, final Matrix<Matrix<Matrix<?>>>[] deltas) {
+    public List<Matrix<M>> changeBiases(final List<Matrix<M>> biases, final List<Matrix<M>> deltas) {
         return getAdamDeltas(biases, deltas, this.biasM, this.biasN);
     }
 
-    private Matrix<Matrix<Matrix>>[] getAdamDeltas(final Matrix<Matrix<Matrix>>[] inParams, final Matrix<Matrix<Matrix<?>>>[] paramDeltas, final Matrix<Matrix<Matrix>>[] M,
-                                                   final Matrix<Matrix<Matrix>>[] N) {
-        Matrix<Matrix<Matrix>>[] newOut = new Matrix<Matrix<Matrix>>[inParams.length];
+    private List<Matrix<M>> getAdamDeltas(final List<Matrix<M>> inParams, final List<Matrix<M>> paramDeltas, final List<Matrix<M>> M,
+                                          final List<Matrix<M>> N) {
+        List<Matrix<M>> newOut = new ArrayList<>(inParams.size());
 
-        for (int i = 0; i < inParams.length; i++) {
+        for (int i = 0; i < inParams.size(); i++) {
             int exponent = i + 1;
-            Matrix<Matrix> mHat;
-            Matrix<Matrix> vHat;
-            if (M[i] != null && N[i] != null) {
+            Matrix<M> mHat;
+            Matrix<M> vHat;
+            if (M.get(i) != null && N.get(i) != null) {
                 // m = beta_1 * m + (1 - beta_1) * g
                 // v = beta_2 * v + (1 - beta_2) * np.power(g, 2)
-                M[i] = M[i].times(beta1).plus(paramDeltas[i].times((1 - beta1)));
-                N[i] = N[i].times(beta2).plus(paramDeltas[i].times(paramDeltas[i]).times((1 - beta2)));
+                M.set(i, M.get(i).multiply(beta1).add(paramDeltas.get(i)).multiply((1 - beta1)));
+                N.set(i, N.get(i).multiply(beta2).add(paramDeltas.get(i).multiply(paramDeltas.get(i)).multiply((1 - beta2))));
             } else {
-                M[i] = paramDeltas[i].times((1 - beta1));
-                N[i] = paramDeltas[i].times(paramDeltas[i]).times((1 - beta2));
+                M.set(i, paramDeltas.get(i).multiply((1 - beta1)));
+                N.set(i, paramDeltas.get(i).multiply(paramDeltas.get(i).multiply((1 - beta2))));
             }
-            mHat = M[i].divide((1 - Math.pow(beta1, exponent)));
-            vHat = N[i].divide((1 - Math.pow(beta2, exponent)));
-            Matrix<Matrix> deNom = vHat.sqrt(Calculation.Ret.NEW).plus(10e-8);
-            Matrix<Matrix> num = mHat.times(this.lR);
-            Matrix<Matrix> adam = num.divide(deNom);
-            newOut[i] = inParams[i].minus(adam);
+            mHat = M.get(i).divide((1 - Math.pow(beta1, exponent)));
+            vHat = N.get(i).divide((1 - Math.pow(beta2, exponent)));
+            Matrix<M> deNom = vHat.mapElements(Math::sqrt).add(10e-8);
+            Matrix<M> num = mHat.multiply(this.lR);
+            Matrix<M> adam = num.divide(deNom);
+            newOut.set(i, inParams.get(i).subtract(adam));
         }
         return newOut;
     }
 
     @Override
-    public void initializeOptimizer(int layers) {
-        this.weightM = new Matrix<Matrix<Matrix>>[layers];
-        this.weightN = new Matrix<Matrix<Matrix>>[layers];
-        this.biasM = new Matrix<Matrix<Matrix>>[layers];
-        this.biasN = new Matrix<Matrix<Matrix>>[layers];
+    public void initializeOptimizer(int layers, Matrix<M> weightSeed, Matrix<M> biasSeed) {
+        this.weightM = new ArrayList<>(layers);
+        this.weightN = new ArrayList<>(layers);
+        this.biasM = new ArrayList<>(layers);
+        this.biasN = new ArrayList<>(layers);
+    }
+
+    @Override
+    public String toString() {
+        return NAME;
     }
 }

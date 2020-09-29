@@ -1,8 +1,9 @@
 package math.activations;
 
+import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
-public class ReluFunction extends ActivationFunction {
+public class ReluFunction<M> extends ActivationFunction<M> {
 
     public ReluFunction() {
         super();
@@ -14,12 +15,12 @@ public class ReluFunction extends ActivationFunction {
     }
 
     @Override
-    public OjAlgoMatrix function(OjAlgoMatrix m) {
+    public Matrix<M> function(Matrix<M> m) {
         return m.mapElements((e) -> e > 0 ? e : 0);
     }
 
     @Override
-    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
+    public Matrix<M> derivative(Matrix<M> m) {
         return m.mapElements((e) -> e > 0 ? 1d : 0);
     }
 }

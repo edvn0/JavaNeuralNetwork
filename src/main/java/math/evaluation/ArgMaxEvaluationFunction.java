@@ -1,38 +1,43 @@
 package math.evaluation;
 
-import java.util.List;
+import math.linearalgebra.Matrix;
 import neuralnetwork.inputs.NetworkInput;
-import org.ujmp.core.Matrix;
-import utilities.MatrixUtilities;
+
+import java.util.List;
 
 /**
  * Evaluation function which returns a correct value iff the argmax of the
  * predicted data is the label
  */
-public class ArgMaxEvaluationFunction implements EvaluationFunction {
+public class ArgMaxEvaluationFunction<M> implements EvaluationFunction<M> {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 3730260463010183881L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 3730260463010183881L;
+    private static final String NAME = "Argmax Evaluation";
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public double evaluatePrediction(List<NetworkInput> toEvaluate) {
-		int correct = 0;
-		for (NetworkInput networkInput : toEvaluate) {
-			Matrix data = networkInput.getData();
-			int correctLabels = MatrixUtilities.argMax(networkInput.getLabel());
-			int val = MatrixUtilities.argMax(data);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public double evaluatePrediction(List<NetworkInput<M>> toEvaluate) {
+        int correct = 0;
+        for (NetworkInput<M> networkInput : toEvaluate) {
+            Matrix<M> data = networkInput.getData();
+            int correctLabels = networkInput.getLabel().argMax();
+            int val = data.argMax();
 
-			if (correctLabels == val) {
-				correct++;
-			}
+            if (correctLabels == val) {
+                correct++;
+            }
 
-		}
-		return (double) correct / toEvaluate.size();
-	}
+        }
+        return (double) correct / toEvaluate.size();
+    }
 
+    @Override
+    public String toString() {
+        return NAME;
+    }
 }

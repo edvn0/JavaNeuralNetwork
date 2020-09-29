@@ -2,45 +2,54 @@ package optimizers;
 
 import math.linearalgebra.Matrix;
 
-public class Momentum implements Optimizer {
+import java.util.ArrayList;
+import java.util.List;
 
-	private double lR;
-	private double momentumRate;
+public class Momentum<M> implements Optimizer<M> {
 
-	private Matrix<?>[] lastDeltaWeights, lastDeltaBiases;
+    private static final String NAME = "Momentum";
+    private final double lR;
+    private final double momentumRate;
 
-	public Momentum(double lR, double momentum) {
-		this.lR = lR;
-		this.momentumRate = momentum;
+    private List<Matrix<M>> lastDeltaWeights, lastDeltaBiases;
 
-	}
+    public Momentum(double lR, double momentum) {
+        this.lR = lR;
+        this.momentumRate = momentum;
 
-	@Override
-	public Matrix<?>[] changeWeights(final Matrix<?>[] weights, final Matrix<?>[] deltaWeights) {
-		return getMomentumDeltas(weights, deltaWeights, lastDeltaWeights);
-	}
+    }
 
-	@Override
-	public Matrix<?>[] changeBiases(final Matrix<?>[] biases, final Matrix<?>[] deltaBiases) {
-		return getMomentumDeltas(biases, deltaBiases, lastDeltaBiases);
-	}
+    @Override
+    public List<Matrix<M>> changeWeights(final List<Matrix<M>> weights, final List<Matrix<M>> deltaWeights) {
+        return getMomentumDeltas(weights, deltaWeights, lastDeltaWeights);
+    }
 
-	private Matrix<?>[] getMomentumDeltas(final Matrix<?>[] in, final Matrix<?>[] deltaIns, final Matrix<?>[] lastDeltas) {
-		org.ujmp.core.Matrix[] newOut = new org.ujmp.core.Matrix[in.length];
-		for (int i = 0; i < in.length; i++) {
-			if (lastDeltas[i] == null) {
-				lastDeltas[i] = deltaIns[i].times(this.lR);
-			} else {
-				lastDeltas[i] = lastDeltas[i].times(momentumRate).plus(deltaIns[i].times(this.lR));
-			}
-			newOut[i] = in[i].minus(lastDeltas[i]);
-		}
-		return newOut;
-	}
+    @Override
+    public List<Matrix<M>> changeBiases(final List<Matrix<M>> biases, final List<Matrix<M>> deltaBiases) {
+        return getMomentumDeltas(biases, deltaBiases, lastDeltaBiases);
+    }
 
-	@Override
-	public void initializeOptimizer(final int layers) {
-		lastDeltaWeights = new Matrix<?>[layers];
-		lastDeltaBiases = new Matrix<?>[layers];
-	}
+    private List<Matrix<M>> getMomentumDeltas(final List<Matrix<M>> in, final List<Matrix<M>> deltaIns, final List<Matrix<M>> lastDeltas) {
+        List<Matrix<M>> newOut = new ArrayList<>();
+        for (int i = 0; i < in.size(); i++) {
+            if (lastDeltas.get(i) == null) {
+                lastDeltas.set(i, deltaIns.get(i).multiply(this.lR));
+            } else {
+                lastDeltas.set(i, lastDeltas.get(i)).multiply(momentumRate).add(deltaIns.get(i).multiply(this.lR));
+            }
+            newOut.add(i, in.get(i).subtract(lastDeltas.get(i)));
+        }
+        return newOut;
+    }
+
+    @Override
+    public void initializeOptimizer(final int layers, Matrix<M> weightSeed, Matrix<M> biasSeed) {
+        lastDeltaWeights = new ArrayList<>(layers);
+        lastDeltaBiases = new ArrayList<>(layers);
+    }
+
+    @Override
+    public String toString() {
+        return NAME;
+    }
 }

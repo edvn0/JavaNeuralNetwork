@@ -1,8 +1,8 @@
 package math.activations;
 
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
+import math.linearalgebra.Matrix;
 
-public class SigmoidFunction extends ActivationFunction {
+public class SigmoidFunction<M> extends ActivationFunction<M> {
 
     @Override
     public String getName() {
@@ -18,12 +18,12 @@ public class SigmoidFunction extends ActivationFunction {
     }
 
     @Override
-    public OjAlgoMatrix function(OjAlgoMatrix m) {
+    public Matrix<M> function(Matrix<M> m) {
         return m.mapElements(this::sigmoid);
     }
 
     @Override
-    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
+    public Matrix<M> derivative(Matrix<M> m) {
         return m.mapElements(this::sigmoidDerivative);
     }
 }

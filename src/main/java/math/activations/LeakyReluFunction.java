@@ -1,8 +1,9 @@
 package math.activations;
 
+import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
-public class LeakyReluFunction extends ReluFunction {
+public class LeakyReluFunction<M> extends ReluFunction<M> {
 
     private final double alpha;
 
@@ -17,12 +18,12 @@ public class LeakyReluFunction extends ReluFunction {
     }
 
     @Override
-    public OjAlgoMatrix derivative(OjAlgoMatrix in) {
+    public Matrix<M> derivative(Matrix<M> in) {
         return in.mapElements((e) -> e > 0 ? e : alpha);
     }
 
     @Override
-    public OjAlgoMatrix function(OjAlgoMatrix in) {
+    public Matrix<M> function(Matrix<M> in) {
         return in.mapElements((e) -> e > 0 ? 1 : alpha);
     }
 }

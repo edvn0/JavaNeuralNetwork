@@ -2,40 +2,50 @@ package optimizers;
 
 import math.linearalgebra.Matrix;
 
-public class StochasticGradientDescent implements Optimizer {
+import java.util.ArrayList;
+import java.util.List;
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 3872768343431121671L;
-	private double learningRate;
+public class StochasticGradientDescent<M> implements Optimizer<M> {
 
-	public StochasticGradientDescent(double l) {
-		this.learningRate = l;
-	}
+    /**
+     *
+     */
+    private static final long serialVersionUID = 3872768343431121671L;
+    private static final String NAME = "Stochastic Gradient Descent";
+    private final double learningRate;
 
-	@Override
-	public Matrix<?>[] changeWeights(final Matrix<?>[] weights, final Matrix<?>[] deltas) {
-		Matrix<?>[] out = new Matrix<?>[weights.length];
-		for (int i = 0; i < weights.length; i++) {
-			deltas[i] = deltas[i].times(this.learningRate);
-			out[i] = weights[i].minus(deltas[i]);
-		}
-		return out;
-	}
+    public StochasticGradientDescent(double l) {
+        this.learningRate = l;
+    }
 
-	@Override
-	public Matrix<?>[] changeBiases(final Matrix<?>[] biases, final Matrix<?>[] deltas) {
-		org.ujmp.core.Matrix[] out = new org.ujmp.core.Matrix[biases.length];
-		for (int i = 0; i < biases.length; i++) {
-			deltas[i] = deltas[i].times(this.learningRate);
-			out[i] = biases[i].minus(deltas[i]);
-		}
-		return out;
-	}
+    @Override
+    public List<Matrix<M>> changeWeights(final List<Matrix<M>> weights, final List<Matrix<M>> deltas) {
+        List<Matrix<M>> matrixList = new ArrayList<>();
+        for (int i = 0; i < weights.size(); i++) {
+            Matrix<M> newValue = deltas.get(i).multiply(this.learningRate);
+            deltas.set(i, newValue);
+            matrixList.add(i, weights.get(i).subtract(deltas.get(i)));
+        }
+        return matrixList;
+    }
 
-	@Override
-	public void initializeOptimizer(final int layers) {
-		// We need no intialisation for this optimiser.
-	}
+    @Override
+    public List<Matrix<M>> changeBiases(final List<Matrix<M>> biases, final List<Matrix<M>> deltas) {
+        List<Matrix<M>> matrixList = new ArrayList<>();
+        for (int i = 0; i < biases.size(); i++) {
+            deltas.set(i, deltas.get(i).multiply(this.learningRate));
+            matrixList.add(i, biases.get(i).multiply(deltas.get(i)));
+        }
+        return matrixList;
+    }
+
+    @Override
+    public void initializeOptimizer(final int layers, Matrix<M> weightSeed, Matrix<M> biasSeed) {
+        // We need no intialisation for this optimiser.
+    }
+
+    @Override
+    public String toString() {
+        return NAME;
+    }
 }

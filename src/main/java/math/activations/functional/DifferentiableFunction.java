@@ -1,11 +1,11 @@
 package math.activations.functional;
 
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
+import math.linearalgebra.Matrix;
 
-public interface DifferentiableFunction {
+public interface DifferentiableFunction<M> {
 
-    OjAlgoMatrix function(OjAlgoMatrix m);
+    Matrix<M> function(Matrix<M> m);
 
-    OjAlgoMatrix derivative(OjAlgoMatrix m);
+    Matrix<M> derivative(Matrix<M> m);
 
 }
