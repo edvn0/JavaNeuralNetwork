@@ -124,7 +124,8 @@ public class UJMPMatrix implements Matrix<UJMPMatrix> {
                 out[i][j] = mapping.apply(elements[i][j]);
             }
         }
-        return new UJMPMatrix(out, rows(), cols());
+        UJMPMatrix m = new UJMPMatrix(out, rows(), cols());
+        return m;
     }
 
     @Override

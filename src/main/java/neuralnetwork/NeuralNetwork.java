@@ -49,7 +49,7 @@ public class NeuralNetwork<M> implements Serializable {
     private List<Matrix<M>> dW;
     private List<Matrix<M>> dB;
 
-    public NeuralNetwork(NetworkBuilder<M> b, ParameterFactory<M> factory) {
+    public NeuralNetwork(final NetworkBuilder<M> b, final ParameterFactory<M> factory) {
 
         this.sizes = b.structure;
         this.functions = b.getActivationFunctions();
@@ -86,7 +86,7 @@ public class NeuralNetwork<M> implements Serializable {
         path = (path.endsWith(".ser") ? path : path + ".ser");
 
         try (FileInputStream fs = new FileInputStream(file = new File(path));
-             ObjectInputStream os = new ObjectInputStream(fs)) {
+                ObjectInputStream os = new ObjectInputStream(fs)) {
 
             network = (NeuralNetwork<M>) os.readObject();
 
@@ -129,7 +129,6 @@ public class NeuralNetwork<M> implements Serializable {
             throw new IOException(ERROR_MSG);
         }
     }
-
 
     /**
      * Train the network with one example.
@@ -186,32 +185,28 @@ public class NeuralNetwork<M> implements Serializable {
 
     }
 
-    private synchronized BackPropContainer<M> backPropagate(NetworkInput<M> in) {
-        final List<Matrix<M>> activations = new ArrayList<>();
-
-        List<Matrix<M>> deltaBiases = this.initialiser.getDeltaBiasParameters();
-        List<Matrix<M>> deltaWeights = this.initialiser.getDeltaWeightParameters();
-
-        // Alters all arrays and lists.
-        this.feedForward(in.getData(), activations);
+    private BackPropContainer<M> backPropagate(final NetworkInput<M> in) {
+        final List<Matrix<M>> deltaBiases = this.initialiser.getDeltaBiasParameters();
+        final List<Matrix<M>> deltaWeights = this.initialiser.getDeltaWeightParameters();
+        
+        final List<Matrix<M>> activations = this.feedForward(in.getData());
         // End feedforward
 
-        Matrix<M> a = activations.get(activations.size() - 1);
+        final Matrix<M> a = activations.get(activations.size() - 1);
         Matrix<M> deltaError = costFunction.applyCostFunctionGradient(a, in.getLabel());
 
-        // Iterate over all layers, they are indexed by the last layer (here given b
+        // Iterate over all layers, they are indexed by the last layer
         for (int k = deltaBiases.size() - 1; k >= 0; k--) {
             final Matrix<M> aCurr = activations.get(k + 1); // this layer
             final Matrix<M> aNext = activations.get(k); // Previous layer
 
-            Matrix<M> differentiate = this.functions.get(k + 1).derivativeOnInput(aCurr, deltaError);
+            final Matrix<M> differentiate = this.functions.get(k + 1).derivativeOnInput(aCurr, deltaError);
 
             deltaBiases.set(k, differentiate);
             deltaWeights.set(k, differentiate.multiply(aNext.transpose()));
 
-            deltaError = this.weights.get(k).transpose().multiply(differentiate);
+            deltaError = this.weights.get(k).transpose().multiply(differentiate).transpose();
         }
-
 
         return new BackPropContainer<>(deltaWeights, deltaBiases);
     }
@@ -221,27 +216,20 @@ public class NeuralNetwork<M> implements Serializable {
      *
      * @param starter Input NeuralNetworkMatrix<Matrix>
      * @param actives activations list
+     * @return
      */
-    private void feedForward(final Matrix<M> starter, final List<Matrix<M>> actives) {
+    private List<Matrix<M>> feedForward(final Matrix<M> starter) {
+        List<Matrix<M>> out = new ArrayList<>();
         Matrix<M> toPredict = starter;
 
-        actives.add(toPredict);
+        out.add(toPredict);
         for (int i = 0; i < this.totalLayers - 1; i++) {
             final Matrix<M> x = this.weights.get(i).multiply(toPredict).add(this.biases.get(i));
 
             toPredict = this.functions.get(i + 1).function(x);
-            actives.add(toPredict);
+            out.add(toPredict);
         }
-    }
-
-    /**
-     * Predict a single example input data.
-     *
-     * @param in {@link Matrix <Matrix>} a NeuralNetworkMatrix<Matrix> to feed forward.
-     * @return a classification of {@link Matrix <Matrix>}
-     */
-    public Matrix<M> predict(final Matrix<M> in) {
-        return feedForward(in);
+        return out;
     }
 
     /**
@@ -250,12 +238,12 @@ public class NeuralNetwork<M> implements Serializable {
      * @param in VECTOR to predict
      * @return classified values.
      */
-    private Matrix<M> feedForward(final Matrix<M> in) {
+    public Matrix<M> predict(final Matrix<M> in) {
         Matrix<M> input = in; // row vector, from Nx1 to 1XN
 
         for (int i = 0; i < this.totalLayers - 1; i++) {
-            Matrix<M> wI = this.weights.get(i).multiply(input);
-            Matrix<M> a = wI.add(this.biases.get(i));
+            final Matrix<M> wI = this.weights.get(i).multiply(input);
+            final Matrix<M> a = wI.add(this.biases.get(i));
             input = functions.get(i + 1).function(a);
         }
 
@@ -267,7 +255,7 @@ public class NeuralNetwork<M> implements Serializable {
 
         for (final NetworkInput<M> networkInput : test) {
 
-            final Matrix<M> out = this.feedForward(networkInput.getData());
+            final Matrix<M> out = this.predict(networkInput.getData());
             final NetworkInput<M> newOut = new NetworkInput<M>(out, networkInput.getLabel());
             copy.add(newOut);
         }
@@ -275,9 +263,9 @@ public class NeuralNetwork<M> implements Serializable {
         return copy;
     }
 
-    public double evaluateTestData(final List<NetworkInput<M>> imagesTest, int size) {
+    public double evaluateTestData(final List<NetworkInput<M>> imagesTest, final int size) {
         double avg = 0;
-        List<NetworkInput<M>> d = this.feedForwardData(imagesTest);
+        final List<NetworkInput<M>> d = this.feedForwardData(imagesTest);
         for (int i = 0; i < size; i++) {
             avg += this.evaluationFunction.evaluatePrediction(d);
         }
@@ -289,33 +277,33 @@ public class NeuralNetwork<M> implements Serializable {
      * a {@link Optimizer} to optimize the gradient descent.
      *
      * @param training   a Collections object with {@link NetworkInput<M>} objects,
-     *                   NetworkInput<M>.getData() is the data, NetworkInput<M>.getLabel()
-     *                   is the label.
+     *                   NetworkInput<M>.getData() is the data,
+     *                   NetworkInput<M>.getLabel() is the label.
      * @param validation a Collections object with {@link NetworkInput<M>} objects,
-     *                   NetworkInput<M>.getData() is the data, NetworkInput<M>.getLabel()
-     *                   is the label.
+     *                   NetworkInput<M>.getData() is the data,
+     *                   NetworkInput<M>.getLabel() is the label.
      * @param epochs     how many iterations are we doing the descent for
      * @param batchSize  how big is the batch size, typically 32. See
      *                   https://stats.stackexchange.com/q/326663
      */
     public void train(@NotNull final List<NetworkInput<M>> training, @NotNull final List<NetworkInput<M>> validation,
-                      final int epochs, final int batchSize) {
+            final int epochs, final int batchSize) {
 
-        int info = epochs / 10;
-        List<List<NetworkInput<M>>> split = NetworkUtilities.batchSplitData(training, batchSize);
+        final int info = epochs / 10;
+        final List<List<NetworkInput<M>>> split = NetworkUtilities.batchSplitData(training, batchSize);
         for (int i = 0; i < epochs; i++) {
             // Randomize training sample.
             // randomisedBatchTraining(split);
 
-            for (var l : split) {
+            for (final var l : split) {
                 this.evaluateTrainingExample(l);
                 this.learnFromDeltas();
             }
 
             if (i % info == 0) {
-                List<NetworkInput<M>> l = this.feedForwardData(validation);
-                double loss = this.costFunction.calculateCostFunction(l);
-                double correct = this.evaluationFunction.evaluatePrediction(l) * 100;
+                final List<NetworkInput<M>> l = this.feedForwardData(validation);
+                final double loss = this.costFunction.calculateCostFunction(l);
+                final double correct = this.evaluationFunction.evaluatePrediction(l) * 100;
                 log.info("Epoch {}: Loss value of {}\n\tCorrect: {}% examples were classified correctly.\n\n", i, loss,
                         correct);
             }
@@ -329,8 +317,8 @@ public class NeuralNetwork<M> implements Serializable {
      * Displays a progress bar!
      *
      * @param training  a Collections object with {@link NetworkInput<M>} objects,
-     *                  NetworkInput<M>.getData() is the data, NetworkInput<M>.getLabel()
-     *                  is the label.
+     *                  NetworkInput<M>.getData() is the data,
+     *                  NetworkInput<M>.getLabel() is the label.
      * @param epochs    how many iterations are we doing the descent for
      * @param batchSize how big is the batch size, typically 32. See
      *                  https://stats.stackexchange.com/q/326663
@@ -338,7 +326,7 @@ public class NeuralNetwork<M> implements Serializable {
     public void trainVerbose(@NotNull final List<NetworkInput<M>> training, final int epochs, final int batchSize) {
         log.info("Started stochastic gradient descent, verbose mode on.%n");
         // How many times will we decrease the learning rate?
-        List<List<NetworkInput<M>>> split = NetworkUtilities.batchSplitData(training, batchSize);
+        final List<List<NetworkInput<M>>> split = NetworkUtilities.batchSplitData(training, batchSize);
         try (ProgressBar bar = new ProgressBar("Backpropagation", epochs)) {
             for (int i = 0; i < epochs; i++) {
                 randomisedBatchTraining(split);
@@ -352,24 +340,23 @@ public class NeuralNetwork<M> implements Serializable {
      * a {@link Optimizer} to optimize the gradient descent.
      *
      * @param training   a Collections object with {@link NetworkInput<M>} objects,
-     *                   NetworkInput<M>.getData() is the data, NetworkInput<M>.getLabel()
-     *                   is the label.
+     *                   NetworkInput<M>.getData() is the data,
+     *                   NetworkInput<M>.getLabel() is the label.
      * @param validation a Collections object with {@link NetworkInput<M>} objects,
-     *                   NetworkInput<M>.getData() is the data, NetworkInput<M>.getLabel()
-     *                   is the label.
+     *                   NetworkInput<M>.getData() is the data,
+     *                   NetworkInput<M>.getLabel() is the label.
      * @param batchSize  how big is the batch size, typically 32. See
      *                   https://stats.stackexchange.com/q/326663
      * @param path       To what path should the plots be printed?
      */
     public void trainWithMetrics(@NotNull final List<NetworkInput<M>> training,
-                                 @NotNull final List<NetworkInput<M>> validation, final int epochs, final int batchSize,
-                                 String path) {
+            @NotNull final List<NetworkInput<M>> validation, final int epochs, final int batchSize, final String path) {
 
         long t1, t2;
         // Members which supply functionality to the plots.
-        NetworkMetrics metrics = new NetworkMetrics();
+        final NetworkMetrics metrics = new NetworkMetrics();
 
-        var split = NetworkUtilities.batchSplitData(training, batchSize);
+        final var split = NetworkUtilities.batchSplitData(training, batchSize);
 
         // Feed forward the validation data prior to the batch descent
         // to establish a ground truth value
@@ -406,17 +393,17 @@ public class NeuralNetwork<M> implements Serializable {
         log.info("Outputting charts into " + path);
         try {
             metrics.present(path);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
         log.info("Charts outputted.");
     }
 
-    private void randomisedBatchTraining(List<List<NetworkInput<M>>> split) {
-        /*Collections.shuffle(split);
-        for (List<NetworkInput<M>> networkInputs : split) {
-            Collections.shuffle(networkInputs);
-        }*/
+    private void randomisedBatchTraining(final List<List<NetworkInput<M>>> split) {
+        /*
+         * Collections.shuffle(split); for (List<NetworkInput<M>> networkInputs : split)
+         * { Collections.shuffle(networkInputs); }
+         */
 
         split.parallelStream().forEach(e -> {
             evaluateTrainingExample(e);
@@ -424,8 +411,8 @@ public class NeuralNetwork<M> implements Serializable {
         });
     }
 
-    private int[] weightDimensions(int i) {
-        return new int[]{(this.weights.get(i).rows()), (this.weights.get(i).cols())};
+    private int[] weightDimensions(final int i) {
+        return new int[] { (this.weights.get(i).rows()), (this.weights.get(i).cols()) };
     }
 
     /**
@@ -437,15 +424,16 @@ public class NeuralNetwork<M> implements Serializable {
      * @param batchSize the batch size.
      * @return a slice of the list starting at k*batchSize.
      */
-    private List<NetworkInput<M>> getBatch(final int k, final List<NetworkInput<M>> training, int batchSize) {
-        int fromIx = k * batchSize;
-        int toIx = Math.min(training.size(), (k + 1) * batchSize);
+    private List<NetworkInput<M>> getBatch(final int k, final List<NetworkInput<M>> training, final int batchSize) {
+        final int fromIx = k * batchSize;
+        final int toIx = Math.min(training.size(), (k + 1) * batchSize);
         return Collections.unmodifiableList(training.subList(fromIx, toIx));
     }
 
-    private List<List<NetworkInput<M>>> getSplitBatch(final int k, final List<List<NetworkInput<M>>> list, int splitSize) {
-        int fromIx = k * splitSize;
-        int toIx = Math.min(list.size(), (k + 1) * splitSize);
+    private List<List<NetworkInput<M>>> getSplitBatch(final int k, final List<List<NetworkInput<M>>> list,
+            final int splitSize) {
+        final int fromIx = k * splitSize;
+        final int toIx = Math.min(list.size(), (k + 1) * splitSize);
         return Collections.unmodifiableList(list.subList(fromIx, toIx));
     }
 
@@ -458,20 +446,21 @@ public class NeuralNetwork<M> implements Serializable {
      * @param batchSize the batch size.
      * @return a slice of the list starting at k*batchSize.
      */
-    private Stream<NetworkInput<M>> getBatchStream(final int k, final List<NetworkInput<M>> training, int batchSize) {
-        int fromIx = k * batchSize;
-        int toIx = Math.min(training.size(), (k + 1) * batchSize);
+    private Stream<NetworkInput<M>> getBatchStream(final int k, final List<NetworkInput<M>> training,
+            final int batchSize) {
+        final int fromIx = k * batchSize;
+        final int toIx = Math.min(training.size(), (k + 1) * batchSize);
         return Collections.unmodifiableList(training.subList(fromIx, toIx)).parallelStream();
     }
 
     public void display() {
-        StringBuilder b = new StringBuilder();
+        final StringBuilder b = new StringBuilder();
         b.append("\n").append("======================================================================").append("\n")
-                .append("Network information and structure.").append("\n")
-                .append(String.format("Input nodes: [%d]; Output nodes: [%d]%n%n", this.sizes[0], sizes[sizes.length - 1]));
+                .append("Network information and structure.").append("\n").append(String
+                        .format("Input nodes: [%d]; Output nodes: [%d]%n%n", this.sizes[0], sizes[sizes.length - 1]));
 
         for (int i = 0; i < weights.size(); i++) {
-            int[] dims = weightDimensions(i);
+            final int[] dims = weightDimensions(i);
             b.append(String.format("\t\tLayer %d : [%d X %d]%n", (i + 1), dims[0], dims[1]))
                     .append(String.format("\t\tActivation function from this layer: %s", functions.get(i).getName())).append("\n");
         }

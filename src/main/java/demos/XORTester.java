@@ -70,7 +70,7 @@ public class XORTester {
                 new UJMPFactory(new int[]{2, 3, 3, 1}, InitialisationMethod.XAVIER, InitialisationMethod.SCALAR));
 
         network.display();
-        network.train(data.subList(0, 1000), data.subList(1000, 2000), 70, 64);
+        network.train(data.subList(0, 7000), data.subList(7000, 9000), 70, 64);
         //network.trainWithMetrics(data.subList(0, 1000), data.subList(1000, 2000), 70, 64, "E:\\Programming\\Git\\JavaNeuralNetwork\\src\\main\\resources\\output");
     }
 

@@ -2,14 +2,12 @@ package math.linearalgebra.ojalgo;
 
 import lombok.extern.slf4j.Slf4j;
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ujmp.UJMPMatrix;
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-@Slf4j
 public class OjAlgoMatrixTest {
 
     @Before

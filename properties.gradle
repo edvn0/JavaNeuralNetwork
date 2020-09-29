@@ -1,1 +1,1 @@
-mainClass = demos.MNISTTester
+mainClass = demos.XORTester
