@@ -1,6 +1,5 @@
 package math.linearalgebra.ojalgo;
 
-import lombok.extern.slf4j.Slf4j;
 import math.linearalgebra.Matrix;
 import org.ojalgo.function.aggregator.Aggregator;
 import org.ojalgo.matrix.Primitive64Matrix;
@@ -9,9 +8,9 @@ import utilities.MatrixUtilities;
 
 import java.util.function.Function;
 
-@Slf4j
-public class OjAlgoMatrix implements Matrix<OjAlgoMatrix> {
+public class OjAlgoMatrix extends Matrix<OjAlgoMatrix> {
 
+    private static final String NAME = "OjAlgo";
     protected Primitive64Matrix delegate;
 
     public OjAlgoMatrix(Primitive64Matrix in) {
@@ -264,4 +263,9 @@ public class OjAlgoMatrix implements Matrix<OjAlgoMatrix> {
         OjAlgoMatrix m = new OjAlgoMatrix(out, rows(), cols());
         return m;
 	}
+
+    @Override
+    public String name() {
+        return NAME;
+    }
 }

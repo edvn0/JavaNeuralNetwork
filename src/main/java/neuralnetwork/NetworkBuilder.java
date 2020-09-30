@@ -1,6 +1,5 @@
 package neuralnetwork;
 
-import lombok.extern.slf4j.Slf4j;
 import math.activations.ActivationFunction;
 import math.activations.DoNothingFunction;
 import math.error_functions.CostFunction;
@@ -12,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Slf4j
 public class NetworkBuilder<M> {
 
     /**
@@ -41,7 +39,8 @@ public class NetworkBuilder<M> {
 
     public NetworkBuilder<M> compile() {
         if (costFunction == null || evaluationFunction == null || optimizer == null) {
-            throw new IllegalArgumentException("You need to chose an implementation or implement a cost function, evaluation function and an optimizer.");
+            throw new IllegalArgumentException(
+                    "You need to chose an implementation or implement a cost function, evaluation function and an optimizer.");
         }
 
         for (var e : functionMap.entrySet()) {

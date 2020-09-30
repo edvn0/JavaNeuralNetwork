@@ -1,6 +1,5 @@
 package math.linearalgebra.ujmp;
 
-import lombok.extern.slf4j.Slf4j;
 import math.linearalgebra.Matrix;
 import org.ujmp.core.calculation.Calculation;
 import utilities.MathUtilities;
@@ -8,9 +7,9 @@ import utilities.MatrixUtilities;
 
 import java.util.function.Function;
 
-@Slf4j
-public class UJMPMatrix implements Matrix<UJMPMatrix> {
+public class UJMPMatrix extends Matrix<UJMPMatrix> {
 
+    private static final String NAME = "UJMP";
     protected final org.ujmp.core.Matrix delegate;
 
     public UJMPMatrix(org.ujmp.core.Matrix m) {
@@ -31,7 +30,8 @@ public class UJMPMatrix implements Matrix<UJMPMatrix> {
                     throw new IllegalArgumentException("Need to provide values of size NXN");
                 }
                 int sqrt = (int) Math.sqrt(values.length);
-                this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(MatrixUtilities.fromFlat(values, sqrt, sqrt));
+                this.delegate = org.ujmp.core.Matrix.Factory
+                        .importFromArray(MatrixUtilities.fromFlat(values, sqrt, sqrt));
                 break;
             case ONES:
                 this.delegate = org.ujmp.core.Matrix.Factory.ones(rows, cols);
@@ -63,7 +63,6 @@ public class UJMPMatrix implements Matrix<UJMPMatrix> {
     public UJMPMatrix(Matrix<UJMPMatrix> out) {
         this.delegate = out.delegate().delegate;
     }
-
 
     @Override
     public int rows() {
@@ -203,8 +202,10 @@ public class UJMPMatrix implements Matrix<UJMPMatrix> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         UJMPMatrix matrix = (UJMPMatrix) o;
         return delegate.equals(matrix.delegate);
     }
@@ -216,8 +217,9 @@ public class UJMPMatrix implements Matrix<UJMPMatrix> {
 
     @Override
     public double square() {
-        if (cols() != 1) throw new IllegalArgumentException("Trying to take the vector norm of a matrix...");
-        return this.mapElements(e -> e*e).map(e -> e.sum());
+        if (cols() != 1)
+            throw new IllegalArgumentException("Trying to take the vector norm of a matrix...");
+        return this.mapElements(e -> e * e).map(e -> e.sum());
     }
 
     @Override
@@ -226,12 +228,16 @@ public class UJMPMatrix implements Matrix<UJMPMatrix> {
         double[][] out = new double[elements.length][elements[0].length];
         for (int i = 0; i < elements.length; i++) {
             for (int j = 0; j < elements[0].length; j++) {
-                out[i][j] =  out[i][j]*elements[i][j];
+                out[i][j] = out[i][j] * elements[i][j];
             }
         }
         UJMPMatrix m = new UJMPMatrix(out, rows(), cols());
         return m;
     }
 
+    @Override
+    public String name() {
+        return NAME;
+    }
 
 }

@@ -5,9 +5,6 @@ import math.linearalgebra.Matrix;
 
 import java.io.Serializable;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public abstract class ActivationFunction<M> implements DifferentiableFunction<M>, Serializable {
 
     /**

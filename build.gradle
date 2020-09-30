@@ -13,11 +13,7 @@ repositories {
     mavenCentral()
 }
 
-mainClassName = "demos.XORTester"
-
-run {
-    args = ["200", "32", "C:\\Users\\edvin\\IdeaProjects\\JavaNeuralNetwork\\src\\main\\resources\\graphoutput"]
-}
+mainClassName = "demos.Sandbox"
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'

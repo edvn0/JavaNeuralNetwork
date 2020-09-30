@@ -1,9 +1,10 @@
 package math.activations;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class TanhFunction<M> extends ActivationFunction<M> {
+
+    private static final long serialVersionUID = 9220582961801243285L;
 
     private double tanh(double a) {
         return Math.tanh(a);
@@ -12,7 +13,6 @@ public class TanhFunction<M> extends ActivationFunction<M> {
     private double tanhDerivative(double a) {
         return 1 - (a * a);
     }
-
 
     @Override
     public String getName() {

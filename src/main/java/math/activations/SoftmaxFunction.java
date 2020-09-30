@@ -1,13 +1,9 @@
 package math.activations;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class SoftmaxFunction<M> extends ActivationFunction<M> {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = -5298468440584699205L;
 
     /**

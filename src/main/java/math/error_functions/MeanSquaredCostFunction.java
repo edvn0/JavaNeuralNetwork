@@ -5,14 +5,8 @@ import neuralnetwork.inputs.NetworkInput;
 
 import java.util.List;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class MeanSquaredCostFunction<M> implements CostFunction<M> {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = 4470711763150915089L;
     private static final String NAME = "Mean Squared Error";
 

@@ -2,7 +2,6 @@ package neuralnetwork;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import math.activations.ActivationFunction;
 import math.error_functions.CostFunction;
@@ -46,9 +45,9 @@ public class NeuralNetwork<M> implements Serializable {
     private final ParameterFactory<M> initialiser;
     // Weights and biases of the network
     private volatile List<Matrix<M>> weights;
-    private volatile  List<Matrix<M>> biases;
-    private volatile  List<Matrix<M>> dW;
-    private volatile  List<Matrix<M>> dB;
+    private volatile List<Matrix<M>> biases;
+    private volatile List<Matrix<M>> dW;
+    private volatile List<Matrix<M>> dB;
 
     public NeuralNetwork(final NetworkBuilder<M> b, final ParameterFactory<M> factory) {
 
@@ -81,7 +80,7 @@ public class NeuralNetwork<M> implements Serializable {
      * @return a deserialised object.
      * @throws IOException if file could not be found.
      */
-    public static <M> NeuralNetwork<M> readObject(String path) throws IOException {
+    public static <M extends Matrix<M>> NeuralNetwork<M> readObject(String path) throws IOException {
         NeuralNetwork<M> network = null;
         File file;
         path = (path.endsWith(".ser") ? path : path + ".ser");
@@ -114,7 +113,7 @@ public class NeuralNetwork<M> implements Serializable {
      * @return a deserialised network.
      * @throws IOException if file is not readable.
      */
-    public static <M> NeuralNetwork<M> readObject(final File file) throws IOException {
+    public static <M extends Matrix<M>> NeuralNetwork<M> readObject(final File file) throws IOException {
         NeuralNetwork<M> neuralNetwork = null;
         try (FileInputStream fs = new FileInputStream(file); ObjectInputStream stream = new ObjectInputStream(fs)) {
             neuralNetwork = (NeuralNetwork<M>) stream.readObject();
@@ -147,16 +146,18 @@ public class NeuralNetwork<M> implements Serializable {
      */
     private void evaluateTrainingExample(final List<NetworkInput<M>> trainingExamples) {
         final int size = trainingExamples.size();
-        final double inverse = 1d/ size;
+        final double inverse = 1d / size;
 
         for (final var data : trainingExamples) {
             final BackPropContainer<M> deltas = backPropagate(data);
-            final List<Matrix<M>> deltaB = deltas.getDeltaBiases();
             final List<Matrix<M>> deltaW = deltas.getDeltaWeights();
+            final List<Matrix<M>> deltaB = deltas.getDeltaBiases();
 
-            for (int j = 0; j < this.totalLayers - 1; j++) {
-                this.dW.set(j, this.dW.get(j).add(deltaW.get(j).multiply(inverse)));
-                this.dB.set(j, this.dB.get(j).add(deltaB.get(j).multiply(inverse)));
+            for (int j = 0; j < this.totalLayers; j++) {
+                Matrix<M> newDeltaWeight = this.dW.get(j).add(deltaW.get(j).multiply(inverse));
+                Matrix<M> newDeltaBias = this.dB.get(j).add(deltaB.get(j).multiply(inverse));
+                this.dW.set(j, newDeltaWeight);
+                this.dB.set(j, newDeltaBias);
             }
         }
     }
@@ -176,7 +177,7 @@ public class NeuralNetwork<M> implements Serializable {
     private BackPropContainer<M> backPropagate(final NetworkInput<M> in) {
         final List<Matrix<M>> deltaBiases = this.initialiser.getDeltaBiasParameters();
         final List<Matrix<M>> deltaWeights = this.initialiser.getDeltaWeightParameters();
-        
+
         final List<Matrix<M>> activations = this.feedForward(in.getData());
         // End feedforward
 
@@ -189,13 +190,13 @@ public class NeuralNetwork<M> implements Serializable {
             final Matrix<M> aNext = activations.get(k); // Previous layer
 
             final Matrix<M> differentiate = this.functions.get(k + 1).derivativeOnInput(aCurr, deltaError);
-            
+
             final Matrix<M> dB = differentiate;
             final Matrix<M> dW = differentiate.multiply(aNext.transpose());
-            
+
             deltaBiases.set(k, dB);
             deltaWeights.set(k, dW);
-            
+
             deltaError = this.weights.get(k).transpose().multiply(differentiate);
         }
 
@@ -213,7 +214,7 @@ public class NeuralNetwork<M> implements Serializable {
         Matrix<M> toPredict = starter;
 
         out.add(toPredict);
-        for (int i = 0; i < this.totalLayers - 1; i++) {
+        for (int i = 0; i < this.totalLayers; i++) {
             final Matrix<M> x = this.weights.get(i).multiply(toPredict).add(this.biases.get(i));
 
             toPredict = this.functions.get(i + 1).function(x);
@@ -231,7 +232,7 @@ public class NeuralNetwork<M> implements Serializable {
     public Matrix<M> predict(final Matrix<M> in) {
         Matrix<M> input = in; // row vector, from Nx1 to 1XN
 
-        for (int i = 0; i < this.totalLayers - 1; i++) {
+        for (int i = 0; i < this.totalLayers; i++) {
             final Matrix<M> wI = this.weights.get(i).multiply(input);
             final Matrix<M> a = wI.add(this.biases.get(i));
             input = functions.get(i + 1).function(a);
@@ -253,13 +254,25 @@ public class NeuralNetwork<M> implements Serializable {
         return copy;
     }
 
-    public double evaluateTestData(final List<NetworkInput<M>> imagesTest, final int size) {
+    public double testEvaluation(final List<NetworkInput<M>> imagesTest, final int size) {
         double avg = 0;
         final List<NetworkInput<M>> d = this.feedForwardData(imagesTest);
         for (int i = 0; i < size; i++) {
-            avg += this.evaluationFunction.evaluatePrediction(d);
+            avg += evaluate(d);
         }
         return avg / size;
+    }
+
+    private double loss(List<NetworkInput<M>> data) {
+        return this.costFunction.calculateCostFunction(data);
+    }
+
+    private double evaluate(final List<NetworkInput<M>> data) {
+        return this.evaluationFunction.evaluatePrediction(data);
+    }
+
+    public double testLoss(List<NetworkInput<M>> right) {
+        return loss(feedForwardData(right));
     }
 
     /**
@@ -278,8 +291,6 @@ public class NeuralNetwork<M> implements Serializable {
      */
     public void train(@NotNull final List<NetworkInput<M>> training, @NotNull final List<NetworkInput<M>> validation,
             final int epochs, final int batchSize) {
-
-        final int info = epochs / 10;
         final List<List<NetworkInput<M>>> split = NetworkUtilities.batchSplitData(training, batchSize);
         for (int i = 0; i < epochs; i++) {
             // Randomize training sample.
@@ -288,15 +299,6 @@ public class NeuralNetwork<M> implements Serializable {
             for (final var l : split) {
                 this.evaluateTrainingExample(l);
                 this.learnFromDeltas();
-            }
-
-            if (i % info == 0) {
-                Collections.shuffle(validation);
-                final List<NetworkInput<M>> l = this.feedForwardData(validation);
-                final double loss = this.costFunction.calculateCostFunction(l);
-                final double correct = this.evaluationFunction.evaluatePrediction(l) * 100;
-                log.info("\nEpoch {}: Loss value of {}\n\tCorrect: {}% examples were classified correctly.\n\n", i, loss,
-                        correct);
             }
         }
     }
@@ -314,13 +316,28 @@ public class NeuralNetwork<M> implements Serializable {
      * @param batchSize how big is the batch size, typically 32. See
      *                  https://stats.stackexchange.com/q/326663
      */
-    public void trainVerbose(@NotNull final List<NetworkInput<M>> training, final int epochs, final int batchSize) {
+    public void trainVerbose(@NotNull final List<NetworkInput<M>> training, final List<NetworkInput<M>> validation,
+            final int epochs, final int batchSize) {
         log.info("Started stochastic gradient descent, verbose mode on.%n");
         // How many times will we decrease the learning rate?
         final List<List<NetworkInput<M>>> split = NetworkUtilities.batchSplitData(training, batchSize);
+        int info = epochs / 8;
         try (ProgressBar bar = new ProgressBar("Backpropagation", epochs)) {
             for (int i = 0; i < epochs; i++) {
                 randomisedBatchTraining(split);
+
+                if ((i + 1) % info == 0) {
+                    // Feed forward the test data
+                    final List<NetworkInput<M>> feedForwardData = this.feedForwardData(validation);
+                    // Evaluate prediction with the interface EvaluationFunction.
+                    double correct = evaluate(feedForwardData);
+                    // Calculate cost/loss with the interface CostFunction
+                    double loss = this.loss(feedForwardData);
+
+                    log.info("\nThe network correctly evaluted \t {}\nThe network has a loss of {}.\n", correct * 100,
+                            loss);
+                }
+
                 bar.step();
             }
         }
@@ -345,7 +362,7 @@ public class NeuralNetwork<M> implements Serializable {
 
         long t1, t2;
         // Members which supply functionality to the plots.
-        final NetworkMetrics metrics = new NetworkMetrics();
+        final NetworkMetrics metrics = new NetworkMetrics(training.get(0).getData().name());
 
         final var split = NetworkUtilities.batchSplitData(training, batchSize);
 
@@ -353,30 +370,33 @@ public class NeuralNetwork<M> implements Serializable {
         // to establish a ground truth value
         final var ffD = this.feedForwardData(validation);
         // Evaluate prediction with the interface EvaluationFunction.
-        double correct = this.evaluationFunction.evaluatePrediction(ffD);
-        double loss = this.costFunction.calculateCostFunction(ffD);
+        double correct = evaluate(ffD);
+        double loss = this.loss(ffD);
         metrics.initialPlotData(correct, loss);
 
         for (int i = 0; i < epochs; i++) {
 
             // Calculates a batch of training data and update the deltas.
             t1 = System.nanoTime();
-            randomisedBatchTraining(split);
+            for (final var l : split) {
+                this.evaluateTrainingExample(l);
+                this.learnFromDeltas();
+            }
             t2 = System.nanoTime();
 
             // Feed forward the test data
             final List<NetworkInput<M>> feedForwardData = this.feedForwardData(validation);
 
             // Evaluate prediction with the interface EvaluationFunction.
-            correct = this.evaluationFunction.evaluatePrediction(feedForwardData);
+            correct = evaluate(feedForwardData);
             // Calculate cost/loss with the interface CostFunction
-            loss = this.costFunction.calculateCostFunction(feedForwardData);
+            loss = this.loss(feedForwardData);
 
             // Add the plotting data, x, y_1, y_2 to the
             // lists of xValues, correctValues, lossValues.
             metrics.addPlotData(i + 1, correct, loss, (t2 - t1));
 
-            if ((i + 1) % (epochs / 8) == 0) {
+            if ((i) % (epochs / 8) == 0) {
                 log.info("\n {} / {} epochs are finished.\n Loss: \t {}", (i + 1), epochs, loss);
             }
         }
@@ -453,19 +473,13 @@ public class NeuralNetwork<M> implements Serializable {
         for (int i = 0; i < weights.size(); i++) {
             final int[] dims = weightDimensions(i);
             b.append(String.format("\t\tLayer %d : [%d X %d]%n", (i + 1), dims[0], dims[1]))
-                    .append(String.format("\t\tActivation function from this layer: %s", functions.get(i).getName())).append("\n");
+                    .append(String.format("\t\tActivation function from this layer: %s", functions.get(i).getName()))
+                    .append("\n");
         }
 
-        b.append("\n")
-                .append("The error function: ")
-                .append(this.costFunction)
-                .append("\n")
-                .append("The evaluation function: ")
-                .append(this.evaluationFunction)
-                .append("\n")
-                .append("The optimizer: ")
-                .append(this.optimizer)
-                .append("\n")
+        b.append("\n").append("The error function: ").append(this.costFunction).append("\n")
+                .append("The evaluation function: ").append(this.evaluationFunction).append("\n")
+                .append("The optimizer: ").append(this.optimizer).append("\n")
                 .append("======================================================================");
 
         log.info(b.toString());

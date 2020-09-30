@@ -1,4 +1,4 @@
-package demos;
+package demos.implementations;
 
 import lombok.extern.slf4j.Slf4j;
 import math.activations.LeakyReluFunction;
@@ -24,26 +24,25 @@ import java.util.stream.Collectors;
 public class MNISTTester {
 
     public static void main(final String[] args) throws IOException {
-        //if (args.length != 3)
-        //    throw new IllegalArgumentException("Need to supply epochs, batches, output path.");
+        // if (args.length != 3)
+        // throw new IllegalArgumentException("Need to supply epochs, batches, output
+        // path.");
 
         final int epochs = 20;// Integer.parseInt(args[0]);
-        final int batch = 64;//;Integer.parseInt(args[1]);
-        final String output = "E:\\Programming\\Git\\JavaNeuralNetwork\\src\\main\\resources\\output";//args[2];
+        final int batch = 64;// ;Integer.parseInt(args[1]);
+        final String output = "E:\\Programming\\Git\\JavaNeuralNetwork\\src\\main\\resources\\output";// args[2];
 
         NeuralNetwork<OjAlgoMatrix> network = new NeuralNetwork<>(
-                new NetworkBuilder<OjAlgoMatrix>(3)
-                        .setFirstLayer(784)
-                        .setLayer(35, new LeakyReluFunction<>(0.01))
-                        .setLastLayer(10, new SoftmaxFunction<>())
-                        .setCostFunction(new CrossEntropyCostFunction<>())
+                new NetworkBuilder<OjAlgoMatrix>(3).setFirstLayer(784).setLayer(35, new LeakyReluFunction<>(0.01))
+                        .setLastLayer(10, new SoftmaxFunction<>()).setCostFunction(new CrossEntropyCostFunction<>())
                         .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
                         .setOptimizer(new ADAM<>(0.001, 0.9, 0.999)),
-                new OjAlgoFactory(new int[]{784, 35, 10}, InitialisationMethod.XAVIER, InitialisationMethod.SCALAR)
-        );
+                new OjAlgoFactory(new int[] { 784, 35, 10 }, InitialisationMethod.XAVIER, InitialisationMethod.SCALAR));
 
-        List<NetworkInput<OjAlgoMatrix>> imagesTrain = generateDataFromCSV("C:\\Users\\edvin\\Downloads\\MNIST\\mnist_train.csv");
-        List<NetworkInput<OjAlgoMatrix>> imagesValidate = generateDataFromCSV("C:\\Users\\edvin\\Downloads\\MNIST\\mnist_test.csv");
+        List<NetworkInput<OjAlgoMatrix>> imagesTrain = generateDataFromCSV(
+                "C:\\Users\\edvin\\Downloads\\MNIST\\mnist_train.csv");
+        List<NetworkInput<OjAlgoMatrix>> imagesValidate = generateDataFromCSV(
+                "C:\\Users\\edvin\\Downloads\\MNIST\\mnist_test.csv");
 
         Collections.shuffle(imagesTrain);
         Collections.shuffle(imagesValidate);
@@ -54,7 +53,7 @@ public class MNISTTester {
 
         network.trainWithMetrics(imagesTrain, imagesValidate, epochs, batch, output);
 
-        double correct = network.evaluateTestData(imagesTest, 100);
+        double correct = network.testEvaluation(imagesTest, 100);
         log.info("Correct evaluation percentage: {}", correct);
         network.writeObject(output);
         System.exit(0);

@@ -7,13 +7,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static neuralnetwork.initialiser.InitialisationMethod.ZERO;
-
 public class OjAlgoFactory extends ParameterFactory<OjAlgoMatrix> {
     public OjAlgoFactory(int[] sizes, InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
         super(sizes, weightMethod, biasMethod);
     }
-
 
     @Override
     public List<Matrix<OjAlgoMatrix>> getWeightParameters() {
@@ -48,13 +45,13 @@ public class OjAlgoFactory extends ParameterFactory<OjAlgoMatrix> {
 
     @NotNull
     private List<Matrix<OjAlgoMatrix>> getDeltaParameters(boolean isBias) {
-        List<Matrix<OjAlgoMatrix>> deltaBiases = new ArrayList<>();
+        List<Matrix<OjAlgoMatrix>> deltaParams = new ArrayList<>();
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
-            int next = this.sizes[i];
-            deltaBiases.add(new OjAlgoMatrix(ZERO.initialisationValues(0, current, isBias ? 1 : next), current, isBias ? 1 : next));
+            int next = isBias ? 1 : this.sizes[i];
+            deltaParams.add(new OjAlgoMatrix(this.wM.initialisationValues(0, current, next), current, next));
         }
-        return deltaBiases;
+        return deltaParams;
     }
 
 }

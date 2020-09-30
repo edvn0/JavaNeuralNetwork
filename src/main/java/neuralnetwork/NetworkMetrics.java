@@ -18,15 +18,18 @@ public class NetworkMetrics {
     private final List<Double> lossValues;
     private final List<Double> correctValues;
     private final List<Double> calculationTimes;
+    private final String matrixType;
 
-    public NetworkMetrics(int epochs) {
+    public NetworkMetrics(int epochs, String matrixType) {
+        this.matrixType = matrixType;
         this.epochs = new ArrayList<>(epochs);
         this.lossValues = new ArrayList<>();
         this.correctValues = new ArrayList<>();
         this.calculationTimes = new ArrayList<>();
     }
 
-    public NetworkMetrics() {
+    public NetworkMetrics(String matrixType) {
+        this.matrixType = matrixType;
         this.epochs = new ArrayList<>();
         this.calculationTimes = new ArrayList<>();
         this.lossValues = new ArrayList<>();
@@ -68,16 +71,12 @@ public class NetworkMetrics {
     }
 
     private double maxTime() {
-        return calculationTimes
-                .stream()
-                .max(Double::compare)
+        return calculationTimes.stream().max(Double::compare)
                 .orElseThrow(() -> new RuntimeException("Could not find a maximum of this list."));
     }
 
     private double minTime() {
-        return calculationTimes
-                .stream()
-                .min(Double::compare)
+        return calculationTimes.stream().min(Double::compare)
                 .orElseThrow(() -> new RuntimeException("Could not find a minimum of this list."));
     }
 
@@ -113,35 +112,29 @@ public class NetworkMetrics {
 
         double min = Collections.min(lossValues);
         double max = Collections.max(lossValues);
-        XYChart lossChart =
-                generateChart("Loss per Epoch", "Loss", "loss(x)", epochs, lossValues,
-                        Collections.max(epochs), min, max);
+        XYChart lossChart = generateChart("Loss per Epoch", "Loss", "loss(x)", epochs, lossValues,
+                Collections.max(epochs), min, max);
 
         String chartPath = createChartPathFromBasePath(out, "LossToEpochPlot");
 
-        log.info("Potential errors: {} , {}, {}, {}, {}, {}, {}", lossChart, chartPath, out, lossValues, epochs, min, max);
-
-        BitmapEncoder.saveBitmapWithDPI(lossChart,
-                chartPath, BitmapFormat.PNG, 300);
+        BitmapEncoder.saveBitmapWithDPI(lossChart, chartPath, BitmapFormat.PNG, 300);
     }
 
     private void chartForAccuracy(String out) throws IOException {
-        XYChart accuracyChart =
-                generateChart("Accuracy per Epoch", "Accuracy", "acc(x)", epochs, correctValues,
-                        Collections.max(epochs), 0, 1);
+        XYChart accuracyChart = generateChart("Accuracy per Epoch", "Accuracy", "acc(x)", epochs, correctValues,
+                Collections.max(epochs), 0, 1);
 
-        BitmapEncoder.saveBitmapWithDPI(accuracyChart,
-                createChartPathFromBasePath(out, "AccuracyToEpochPlot"), BitmapFormat.PNG, 300);
+        BitmapEncoder.saveBitmapWithDPI(accuracyChart, createChartPathFromBasePath(out, "AccuracyToEpochPlot"),
+                BitmapFormat.PNG, 300);
 
     }
 
     private void chartForTimes(String out) throws IOException {
         XYChart timeChart = generateChart("Time measure per Epoch", "Time", "time(x)", epochs.subList(1, epochs.size()),
-                calculationTimes,
-                Collections.max(epochs), minTime(), maxTime());
+                calculationTimes, Collections.max(epochs), minTime(), maxTime());
 
-        BitmapEncoder.saveBitmapWithDPI(timeChart,
-                createChartPathFromBasePath(out, "TimeMeasureToEpochPlot"), BitmapFormat.PNG, 300);
+        BitmapEncoder.saveBitmapWithDPI(timeChart, createChartPathFromBasePath(out, "TimeMeasureToEpochPlot"),
+                BitmapFormat.PNG, 300);
 
     }
 
@@ -161,9 +154,9 @@ public class NetworkMetrics {
     }
 
     private String createChartPathFromBasePath(String in, String out) {
-        String use = in.endsWith("\\") ? in : in + "\\";
+        String use = in.endsWith("/") ? in : in + "/";
 
-        return use + out + "_" + getNow();
+        return use + out + "_" + matrixType + "_" + getNow();
     }
 
     private String getNow() {
@@ -175,8 +168,7 @@ public class NetworkMetrics {
     }
 
     private XYChart generateChart(final String heading, final String yLabel, final String function,
-                                  final List<Integer> xValues, final List<Double> yValues, double maxX, double minY,
-                                  double maxY) {
+            final List<Integer> xValues, final List<Double> yValues, double maxX, double minY, double maxY) {
 
         final XYChart chart = QuickChart.getChart(heading, NetworkMetrics.EPOCH, yLabel, function, xValues, yValues);
         chart.getStyler().setXAxisMin((double) 0);

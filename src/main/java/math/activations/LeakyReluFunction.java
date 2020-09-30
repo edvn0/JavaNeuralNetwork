@@ -1,10 +1,11 @@
 package math.activations;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class LeakyReluFunction<M> extends ReluFunction<M> {
 
+
+    private static final long serialVersionUID = -301187113858930644L;
     private final double alpha;
 
     public LeakyReluFunction(double alpha) {

@@ -1,17 +1,15 @@
-package demos;
+package demos.implementations;
 
-import lombok.extern.slf4j.Slf4j;
 import math.activations.TanhFunction;
 import math.error_functions.MeanSquaredCostFunction;
 import math.evaluation.ThresholdEvaluationFunction;
-import math.linearalgebra.ujmp.UJMPMatrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.InitialisationMethod;
 import neuralnetwork.initialiser.OjAlgoFactory;
 import neuralnetwork.initialiser.UJMPFactory;
 import neuralnetwork.inputs.NetworkInput;
-import optimizers.ADAM;
 import optimizers.StochasticGradientDescent;
 import org.apache.log4j.BasicConfigurator;
 
@@ -25,17 +23,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Slf4j
 public class XORTester {
 
-    private List<NetworkInput<UJMPMatrix>> data;
+    private List<NetworkInput<OjAlgoMatrix>> data;
 
     private BufferedImage[] images;
 
-    private double[][] xorData = new double[][]{{0, 1}, {0, 0}, {1, 1}, {1, 0}};
-    private double[][] xorLabel = new double[][]{{1}, {0}, {0}, {1}};
+    private double[][] xorData = new double[][] { { 0, 1 }, { 0, 0 }, { 1, 1 }, { 1, 0 } };
+    private double[][] xorLabel = new double[][] { { 1 }, { 0 }, { 0 }, { 1 } };
 
-    private NeuralNetwork<UJMPMatrix> network;
+    private NeuralNetwork<OjAlgoMatrix> network;
     private String path;
 
     private int imagesSize;
@@ -57,24 +54,22 @@ public class XORTester {
             int rd = r.nextInt(xorData.length);
             cData = xorData[rd];
             cLabel = xorLabel[rd];
-            data.add(new NetworkInput<UJMPMatrix>(new UJMPMatrix(cData, 2, 1),
-                    new UJMPMatrix(cLabel, 1, 1)));
+            data.add(new NetworkInput<OjAlgoMatrix>(new OjAlgoMatrix(cData, 2, 1), new OjAlgoMatrix(cLabel, 1, 1)));
         }
         Collections.shuffle(data);
 
         network = new NeuralNetwork<>(
-                new NetworkBuilder<UJMPMatrix>(4).setFirstLayer(2)
-                        .setLayer(3, new TanhFunction<>())
-                        .setLayer(3, new TanhFunction<>())
-                        .setLastLayer(1, new TanhFunction<>())
+                new NetworkBuilder<OjAlgoMatrix>(4).setFirstLayer(2).setLayer(3, new TanhFunction<>())
+                        .setLayer(3, new TanhFunction<>()).setLastLayer(1, new TanhFunction<>())
                         .setCostFunction(new MeanSquaredCostFunction<>())
-                        .setEvaluationFunction(new ThresholdEvaluationFunction<>(0.01))
-                        .setOptimizer(new StochasticGradientDescent<>(0.001)),
-                new UJMPFactory(new int[]{2, 3, 3, 1}, InitialisationMethod.XAVIER, InitialisationMethod.SCALAR));
+                        .setEvaluationFunction(new ThresholdEvaluationFunction<>(0.1))
+                        .setOptimizer(new StochasticGradientDescent<>(0.6)),
+                new OjAlgoFactory(new int[] { 2, 3, 3, 1 }, InitialisationMethod.XAVIER, InitialisationMethod.SCALAR));
 
         network.display();
         network.train(data.subList(0, 7000), data.subList(7000, 9000), 70, 64);
-        //network.trainWithMetrics(data.subList(0, 1000), data.subList(1000, 2000), 70, 64, "E:\\Programming\\Git\\JavaNeuralNetwork\\src\\main\\resources\\output");
+        // network.trainWithMetrics(data.subList(0, 1000), data.subList(1000, 2000), 70,
+        // 64, "E:\\Programming\\Git\\JavaNeuralNetwork\\src\\main\\resources\\output");
     }
 
     public static void main(String[] args) throws IOException {
@@ -114,7 +109,7 @@ public class XORTester {
         }
     }
 
-    private UJMPMatrix toInputMatrix(final double col, final double row) {
-        return new UJMPMatrix(new double[][]{{col}, {row}}, 2, 1);
+    private OjAlgoMatrix toInputMatrix(final double col, final double row) {
+        return new OjAlgoMatrix(new double[][] { { col }, { row } }, 2, 1);
     }
 }

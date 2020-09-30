@@ -7,9 +7,7 @@ import java.util.List;
 
 public class BinaryCrossEntropyCostFunction<M> implements CostFunction<M> {
 
-    /**
-     *
-     */
+    private static final double log2 = Math.log(2);
     private static final long serialVersionUID = -5304955386755460591L;
     private static final String NAME = "Binary Cross Entropy";
 
@@ -28,10 +26,10 @@ public class BinaryCrossEntropyCostFunction<M> implements CostFunction<M> {
             Matrix<M> label = s.getLabel();
             Matrix<M> data = s.getData();
 
-            Matrix<M> log2Data = label.multiply(data.mapElements(e -> Math.log(e) / Math.log(2)));
+            Matrix<M> log2Data = label.multiply(data.mapElements(e -> Math.log(e) / log2));
             Matrix<M> onesMinusLabel = onesLabel.subtract(label);
             Matrix<M> onesMinusData = onesData.subtract(data);
-            Matrix<M> partTwo = onesMinusLabel.multiply(onesMinusData.mapElements(e -> Math.log(e) / Math.log(2)));
+            Matrix<M> partTwo = onesMinusLabel.multiply(onesMinusData.mapElements(e -> Math.log(e) / log2));
 
             Matrix<M> out = log2Data.add(partTwo);
             total += out.sum() / data.rows();

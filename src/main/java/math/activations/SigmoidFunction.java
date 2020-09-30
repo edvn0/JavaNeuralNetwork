@@ -4,6 +4,8 @@ import math.linearalgebra.Matrix;
 
 public class SigmoidFunction<M> extends ActivationFunction<M> {
 
+    private static final long serialVersionUID = -5780307498502440160L;
+
     @Override
     public String getName() {
         return "Sigmoid";
