@@ -31,6 +31,12 @@ public abstract class Matrix<M> {
      */
     public abstract Matrix<M> multiply(Matrix<M> otherMatrix);
 
+    /**
+     * Element wise multiplication of two matrices.
+     * 
+     * @param otherMatrix right operand
+     * @return new element wise multiplied matrix
+     */
     public abstract Matrix<M> hadamard(Matrix<M> otherMatrix);
 
     /**

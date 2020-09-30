@@ -46,10 +46,11 @@ public class OjAlgoFactory extends ParameterFactory<OjAlgoMatrix> {
     @NotNull
     private List<Matrix<OjAlgoMatrix>> getDeltaParameters(boolean isBias) {
         List<Matrix<OjAlgoMatrix>> deltaParams = new ArrayList<>();
+        InitialisationMethod m = InitialisationMethod.ZERO;
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             int next = isBias ? 1 : this.sizes[i];
-            deltaParams.add(new OjAlgoMatrix(this.wM.initialisationValues(0, current, next), current, next));
+            deltaParams.add(new OjAlgoMatrix(m.initialisationValues(0, current, next), current, next));
         }
         return deltaParams;
     }

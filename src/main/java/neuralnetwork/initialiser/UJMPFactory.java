@@ -48,12 +48,13 @@ public class UJMPFactory extends ParameterFactory<UJMPMatrix> {
 
     @NotNull
     private List<Matrix<UJMPMatrix>> getDeltaParameters(boolean isBias) {
-        List<Matrix<UJMPMatrix>> deltaBiases = new ArrayList<>();
+        List<Matrix<UJMPMatrix>> deltaParams = new ArrayList<>();
+        InitialisationMethod m = InitialisationMethod.ZERO;
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
-            int next = this.sizes[i];
-            deltaBiases.add(new UJMPMatrix(ZERO.initialisationValues(0, current, isBias ? 1 : next), current, isBias ? 1 : next));
+            int next = isBias ? 1 : this.sizes[i];
+            deltaParams.add(new UJMPMatrix(m.initialisationValues(0, current, next), current, next));
         }
-        return deltaBiases;
+        return deltaParams;
     }
 }

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import demos.AbstractDemo;
+import math.activations.ActivationFunction;
+import math.activations.LeakyReluFunction;
 import math.activations.TanhFunction;
 import math.error_functions.MeanSquaredCostFunction;
 import math.evaluation.ThresholdEvaluationFunction;
@@ -15,6 +17,7 @@ import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.InitialisationMethod;
 import neuralnetwork.initialiser.OjAlgoFactory;
 import neuralnetwork.inputs.NetworkInput;
+import optimizers.ADAM;
 import optimizers.StochasticGradientDescent;
 import utilities.types.Pair;
 import utilities.types.Triple;
@@ -35,7 +38,7 @@ public class SandboxXOR extends AbstractDemo<OjAlgoMatrix> {
 
     @Override
     protected Pair<Integer, Integer> epochBatch() {
-        return Pair.of(50, 64);
+        return Pair.of(50, 1);
     }
 
     @Override
@@ -60,13 +63,15 @@ public class SandboxXOR extends AbstractDemo<OjAlgoMatrix> {
 
     @Override
     protected NeuralNetwork<OjAlgoMatrix> createNetwork() {
+        ActivationFunction<OjAlgoMatrix> f = new LeakyReluFunction<>(0.1);
         NeuralNetwork<OjAlgoMatrix> network = new NeuralNetwork<>(
-                new NetworkBuilder<OjAlgoMatrix>(4).setFirstLayer(2).setLayer(3, new TanhFunction<>())
-                        .setLayer(3, new TanhFunction<>()).setLastLayer(1, new TanhFunction<>())
+                new NetworkBuilder<OjAlgoMatrix>(5).setFirstLayer(2).setLayer(35, f).setLayer(35, f)
+                        .setLayer(20, new TanhFunction<>()).setLastLayer(1, f)
                         .setCostFunction(new MeanSquaredCostFunction<>())
                         .setEvaluationFunction(new ThresholdEvaluationFunction<>(0.1))
-                        .setOptimizer(new StochasticGradientDescent<>(0.6)),
-                new OjAlgoFactory(new int[] { 2, 3, 3, 1 }, InitialisationMethod.XAVIER, InitialisationMethod.SCALAR));
+                        .setOptimizer(new ADAM<>(0.001, 0.9, 0.999)),
+                new OjAlgoFactory(new int[] { 2, 35, 35, 20, 1 }, InitialisationMethod.XAVIER,
+                        InitialisationMethod.SCALAR));
         return network;
     }
 

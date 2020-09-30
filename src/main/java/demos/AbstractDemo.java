@@ -21,6 +21,8 @@ public abstract class AbstractDemo<M> {
         final TrainingMethod trainingMethod = networkTrainingMethod();
         final String outputPath = outputDirectory();
 
+        network.display();
+
         switch (trainingMethod) {
             case METRICS:
                 network.trainWithMetrics(trainValidateTest.getLeft(), trainValidateTest.getMiddle(), epochBatch.left(),

@@ -12,14 +12,14 @@ public class MeanSquaredCostFunction<M> implements CostFunction<M> {
 
     @Override
     public double calculateCostFunction(final List<NetworkInput<M>> tData) {
-        return tData.parallelStream().map((e) -> e.getData().subtract(e.getLabel()))
-                .mapToDouble(e -> e.square()).sum() / tData.size();
+        return tData.parallelStream().map((e) -> e.getData().subtract(e.getLabel())).mapToDouble(e -> e.square()).sum()
+                / tData.size();
 
     }
 
     @Override
     public Matrix<M> applyCostFunctionGradient(final Matrix<M> in, final Matrix<M> correct) {
-        return in.subtract(correct).multiply(2);
+        return correct.subtract(in).multiply(2);
     }
 
     @Override

@@ -165,7 +165,7 @@ public class NeuralNetwork<M> implements Serializable {
     /**
      * Updates weights and biases and resets the batch adjusted deltas.
      */
-    private synchronized void learnFromDeltas() {
+    private void learnFromDeltas() {
         this.weights = this.optimizer.changeWeights(this.weights, this.dW);
         this.biases = this.optimizer.changeBiases(this.biases, this.dB);
 
@@ -185,7 +185,7 @@ public class NeuralNetwork<M> implements Serializable {
         Matrix<M> deltaError = costFunction.applyCostFunctionGradient(a, in.getLabel());
 
         // Iterate over all layers, they are indexed by the last layer
-        for (int k = deltaBiases.size() - 1; k >= 0; k--) {
+        for (int k = totalLayers - 1; k >= 0; k--) {
             final Matrix<M> aCurr = activations.get(k + 1); // this layer
             final Matrix<M> aNext = activations.get(k); // Previous layer
 
@@ -263,16 +263,16 @@ public class NeuralNetwork<M> implements Serializable {
         return avg / size;
     }
 
+    public double testLoss(List<NetworkInput<M>> right) {
+        return loss(feedForwardData(right));
+    }
+
     private double loss(List<NetworkInput<M>> data) {
         return this.costFunction.calculateCostFunction(data);
     }
 
     private double evaluate(final List<NetworkInput<M>> data) {
         return this.evaluationFunction.evaluatePrediction(data);
-    }
-
-    public double testLoss(List<NetworkInput<M>> right) {
-        return loss(feedForwardData(right));
     }
 
     /**
@@ -374,7 +374,7 @@ public class NeuralNetwork<M> implements Serializable {
         double loss = this.loss(ffD);
         metrics.initialPlotData(correct, loss);
 
-        for (int i = 0; i < epochs; i++) {
+        for (int i = 1; i <= epochs; i++) {
 
             // Calculates a batch of training data and update the deltas.
             t1 = System.nanoTime();
@@ -384,20 +384,21 @@ public class NeuralNetwork<M> implements Serializable {
             }
             t2 = System.nanoTime();
 
-            // Feed forward the test data
+            // Feed forward the validation data
+            Collections.shuffle(validation);
             final List<NetworkInput<M>> feedForwardData = this.feedForwardData(validation);
 
             // Evaluate prediction with the interface EvaluationFunction.
-            correct = evaluate(feedForwardData);
+            correct = this.evaluate(feedForwardData);
             // Calculate cost/loss with the interface CostFunction
             loss = this.loss(feedForwardData);
 
             // Add the plotting data, x, y_1, y_2 to the
             // lists of xValues, correctValues, lossValues.
-            metrics.addPlotData(i + 1, correct, loss, (t2 - t1));
+            metrics.addPlotData(i, correct, loss, (t2 - t1));
 
-            if ((i) % (epochs / 8) == 0) {
-                log.info("\n {} / {} epochs are finished.\n Loss: \t {}", (i + 1), epochs, loss);
+            if ((i - 1) % (epochs / 8) == 0) {
+                log.info("\n {} / {} epochs are finished.\n Loss: \t {}", (i), epochs, loss);
             }
         }
 
@@ -472,8 +473,8 @@ public class NeuralNetwork<M> implements Serializable {
 
         for (int i = 0; i < weights.size(); i++) {
             final int[] dims = weightDimensions(i);
-            b.append(String.format("\t\tLayer %d : [%d X %d]%n", (i + 1), dims[0], dims[1]))
-                    .append(String.format("\t\tActivation function from this layer: %s", functions.get(i).getName()))
+            b.append(String.format("\t\tLayer %d : [%d X %d]%n", (i + 1), dims[0], dims[1])).append(
+                    String.format("\t\tActivation function from this layer: %s", functions.get(i + 1).getName()))
                     .append("\n");
         }
 

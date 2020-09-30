@@ -6,23 +6,10 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Debug (Launch) - Current File",
+            "name": "Debug (Launch) - Sandbox",
             "request": "launch",
-            "mainClass": "${file}"
-        },
-        {
-            "type": "java",
-            "name": "Debug (Launch)-MNISTTester<NeuralNetwork>",
-            "request": "launch",
-            "mainClass": "demos.MNISTTester",
+            "mainClass": "demos.Sandbox",
             "projectName": "NeuralNetwork"
         },
-        {
-            "type": "java",
-            "name": "Debug (Launch)-XORTester<NeuralNetwork>",
-            "request": "launch",
-            "mainClass": "demos.XORTester",
-            "projectName": "NeuralNetwork"
-        }
     ]
 }
