@@ -279,5 +279,5 @@ local.properties
 /src/main/resources/graphoutput
 
 .idea
-/src/main/resources/output
-/src/main/resources/stockmarket
+/src/main/resources/
+!/src/main/resources/META-INF
