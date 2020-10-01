@@ -1,11 +1,12 @@
 package math.evaluation;
 
 import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.inputs.NetworkInput;
 
 import java.util.List;
 
-public class ThresholdEvaluationFunction<M> implements EvaluationFunction<M> {
+public class ThresholdEvaluationFunction implements EvaluationFunction {
 
     /**
      *
@@ -22,11 +23,11 @@ public class ThresholdEvaluationFunction<M> implements EvaluationFunction<M> {
      * {@inheritDoc}
      */
     @Override
-    public double evaluatePrediction(List<NetworkInput<M>> toEvaluate) {
+    public double evaluatePrediction(List<NetworkInput> toEvaluate) {
         int correct = 0;
-        for (NetworkInput<M> matrices : toEvaluate) {
-            Matrix<M> fed = matrices.getData();
-            Matrix<M> corr = matrices.getLabel();
+        for (NetworkInput matrices : toEvaluate) {
+            OjAlgoMatrix fed = matrices.getData();
+            OjAlgoMatrix corr = matrices.getLabel();
 
             double fedEl = fed.sum();
             double corrEl = corr.sum();

@@ -1,17 +1,21 @@
 package optimizers;
 
-import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Momentum<M> implements Optimizer<M> {
+public class Momentum implements Optimizer {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     private static final String NAME = "Momentum";
     private final double lR;
     private final double momentumRate;
 
-    private List<Matrix<M>> lastDeltaWeights, lastDeltaBiases;
+    private List<OjAlgoMatrix> lastDeltaWeights, lastDeltaBiases;
 
     public Momentum(double lR, double momentum) {
         this.lR = lR;
@@ -20,17 +24,18 @@ public class Momentum<M> implements Optimizer<M> {
     }
 
     @Override
-    public List<Matrix<M>> changeWeights(final List<Matrix<M>> weights, final List<Matrix<M>> deltaWeights) {
+    public List<OjAlgoMatrix> changeWeights(final List<OjAlgoMatrix> weights, final List<OjAlgoMatrix> deltaWeights) {
         return getMomentumDeltas(weights, deltaWeights, lastDeltaWeights);
     }
 
     @Override
-    public List<Matrix<M>> changeBiases(final List<Matrix<M>> biases, final List<Matrix<M>> deltaBiases) {
+    public List<OjAlgoMatrix> changeBiases(final List<OjAlgoMatrix> biases, final List<OjAlgoMatrix> deltaBiases) {
         return getMomentumDeltas(biases, deltaBiases, lastDeltaBiases);
     }
 
-    private List<Matrix<M>> getMomentumDeltas(final List<Matrix<M>> in, final List<Matrix<M>> deltaIns, final List<Matrix<M>> lastDeltas) {
-        List<Matrix<M>> newOut = new ArrayList<>();
+    private List<OjAlgoMatrix> getMomentumDeltas(final List<OjAlgoMatrix> in, final List<OjAlgoMatrix> deltaIns,
+            final List<OjAlgoMatrix> lastDeltas) {
+        List<OjAlgoMatrix> newOut = new ArrayList<>();
         for (int i = 0; i < in.size(); i++) {
             if (lastDeltas.get(i) == null) {
                 lastDeltas.set(i, deltaIns.get(i).multiply(this.lR));
@@ -43,7 +48,7 @@ public class Momentum<M> implements Optimizer<M> {
     }
 
     @Override
-    public void initializeOptimizer(final int layers, Matrix<M> weightSeed, Matrix<M> biasSeed) {
+    public void initializeOptimizer(final int layers, OjAlgoMatrix weightSeed, OjAlgoMatrix biasSeed) {
         lastDeltaWeights = new ArrayList<>(layers);
         lastDeltaBiases = new ArrayList<>(layers);
     }

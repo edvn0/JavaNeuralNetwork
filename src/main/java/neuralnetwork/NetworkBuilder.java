@@ -11,19 +11,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NetworkBuilder<M> {
+public class NetworkBuilder {
 
     /**
      * A Builder for the Network.
      */
     protected int[] structure;
     protected int index;
-    protected CostFunction<M> costFunction;
-    protected EvaluationFunction<M> evaluationFunction;
-    protected Optimizer<M> optimizer;
+    protected CostFunction costFunction;
+    protected EvaluationFunction evaluationFunction;
+    protected Optimizer optimizer;
     protected int total;
 
-    Map<Integer, ActivationFunction<M>> functionMap;
+    Map<Integer, ActivationFunction> functionMap;
 
     public NetworkBuilder(int[] structure) {
         this.structure = structure;
@@ -37,7 +37,7 @@ public class NetworkBuilder<M> {
         this.functionMap = new HashMap<>();
     }
 
-    public NetworkBuilder<M> compile() {
+    public NetworkBuilder compile() {
         if (costFunction == null || evaluationFunction == null || optimizer == null) {
             throw new IllegalArgumentException(
                     "You need to chose an implementation or implement a cost function, evaluation function and an optimizer.");
@@ -52,41 +52,41 @@ public class NetworkBuilder<M> {
         return this;
     }
 
-    public NetworkBuilder<M> setFirstLayer(final int i) {
+    public NetworkBuilder setFirstLayer(final int i) {
         structure[index++] = i;
-        this.functionMap.put(0, new DoNothingFunction<M>());
+        this.functionMap.put(0, new DoNothingFunction());
         return this;
     }
 
-    public NetworkBuilder<M> setOptimizer(Optimizer<M> o) {
+    public NetworkBuilder setOptimizer(Optimizer o) {
         this.optimizer = o;
         return this;
     }
 
-    public NetworkBuilder<M> setLayer(final int i, final ActivationFunction<M> f) {
+    public NetworkBuilder setLayer(final int i, final ActivationFunction f) {
         structure[index] = i;
         this.functionMap.put(index, f);
         index++;
         return this;
     }
 
-    public NetworkBuilder<M> setCostFunction(CostFunction<M> k) {
+    public NetworkBuilder setCostFunction(CostFunction k) {
         this.costFunction = k;
         return this;
     }
 
-    public NetworkBuilder<M> setEvaluationFunction(EvaluationFunction<M> f) {
+    public NetworkBuilder setEvaluationFunction(EvaluationFunction f) {
         this.evaluationFunction = f;
         return this;
     }
 
-    protected List<ActivationFunction<M>> getActivationFunctions() {
+    protected List<ActivationFunction> getActivationFunctions() {
 
-        var f = new ArrayList<ActivationFunction<M>>();
+        var f = new ArrayList<ActivationFunction>();
 
         if (this.functionMap.size() == this.structure.length) {
             // We do not care about this one, never gets evaluated.
-            f.add(new DoNothingFunction<M>());
+            f.add(new DoNothingFunction());
             // We have one too many functions, one associated with the "first layer"
             // which in essence does not exist, we apply a linear function here.
             // However, this is never calculated.
@@ -106,7 +106,7 @@ public class NetworkBuilder<M> {
         return f;
     }
 
-    public NetworkBuilder<M> setLastLayer(final int i, final ActivationFunction<M> f) {
+    public NetworkBuilder setLastLayer(final int i, final ActivationFunction f) {
         this.structure[index] = i;
         this.functionMap.put(total - 1, f);
         return this;

@@ -1,6 +1,7 @@
 package math.error_functions;
 
 import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.inputs.NetworkInput;
 
 import java.io.Serializable;
@@ -11,7 +12,7 @@ import java.util.List;
  * "incorrect" its predictions have been, and at the same time represent the
  * gradient of the multidimensional function of the network.
  */
-public interface CostFunction<M> extends Serializable {
+public interface CostFunction extends Serializable {
 
     /**
      * The cost function which maps the space of validation set to a scalar (the
@@ -20,7 +21,7 @@ public interface CostFunction<M> extends Serializable {
      * @param tData validation data
      * @return a scalar representing the cost of the neural network.
      */
-    double calculateCostFunction(List<NetworkInput<M>> tData);
+    double calculateCostFunction(List<NetworkInput> tData);
 
     /**
      * Calculate the gradient of the cost function with respect to the last layer
@@ -29,7 +30,7 @@ public interface CostFunction<M> extends Serializable {
      * @param correct the correct vector
      * @return the gradient of the cost function
      */
-    Matrix<M> applyCostFunctionGradient(Matrix<M> in, Matrix<M> correct);
+    OjAlgoMatrix applyCostFunctionGradient(OjAlgoMatrix in, OjAlgoMatrix correct);
 
     String toString();
 

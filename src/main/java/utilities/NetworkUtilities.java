@@ -37,32 +37,32 @@ public class NetworkUtilities {
      * @return a {@link List} with objects that can be used with the Neural Network
      * @throws IOException if the file associated with the path does not exist.
      */
-    public static <T> List<NetworkInput<T>> importFromInputPath(String path, int offset, Function<String[], NetworkInput<T>> f)
+    public static List<NetworkInput> importFromInputPath(String path, int offset, Function<String[], NetworkInput> f)
             throws IOException {
-        List<NetworkInput<T>> output = new ArrayList<>();
+        List<NetworkInput> output = new ArrayList<>();
         try (var lines = Files.lines(Paths.get(path))) {
             output = lines.skip(offset).map(line -> line.split(",")).map(f).collect(toList());
         }
         return output;
     }
 
-    public static <T> List<NetworkInput<T>> importFromInputStream(final Stream<String> test, int size,
-                                                                  Function<String[], NetworkInput<T>> f) {
+    public static List<NetworkInput> importFromInputStream(final Stream<String> test, int size,
+            Function<String[], NetworkInput> f) {
         return importFromInputStream(test, size, 0, f);
     }
 
-    public static <T> List<NetworkInput<T>> importFromInputStream(Stream<String> path, int size, int offset,
-                                                                  Function<String[], NetworkInput<T>> f) {
+    public static List<NetworkInput> importFromInputStream(Stream<String> path, int size, int offset,
+            Function<String[], NetworkInput> f) {
 
-        List<NetworkInput<T>> fromStream;
+        List<NetworkInput> fromStream;
 
         fromStream = path.limit(size).skip(offset).map(line -> line.split(",")).map(f).collect(toList());
 
         return fromStream;
     }
 
-    public static <T> List<NetworkInput<T>> readGzip(final String fileName) {
-        List<NetworkInput<T>> output = new ArrayList<>();
+    public static List<NetworkInput> readGzip(final String fileName) {
+        List<NetworkInput> output = new ArrayList<>();
         try (BufferedReader is = new BufferedReader(
                 new InputStreamReader(new GZIPInputStream(new FileInputStream(fileName))))) {
             String line;
@@ -75,7 +75,6 @@ public class NetworkUtilities {
         return output;
     }
 
-
     /**
      * Splits the data into batches of training data.
      *
@@ -83,17 +82,17 @@ public class NetworkUtilities {
      * @param batchSize by what batch size
      * @return list of list of size batch with data
      */
-    public static <T> List<List<NetworkInput<T>>> batchSplitData(final List<NetworkInput<T>> training, final int batchSize) {
-        List<List<NetworkInput<T>>> d = new ArrayList<>();
+    public static <T> List<List<NetworkInput>> batchSplitData(final List<NetworkInput> training, final int batchSize) {
+        List<List<NetworkInput>> d = new ArrayList<>();
         for (int i = 0; i < training.size() - batchSize; i += batchSize) {
             d.add(training.subList(i, i + batchSize));
         }
         return d;
     }
 
-    public static <T> List<Supplier<Stream<NetworkInput<T>>>> streamSplit(final List<NetworkInput<T>> training,
-                                                                          final int batchSize) {
-        List<Supplier<Stream<NetworkInput<T>>>> output = new ArrayList<>();
+    public static <T> List<Supplier<Stream<NetworkInput>>> streamSplit(final List<NetworkInput> training,
+            final int batchSize) {
+        List<Supplier<Stream<NetworkInput>>> output = new ArrayList<>();
         for (int i = 0; i < training.size() - batchSize; i += batchSize) {
             final int index = i;
             final int nextIndex = index + batchSize;

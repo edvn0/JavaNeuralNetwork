@@ -11,17 +11,19 @@ import utilities.types.Pair;
 import utilities.types.Triple;
 
 @Slf4j
-public abstract class AbstractDemo<M> {
+public abstract class AbstractDemo {
 
     void demo() {
         BasicConfigurator.configure();
-        final NeuralNetwork<M> network = createNetwork();
-        final Triple<List<NetworkInput<M>>, List<NetworkInput<M>>, List<NetworkInput<M>>> trainValidateTest = getData();
+        final NeuralNetwork network = createNetwork();
+        final Triple<List<NetworkInput>, List<NetworkInput>, List<NetworkInput>> trainValidateTest = getData();
         final Pair<Integer, Integer> epochBatch = epochBatch();
         final TrainingMethod trainingMethod = networkTrainingMethod();
         final String outputPath = outputDirectory();
 
         network.display();
+
+        long t1 = System.nanoTime();
 
         switch (trainingMethod) {
             case METRICS:
@@ -41,9 +43,12 @@ public abstract class AbstractDemo<M> {
 
         }
 
+        long t2 = System.nanoTime();
+
         double confusion = network.testEvaluation(trainValidateTest.getRight(), 50);
         double loss = network.testLoss(trainValidateTest.getRight());
         log.info("\nCorrectly evaluated {}% of the test set.\nFinal loss: {}", confusion * 100, loss);
+        log.info("\nTotal time taken for training: {}.", (t2-t1)*1e-6);
 
     }
 
@@ -53,9 +58,9 @@ public abstract class AbstractDemo<M> {
 
     protected abstract Pair<Integer, Integer> epochBatch();
 
-    protected abstract Triple<List<NetworkInput<M>>, List<NetworkInput<M>>, List<NetworkInput<M>>> getData();
+    protected abstract Triple<List<NetworkInput>, List<NetworkInput>, List<NetworkInput>> getData();
 
-    protected abstract NeuralNetwork<M> createNetwork();
+    protected abstract NeuralNetwork createNetwork();
 
     public enum TrainingMethod {
         VERBOSE, METRICS, NORMAL

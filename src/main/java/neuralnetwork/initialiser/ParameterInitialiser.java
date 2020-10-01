@@ -7,14 +7,19 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OjAlgoFactory extends ParameterFactory<OjAlgoMatrix> {
-    public OjAlgoFactory(int[] sizes, InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
-        super(sizes, weightMethod, biasMethod);
+public class ParameterInitialiser {
+
+    private int[] sizes;
+    private InitialisationMethod wM, bM;
+
+    public ParameterInitialiser(int[] sizes, InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
+        this.sizes = sizes;
+        this.wM = weightMethod;
+        this.bM = biasMethod;
     }
 
-    @Override
-    public List<Matrix<OjAlgoMatrix>> getWeightParameters() {
-        List<Matrix<OjAlgoMatrix>> weights = new ArrayList<>();
+    public List<OjAlgoMatrix> getWeightParameters() {
+        List<OjAlgoMatrix> weights = new ArrayList<>();
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             int next = this.sizes[i];
@@ -23,9 +28,8 @@ public class OjAlgoFactory extends ParameterFactory<OjAlgoMatrix> {
         return weights;
     }
 
-    @Override
-    public List<Matrix<OjAlgoMatrix>> getBiasParameters() {
-        List<Matrix<OjAlgoMatrix>> biases = new ArrayList<>();
+    public List<OjAlgoMatrix> getBiasParameters() {
+        List<OjAlgoMatrix> biases = new ArrayList<>();
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             biases.add(new OjAlgoMatrix(this.bM.initialisationValues(0, current, 1), current, 1));
@@ -33,19 +37,16 @@ public class OjAlgoFactory extends ParameterFactory<OjAlgoMatrix> {
         return biases;
     }
 
-    @Override
-    public List<Matrix<OjAlgoMatrix>> getDeltaWeightParameters() {
+    public List<OjAlgoMatrix> getDeltaWeightParameters() {
         return getDeltaParameters(false);
     }
 
-    @Override
-    public List<Matrix<OjAlgoMatrix>> getDeltaBiasParameters() {
+    public List<OjAlgoMatrix> getDeltaBiasParameters() {
         return getDeltaParameters(true);
     }
 
-    @NotNull
-    private List<Matrix<OjAlgoMatrix>> getDeltaParameters(boolean isBias) {
-        List<Matrix<OjAlgoMatrix>> deltaParams = new ArrayList<>();
+    private List<OjAlgoMatrix> getDeltaParameters(boolean isBias) {
+        List<OjAlgoMatrix> deltaParams = new ArrayList<>();
         InitialisationMethod m = InitialisationMethod.ZERO;
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];

@@ -49,6 +49,7 @@ public class NetworkMetrics {
         correctValues.add(correct);
         lossValues.add(loss);
         calculationTimes.add(time * 1e-9);
+
     }
 
     /**
@@ -65,6 +66,11 @@ public class NetworkMetrics {
 
     public void present(final String path) throws IOException {
         chartForLoss(path);
+
+        calculationTimes.remove(0);
+        calculationTimes.remove(1);
+        calculationTimes.remove(2);
+
         chartForTimes(path);
         chartForAccuracy(path);
         chartForTimeMetrics(path);
@@ -130,7 +136,7 @@ public class NetworkMetrics {
     }
 
     private void chartForTimes(String out) throws IOException {
-        XYChart timeChart = generateChart("Time measure per Epoch", "Time", "time(x)", epochs.subList(1, epochs.size()),
+        XYChart timeChart = generateChart("Time measure per Epoch", "Time", "time(x)", epochs.subList(4, epochs.size()),
                 calculationTimes, Collections.max(epochs), minTime(), maxTime());
 
         BitmapEncoder.saveBitmapWithDPI(timeChart, createChartPathFromBasePath(out, "TimeMeasureToEpochPlot"),

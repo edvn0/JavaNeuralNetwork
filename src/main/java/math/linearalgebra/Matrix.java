@@ -2,9 +2,9 @@ package math.linearalgebra;
 
 import java.util.function.Function;
 
-public abstract class Matrix<M> {
+public interface Matrix<M> {
 
-    public Matrix<M> squareMatrix() {
+    default Matrix<M> squareMatrix() {
         return this.multiply(this);
     }
 
@@ -13,14 +13,14 @@ public abstract class Matrix<M> {
      *
      * @return columns
      */
-    public abstract int rows();
+    public int rows();
 
     /**
      * Rows of this matrix
      *
      * @return rows
      */
-    public abstract int cols();
+    public int cols();
 
     /**
      * Matrix multiplication, should throw if cols and rows do not match. Contract
@@ -29,7 +29,7 @@ public abstract class Matrix<M> {
      * @param otherMatrix right operand
      * @return new matrix multiplied
      */
-    public abstract Matrix<M> multiply(Matrix<M> otherMatrix);
+    public Matrix<M> multiply(Matrix<M> otherMatrix);
 
     /**
      * Element wise multiplication of two matrices.
@@ -37,7 +37,7 @@ public abstract class Matrix<M> {
      * @param otherMatrix right operand
      * @return new element wise multiplied matrix
      */
-    public abstract Matrix<M> hadamard(Matrix<M> otherMatrix);
+    public Matrix<M> hadamard(Matrix<M> otherMatrix);
 
     /**
      * Multiply each element with this scalar
@@ -45,7 +45,7 @@ public abstract class Matrix<M> {
      * @param scalar to multiply with
      * @return scaled with scalar
      */
-    public abstract Matrix<M> multiply(double scalar);
+    public Matrix<M> multiply(double scalar);
 
     /**
      * Add in to this matrix
@@ -53,7 +53,7 @@ public abstract class Matrix<M> {
      * @param in right operand
      * @return this + in
      */
-    public abstract Matrix<M> add(Matrix<M> in);
+    public Matrix<M> add(Matrix<M> in);
 
     /**
      * Add in to all elements of this.
@@ -61,7 +61,7 @@ public abstract class Matrix<M> {
      * @param in scalar operand
      * @return this.map(e - > e + in)
      */
-    public abstract Matrix<M> add(double in);
+    public Matrix<M> add(double in);
 
     /**
      * Subtract in from all elements of this
@@ -69,7 +69,7 @@ public abstract class Matrix<M> {
      * @param in scalar operand
      * @return this.map(e - > e - in);
      */
-    public abstract Matrix<M> subtract(double in);
+    public Matrix<M> subtract(double in);
 
     /**
      * Substract in from this matrix
@@ -77,7 +77,7 @@ public abstract class Matrix<M> {
      * @param in right operand
      * @return this[i][j] -= in[i][j]
      */
-    public abstract Matrix<M> subtract(Matrix<M> in);
+    public Matrix<M> subtract(Matrix<M> in);
 
     /**
      * Divide all elements by in
@@ -85,7 +85,7 @@ public abstract class Matrix<M> {
      * @param in scalar operand
      * @return in.map(e - > e / in);
      */
-    public abstract Matrix<M> divide(double in);
+    public Matrix<M> divide(double in);
 
     /**
      * Map this matrix to a double, useful for reduce or trace implementations
@@ -93,7 +93,7 @@ public abstract class Matrix<M> {
      * @param mapping f: This -> double
      * @return a double value
      */
-    public abstract double map(Function<Matrix<M>, Double> mapping);
+    public double map(Function<Matrix<M>, Double> mapping);
 
     /**
      * Map each element with this function
@@ -101,55 +101,55 @@ public abstract class Matrix<M> {
      * @param mapping f: Double -> Double each element
      * @return this.map(e - > mapping ( e));
      */
-    public abstract Matrix<M> mapElements(Function<Double, Double> mapping);
+    public Matrix<M> mapElements(Function<Double, Double> mapping);
 
     /**
      * Sum this matrix over all entries.
      *
      * @return sum of this
      */
-    public abstract double sum();
+    public double sum();
 
     /**
      * Max of this matrix over all entries.
      *
      * @return max of this
      */
-    public abstract double max();
+    public double max();
 
     /**
      * Index along a column of max, should only be used for vectors.
      *
      * @return index of max
      */
-    public abstract int argMax();
+    public int argMax();
 
     /**
      * Transpose this matrix.
      *
      * @return transpose.
      */
-    public abstract Matrix<M> transpose();
+    public Matrix<M> transpose();
 
-    public abstract M delegate();
+    public M delegate();
 
-    public abstract Matrix<M> divide(Matrix<M> right);
+    public Matrix<M> divide(Matrix<M> right);
 
-    public abstract Matrix<M> maxVector();
+    public Matrix<M> maxVector();
 
-    public abstract Matrix<M> zeroes(int rows, int cols);
+    public Matrix<M> zeroes(int rows, int cols);
 
-    public abstract Matrix<M> ones(int rows, int cols);
+    public Matrix<M> ones(int rows, int cols);
 
-    public abstract Matrix<M> identity(int rows, int cols);
+    public Matrix<M> identity(int rows, int cols);
 
-    public abstract String toString();
+    public String toString();
 
     public enum MatrixType {
         VECTOR, SQUARE, ZEROES, ONES, IDENTITY
     }
 
-    public abstract double square();
+    public double square();
 
-    public abstract String name();
+    public String name();
 }

@@ -1,17 +1,12 @@
 package optimizers;
 
-import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jline.utils.Log;
 
-import lombok.extern.slf4j.Slf4j;
-
-
-@Slf4j
-public class StochasticGradientDescent<M> implements Optimizer<M> {
+public class StochasticGradientDescent implements Optimizer {
 
     /**
      *
@@ -25,27 +20,29 @@ public class StochasticGradientDescent<M> implements Optimizer<M> {
     }
 
     @Override
-    public List<Matrix<M>> changeWeights(final List<Matrix<M>> weights, final List<Matrix<M>> deltas) {
-        List<Matrix<M>> matrixList = new ArrayList<>();
+    public List<OjAlgoMatrix> changeWeights(final List<OjAlgoMatrix> weights, final List<OjAlgoMatrix> deltas) {
+        List<OjAlgoMatrix> matrixList = new ArrayList<>();
+
         for (int i = 0; i < weights.size(); i++) {
-            Matrix<M> newValue = deltas.get(i).multiply(this.learningRate);
+            OjAlgoMatrix newValue = deltas.get(i).multiply(this.learningRate);
             matrixList.add(i, weights.get(i).subtract(newValue));
         }
+
         return matrixList;
     }
 
     @Override
-    public List<Matrix<M>> changeBiases(final List<Matrix<M>> biases, final List<Matrix<M>> deltas) {
-        List<Matrix<M>> matrixList = new ArrayList<>();
+    public List<OjAlgoMatrix> changeBiases(final List<OjAlgoMatrix> biases, final List<OjAlgoMatrix> deltas) {
+        List<OjAlgoMatrix> matrixList = new ArrayList<>();
         for (int i = 0; i < biases.size(); i++) {
-            Matrix<M> newValue = deltas.get(i).multiply(this.learningRate);
+            OjAlgoMatrix newValue = deltas.get(i).multiply(this.learningRate);
             matrixList.add(i, biases.get(i).subtract(newValue));
         }
         return matrixList;
     }
 
     @Override
-    public void initializeOptimizer(final int layers, Matrix<M> weightSeed, Matrix<M> biasSeed) {
+    public void initializeOptimizer(final int layers, OjAlgoMatrix weightSeed, OjAlgoMatrix biasSeed) {
         // We need no intialisation for this optimiser.
     }
 

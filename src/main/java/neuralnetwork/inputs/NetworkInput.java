@@ -1,6 +1,7 @@
 package neuralnetwork.inputs;
 
 import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 import java.io.Serializable;
 
@@ -8,25 +9,25 @@ import java.io.Serializable;
  * A wrapper to contain a input to a Neural Network, with both the label and the
  * data.
  */
-public class NetworkInput<M> implements Serializable {
+public class NetworkInput implements Serializable {
 
     /**
      *
      */
     private static final long serialVersionUID = -8743845031383184256L;
-    private final Matrix<M> data;
-    private final Matrix<M> label;
+    private final OjAlgoMatrix data;
+    private final OjAlgoMatrix label;
 
-    public NetworkInput(Matrix<M> data, Matrix<M> label) {
+    public NetworkInput(OjAlgoMatrix data, OjAlgoMatrix label) {
         this.data = data;
         this.label = label;
     }
 
-    public Matrix<M> getData() {
+    public OjAlgoMatrix getData() {
         return data;
     }
 
-    public Matrix<M> getLabel() {
+    public OjAlgoMatrix getLabel() {
         return label;
     }
 

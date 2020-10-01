@@ -8,23 +8,27 @@ import java.util.concurrent.ThreadLocalRandom;
 import demos.AbstractDemo;
 import math.activations.ActivationFunction;
 import math.activations.LeakyReluFunction;
+import math.activations.SoftmaxFunction;
 import math.activations.TanhFunction;
+import math.error_functions.BinaryCrossEntropyCostFunction;
+import math.error_functions.CrossEntropyCostFunction;
 import math.error_functions.MeanSquaredCostFunction;
+import math.evaluation.ArgMaxEvaluationFunction;
 import math.evaluation.ThresholdEvaluationFunction;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.InitialisationMethod;
-import neuralnetwork.initialiser.OjAlgoFactory;
+import neuralnetwork.initialiser.ParameterInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import optimizers.ADAM;
 import optimizers.StochasticGradientDescent;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
-public class SandboxXOR extends AbstractDemo<OjAlgoMatrix> {
+public class SandboxXOR extends AbstractDemo {
     private static final double[][] xorData = new double[][] { { 0, 1 }, { 0, 0 }, { 1, 1 }, { 1, 0 } };
-    private static final double[][] xorLabel = new double[][] { { 1 }, { 0 }, { 0 }, { 1 } };
+    private static final double[][] xorLabel = new double[][] { { 1, 0 }, { 0, 1 }, { 0, 1 }, { 1, 0 } };
 
     @Override
     protected String outputDirectory() {
@@ -38,39 +42,36 @@ public class SandboxXOR extends AbstractDemo<OjAlgoMatrix> {
 
     @Override
     protected Pair<Integer, Integer> epochBatch() {
-        return Pair.of(50, 1);
+        return Pair.of(50, 64);
     }
 
     @Override
-    protected Triple<List<NetworkInput<OjAlgoMatrix>>, List<NetworkInput<OjAlgoMatrix>>, List<NetworkInput<OjAlgoMatrix>>> getData() {
-        List<NetworkInput<OjAlgoMatrix>> data = new ArrayList<>();
+    protected Triple<List<NetworkInput>, List<NetworkInput>, List<NetworkInput>> getData() {
+        List<NetworkInput> data = new ArrayList<>();
         for (int i = 0; i < 10000; i++) {
             double[] cData;
             double[] cLabel;
             int rd = ThreadLocalRandom.current().nextInt(xorData.length);
             cData = xorData[rd];
             cLabel = xorLabel[rd];
-            data.add(new NetworkInput<OjAlgoMatrix>(new OjAlgoMatrix(cData, 2, 1), new OjAlgoMatrix(cLabel, 1, 1)));
+            data.add(new NetworkInput(new OjAlgoMatrix(cData, 2, 1), new OjAlgoMatrix(cLabel, 2, 1)));
         }
         Collections.shuffle(data);
 
-        List<NetworkInput<OjAlgoMatrix>> train = data.subList(0, 7000);
-        List<NetworkInput<OjAlgoMatrix>> validate = data.subList(7000, 9000);
-        List<NetworkInput<OjAlgoMatrix>> test = data.subList(9000, 10000);
+        List<NetworkInput> train = data.subList(0, 7000);
+        List<NetworkInput> validate = data.subList(7000, 9000);
+        List<NetworkInput> test = data.subList(9000, 10000);
 
         return Triple.of(train, validate, test);
     }
 
     @Override
-    protected NeuralNetwork<OjAlgoMatrix> createNetwork() {
-        ActivationFunction<OjAlgoMatrix> f = new LeakyReluFunction<>(0.1);
-        NeuralNetwork<OjAlgoMatrix> network = new NeuralNetwork<>(
-                new NetworkBuilder<OjAlgoMatrix>(5).setFirstLayer(2).setLayer(35, f).setLayer(35, f)
-                        .setLayer(20, new TanhFunction<>()).setLastLayer(1, f)
-                        .setCostFunction(new MeanSquaredCostFunction<>())
-                        .setEvaluationFunction(new ThresholdEvaluationFunction<>(0.1))
-                        .setOptimizer(new ADAM<>(0.001, 0.9, 0.999)),
-                new OjAlgoFactory(new int[] { 2, 35, 35, 20, 1 }, InitialisationMethod.XAVIER,
+    protected NeuralNetwork createNetwork() {
+        ActivationFunction f = new LeakyReluFunction(0.1);
+        NeuralNetwork network = new NeuralNetwork(new NetworkBuilder(5).setFirstLayer(2).setLayer(3, f).setLayer(3, f)
+                .setLayer(2, f).setLastLayer(2, new SoftmaxFunction()).setCostFunction(new CrossEntropyCostFunction())
+                .setEvaluationFunction(new ArgMaxEvaluationFunction()).setOptimizer(new StochasticGradientDescent(0.1)),
+                new ParameterInitialiser(new int[] { 2, 3, 3, 2, 2 }, InitialisationMethod.XAVIER,
                         InitialisationMethod.SCALAR));
         return network;
     }

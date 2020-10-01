@@ -2,10 +2,14 @@ package math.activations;
 
 import math.activations.functional.DifferentiableFunction;
 import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 import java.io.Serializable;
 
-public abstract class ActivationFunction<M> implements DifferentiableFunction<M>, Serializable {
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public abstract class ActivationFunction implements DifferentiableFunction<OjAlgoMatrix>, Serializable {
 
     /**
      *
@@ -16,7 +20,7 @@ public abstract class ActivationFunction<M> implements DifferentiableFunction<M>
 
     }
 
-    public Matrix<M> derivativeOnInput(Matrix<M> input, Matrix<M> out) {
+    public OjAlgoMatrix derivativeOnInput(OjAlgoMatrix input, OjAlgoMatrix out) {
         return out.hadamard(derivative(input));
     }
 

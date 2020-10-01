@@ -1,8 +1,9 @@
 package math.activations;
 
 import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
-public class LinearFunction<M> extends ActivationFunction<M> {
+public class LinearFunction extends ActivationFunction {
 
 
     private static final long serialVersionUID = 1398037053480589797L;
@@ -18,12 +19,12 @@ public class LinearFunction<M> extends ActivationFunction<M> {
     }
 
     @Override
-    public Matrix<M> function(Matrix<M> m) {
+    public OjAlgoMatrix function(OjAlgoMatrix m) {
         return m.mapElements((e) -> e * value);
     }
 
     @Override
-    public Matrix<M> derivative(Matrix<M> m) {
+    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
         return m.mapElements((e) -> value);
     }
 }

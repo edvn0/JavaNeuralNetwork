@@ -1,8 +1,8 @@
 package math.activations;
 
-import math.linearalgebra.Matrix;
+import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
-public class TanhFunction<M> extends ActivationFunction<M> {
+public class TanhFunction extends ActivationFunction {
 
     private static final long serialVersionUID = 9220582961801243285L;
 
@@ -20,12 +20,12 @@ public class TanhFunction<M> extends ActivationFunction<M> {
     }
 
     @Override
-    public Matrix<M> function(Matrix<M> m) {
+    public OjAlgoMatrix function(OjAlgoMatrix m) {
         return m.mapElements(this::tanh);
     }
 
     @Override
-    public Matrix<M> derivative(Matrix<M> m) {
+    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
         return m.mapElements(this::tanhDerivative);
     }
 }

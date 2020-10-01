@@ -2,9 +2,9 @@ package neuralnetwork.layer;
 
 import math.activations.ActivationFunction;
 
-public class LastNetworkLayer<M> extends NetworkLayer<M> {
+public class LastNetworkLayer extends NetworkLayer {
 
-    public LastNetworkLayer(ActivationFunction<M> activationFunction, int layerIndex, int neurons) {
+    public LastNetworkLayer(ActivationFunction activationFunction, int layerIndex, int neurons) {
         super(activationFunction, layerIndex, neurons);
     }
 

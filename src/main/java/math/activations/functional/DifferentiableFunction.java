@@ -4,8 +4,8 @@ import math.linearalgebra.Matrix;
 
 public interface DifferentiableFunction<M> {
 
-    Matrix<M> function(Matrix<M> m);
+    M function(M m);
 
-    Matrix<M> derivative(Matrix<M> m);
+    M derivative(M m);
 
 }
