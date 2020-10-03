@@ -10,7 +10,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-@Slf4j
 public class NetworkMetrics {
 
     private static final String EPOCH = "Epoch";

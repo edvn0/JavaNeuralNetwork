@@ -1,5 +1,6 @@
 package demos.implementations;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -71,8 +72,8 @@ public class SandboxXOR extends AbstractDemo {
         NeuralNetwork network = new NeuralNetwork(new NetworkBuilder(5).setFirstLayer(2).setLayer(3, f).setLayer(3, f)
                 .setLayer(2, f).setLastLayer(2, new SoftmaxFunction()).setCostFunction(new CrossEntropyCostFunction())
                 .setEvaluationFunction(new ArgMaxEvaluationFunction()).setOptimizer(new StochasticGradientDescent(0.1)),
-                new ParameterInitialiser(new int[] { 2, 3, 3, 2, 2 }, InitialisationMethod.XAVIER,
-                        InitialisationMethod.SCALAR));
+                new ParameterInitialiser(InitialisationMethod.XAVIER, InitialisationMethod.SCALAR));
+
         return network;
     }
 

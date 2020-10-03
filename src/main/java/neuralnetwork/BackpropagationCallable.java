@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import lombok.extern.slf4j.Slf4j;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.NeuralNetwork.BackPropContainer;
 import neuralnetwork.inputs.NetworkInput;
 
-@Slf4j
 public class BackpropagationCallable implements Callable<NeuralNetwork.BackPropContainer> {
 
     private NeuralNetwork n;

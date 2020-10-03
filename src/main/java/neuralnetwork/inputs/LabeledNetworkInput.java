@@ -1,6 +1,5 @@
 package neuralnetwork.inputs;
 
-import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class LabeledNetworkInput<T> extends NetworkInput {

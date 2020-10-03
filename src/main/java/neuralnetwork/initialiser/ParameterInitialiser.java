@@ -1,8 +1,6 @@
 package neuralnetwork.initialiser;
 
-import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +10,13 @@ public class ParameterInitialiser {
     private int[] sizes;
     private InitialisationMethod wM, bM;
 
-    public ParameterInitialiser(int[] sizes, InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
-        this.sizes = sizes;
+    public ParameterInitialiser(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
         this.wM = weightMethod;
         this.bM = biasMethod;
+    }
+
+    public void init(int[] sizes) {
+        this.sizes = sizes.clone();
     }
 
     public List<OjAlgoMatrix> getWeightParameters() {

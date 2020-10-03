@@ -72,7 +72,7 @@ public class SandboxMNIST extends AbstractDemo {
                 new NetworkBuilder(4).setFirstLayer(784).setLayer(10, f).setLayer(10, f)
                         .setLastLayer(10, new SoftmaxFunction()).setCostFunction(new CrossEntropyCostFunction())
                         .setEvaluationFunction(new ArgMaxEvaluationFunction()).setOptimizer(new ADAM(0.01, 0.9, 0.999)),
-                new ParameterInitialiser(new int[] { 784, 100, 30, 10 }, InitialisationMethod.XAVIER,
+                new ParameterInitialiser(InitialisationMethod.XAVIER,
                         InitialisationMethod.SCALAR));
         return network;
     }
@@ -95,5 +95,4 @@ public class SandboxMNIST extends AbstractDemo {
 
         return new NetworkInput(new OjAlgoMatrix(values, imageSize, 1), new OjAlgoMatrix(labels, labelSize, 1));
     }
-
 }

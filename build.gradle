@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.edwin.neural'
-version '5.2'
+version '7.2.1'
 
 sourceCompatibility = 1.11
 
@@ -17,7 +17,6 @@ mainClassName = "demos.Sandbox"
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'org.jetbrains:annotations:18.0.0'
     implementation 'org.ujmp:ujmp-core:0.3.0'
     implementation 'org.ojalgo:ojalgo:48.3.0'
@@ -40,7 +39,7 @@ jar {
             if (!configurations.compile.isEmpty()) {
                 attributes(
                         'Class-Path': configurations.compile.collect { it.toURI().toString() }.join(' '),
-                        'Main-Class': 'neuralnetwork.MNISTTester')
+                        'Main-Class': 'demos.Sandbox.java')
             }
         }
     }

@@ -6,11 +6,16 @@ import org.ojalgo.matrix.Primitive64Matrix;
 import utilities.MathUtilities;
 import utilities.MatrixUtilities;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.function.Function;
 
 public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = -5585460400424961830L;
     private static final String NAME = "OjAlgo";
     protected Primitive64Matrix delegate;
 

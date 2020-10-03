@@ -1,8 +1,9 @@
 package math.linearalgebra;
 
+import java.io.Serializable;
 import java.util.function.Function;
 
-public interface Matrix<M> {
+public interface Matrix<M> extends Serializable {
 
     default Matrix<M> squareMatrix() {
         return this.multiply(this);

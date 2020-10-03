@@ -1,6 +1,5 @@
 package math.activations.functional;
 
-import math.linearalgebra.Matrix;
 
 public interface DifferentiableFunction<M> {
 

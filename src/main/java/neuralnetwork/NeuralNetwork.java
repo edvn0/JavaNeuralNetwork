@@ -12,9 +12,13 @@ import neuralnetwork.initialiser.ParameterInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import optimizers.Optimizer;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Marker;
+
 import utilities.NetworkUtilities;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -30,9 +34,8 @@ import java.util.stream.Stream;
  * matrices to solve the problem of learning and predicting on data.
  */
 @Slf4j
-public class NeuralNetwork implements Serializable {
+public class NeuralNetwork {
 
-    private static final long serialVersionUID = 7008674899707436812L;
     private static final String ERROR_MSG = "Something bad happened during deserialization";
 
     // All activation functions for all layers
@@ -66,6 +69,7 @@ public class NeuralNetwork implements Serializable {
 
         // Initialize the optimizer and the parameters.
         this.initialiser = parameterSupplier;
+        this.initialiser.init(this.sizes);
         this.optimizer = b.optimizer;
         this.optimizer.initializeOptimizer(totalLayers, null, null);
 
@@ -94,67 +98,6 @@ public class NeuralNetwork implements Serializable {
         this.biases = initialiser.getBiasParameters();
         this.dB = initialiser.getDeltaBiasParameters();
         this.deltaBias = initialiser.getDeltaBiasParameters();
-    }
-
-    /**
-     * Reads a .ser file or a path to a .ser file (with the extension excluded) to a
-     * NeuralNetwork object.
-     * <p>
-     * E.g. /Users/{other paths}/NeuralNetwork_{LONG}_.ser works as well as
-     * /Users/{other paths}/NeuralNetwork_{LONG}_
-     *
-     * @param path the full path to the file. does not require the .ser extension.
-     * @return a deserialised object.
-     * @throws IOException if file could not be found.
-     */
-    public static NeuralNetwork readObject(String path) throws IOException {
-        NeuralNetwork network = null;
-        File file;
-        path = (path.endsWith(".ser") ? path : path + ".ser");
-
-        try (FileInputStream fs = new FileInputStream(file = new File(path));
-                ObjectInputStream os = new ObjectInputStream(fs)) {
-
-            network = (NeuralNetwork) os.readObject();
-
-            log.info("Completed deserialization from file:{}\n", file.getPath());
-        } catch (final ClassNotFoundException e) {
-            log.error(e.getMessage());
-        }
-        if (null != network) {
-            return network;
-        } else {
-            log.error(ERROR_MSG);
-            throw new IOException(ERROR_MSG);
-        }
-    }
-
-    /**
-     * Reads a .ser file or a path to a .ser file (with the extension excluded) to a
-     * NeuralNetwork object.
-     * <p>
-     * E.g. /Users/{other paths}/NeuralNetwork_{LONG}_.ser works as well as
-     * /Users/{other paths}/NeuralNetwork_{LONG}_
-     *
-     * @param file the file to read-
-     * @return a deserialised network.
-     * @throws IOException if file is not readable.
-     */
-    public static NeuralNetwork readObject(final File file) throws IOException {
-        NeuralNetwork neuralNetwork = null;
-        try (FileInputStream fs = new FileInputStream(file); ObjectInputStream stream = new ObjectInputStream(fs)) {
-            neuralNetwork = (NeuralNetwork) stream.readObject();
-
-            log.info("Completed deserialization, see file: {} \n", file.getAbsolutePath());
-        } catch (final ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (null != neuralNetwork) {
-            return neuralNetwork;
-        } else {
-            log.error(ERROR_MSG);
-            throw new IOException(ERROR_MSG);
-        }
     }
 
     /**
@@ -548,28 +491,6 @@ public class NeuralNetwork implements Serializable {
                 .append("======================================================================");
 
         log.info(b.toString());
-    }
-
-    /**
-     * Serialises this network. Outputs a file (.ser) with the date.
-     *
-     * @param path the path to the serialised file.
-     */
-    public void writeObject(final String path) {
-        final String out = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
-        String formattedDate;
-        final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
-        formattedDate = sdf.format(new Date());
-
-        try (final ObjectOutputStream fs = new ObjectOutputStream(
-                new FileOutputStream(new File(out + "/NeuralNetwork_" + formattedDate + "_.ser")))) {
-
-            fs.writeObject(this);
-
-            log.info("Completed serialisation.");
-        } catch (final IOException e) {
-            log.error(e.getMessage());
-        }
     }
 
     @Data
