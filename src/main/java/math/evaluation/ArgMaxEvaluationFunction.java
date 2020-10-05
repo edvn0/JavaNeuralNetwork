@@ -10,7 +10,7 @@ import java.util.List;
  * Evaluation function which returns a correct value iff the argmax of the
  * predicted data is the label
  */
-public class ArgMaxEvaluationFunction implements EvaluationFunction {
+public class ArgMaxEvaluationFunction<M> implements EvaluationFunction<M> {
 
     /**
      *
@@ -22,10 +22,10 @@ public class ArgMaxEvaluationFunction implements EvaluationFunction {
      * {@inheritDoc}
      */
     @Override
-    public double evaluatePrediction(List<NetworkInput> toEvaluate) {
+    public double evaluatePrediction(List<NetworkInput<M>> toEvaluate) {
         int correct = 0;
-        for (NetworkInput networkInput : toEvaluate) {
-            OjAlgoMatrix data = networkInput.getData();
+        for (NetworkInput<M> networkInput : toEvaluate) {
+            Matrix<M> data = networkInput.getData();
             int correctLabels = networkInput.getLabel().argMax();
             int val = data.argMax();
 

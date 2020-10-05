@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
-public class SoftmaxFunction extends ActivationFunction {
+public class SoftmaxFunction<M> extends ActivationFunction<M> {
 
     private static final long serialVersionUID = -5298468440584699205L;
 
@@ -15,21 +15,21 @@ public class SoftmaxFunction extends ActivationFunction {
      * @param input input vector.
      * @return softmax vector.
      */
-    private OjAlgoMatrix softMax(OjAlgoMatrix input) {
+    private Matrix<M> softMax(Matrix<M> input) {
         if (input.cols() != 1) {
             throw new IllegalArgumentException("You can only perform SoftMax on a vector.");
         }
-        OjAlgoMatrix max = input.maxVector();
-        OjAlgoMatrix z = input.subtract(max);
+        Matrix<M> max = input.maxVector();
+        Matrix<M> z = input.subtract(max);
         double sum = z.mapElements(Math::exp).sum();
 
         return z.mapElements((e) -> Math.exp(e) / sum);
     }
 
     @Override
-    public OjAlgoMatrix derivativeOnInput(final OjAlgoMatrix input, final OjAlgoMatrix out) {
+    public Matrix<M> derivativeOnInput(final Matrix<M> input, final Matrix<M> out) {
         double xOut = input.hadamard(out).sum();
-        OjAlgoMatrix derive = out.subtract(xOut);
+        Matrix<M> derive = out.subtract(xOut);
         return input.hadamard(derive);
     }
 
@@ -39,12 +39,12 @@ public class SoftmaxFunction extends ActivationFunction {
     }
 
     @Override
-    public OjAlgoMatrix function(OjAlgoMatrix m) {
+    public Matrix<M> function(Matrix<M> m) {
         return this.softMax(m);
     }
 
     @Override
-    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
+    public Matrix<M> derivative(Matrix<M> m) {
         return null;
     }
 }

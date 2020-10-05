@@ -3,7 +3,7 @@ package math.activations;
 import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
-public class SigmoidFunction extends ActivationFunction {
+public class SigmoidFunction<M> extends ActivationFunction<M> {
 
     private static final long serialVersionUID = -5780307498502440160L;
 
@@ -21,12 +21,12 @@ public class SigmoidFunction extends ActivationFunction {
     }
 
     @Override
-    public OjAlgoMatrix function(OjAlgoMatrix m) {
+    public Matrix<M> function(Matrix<M> m) {
         return m.mapElements(this::sigmoid);
     }
 
     @Override
-    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
+    public Matrix<M> derivative(Matrix<M> m) {
         return m.mapElements(this::sigmoidDerivative);
     }
 }

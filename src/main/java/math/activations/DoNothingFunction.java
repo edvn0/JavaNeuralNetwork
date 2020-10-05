@@ -3,7 +3,7 @@ package math.activations;
 import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
-public class DoNothingFunction extends ActivationFunction {
+public class DoNothingFunction<M> extends ActivationFunction<M> {
 
     private static final long serialVersionUID = -1697257154018408060L;
 
@@ -16,13 +16,18 @@ public class DoNothingFunction extends ActivationFunction {
     }
 
     @Override
-    public OjAlgoMatrix function(OjAlgoMatrix m) {
+    public Matrix<M> function(Matrix<M> m) {
         return m;
     }
 
     @Override
-    public OjAlgoMatrix derivative(OjAlgoMatrix m) {
+    public Matrix<M> derivative(Matrix<M> m) {
         return m;
+    }
+
+    @Override
+    public Matrix<M> derivativeOnInput(Matrix<M> input, Matrix<M> out) {
+        return out.hadamard(derivative(input));
     }
 
 }

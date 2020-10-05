@@ -6,7 +6,7 @@ import neuralnetwork.inputs.NetworkInput;
 
 import java.util.List;
 
-public class ThresholdEvaluationFunction implements EvaluationFunction {
+public class ThresholdEvaluationFunction<M> implements EvaluationFunction<M> {
 
     /**
      *
@@ -23,11 +23,11 @@ public class ThresholdEvaluationFunction implements EvaluationFunction {
      * {@inheritDoc}
      */
     @Override
-    public double evaluatePrediction(List<NetworkInput> toEvaluate) {
+    public double evaluatePrediction(List<NetworkInput<M>> toEvaluate) {
         int correct = 0;
-        for (NetworkInput matrices : toEvaluate) {
-            OjAlgoMatrix fed = matrices.getData();
-            OjAlgoMatrix corr = matrices.getLabel();
+        for (NetworkInput<M> matrices : toEvaluate) {
+            Matrix<M> fed = matrices.getData();
+            Matrix<M> corr = matrices.getLabel();
 
             double fedEl = fed.sum();
             double corrEl = corr.sum();

@@ -1,5 +1,6 @@
 package optimizers;
 
+import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 import java.io.Serializable;
@@ -9,7 +10,7 @@ import java.util.List;
  * The optimizer for the gradient descent, represents some strategy for the
  * neural network.
  */
-public interface Optimizer extends Serializable {
+public interface Optimizer<M> extends Serializable {
 
     /**
      * Changes the networks weights (immutably, returns a new set of weights) with
@@ -19,7 +20,7 @@ public interface Optimizer extends Serializable {
      * @param deltas  the gradients provided by backpropagation and normalisation
      * @return weights representing the iteration of the strategy
      */
-    List<OjAlgoMatrix> changeWeights(List<OjAlgoMatrix> weights, List<OjAlgoMatrix> deltas);
+    List<Matrix<M>> changeWeights(List<Matrix<M>> weights, List<Matrix<M>> deltas);
 
     /**
      * Changes the networks biases (immutably, returns a new set of biases) with
@@ -29,7 +30,7 @@ public interface Optimizer extends Serializable {
      * @param deltas the gradients provided by backpropagation and normalisation
      * @return biases representing the iteration of the strategy
      */
-    List<OjAlgoMatrix> changeBiases(List<OjAlgoMatrix> biases, List<OjAlgoMatrix> deltas);
+    List<Matrix<M>> changeBiases(List<Matrix<M>> biases, List<Matrix<M>> deltas);
 
     /**
      * Some optimizers need to initialise some base case parameters, here you do
@@ -37,7 +38,7 @@ public interface Optimizer extends Serializable {
      *
      * @param layers how many layers are in the network?
      */
-    void initializeOptimizer(int layers, OjAlgoMatrix weightSeed, OjAlgoMatrix biasSeed);
+    void initializeOptimizer(int layers, Matrix<M> weightSeed, Matrix<M> biasSeed);
 
     String toString();
 

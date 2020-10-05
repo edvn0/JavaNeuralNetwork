@@ -6,40 +6,40 @@ import neuralnetwork.inputs.NetworkInput;
 
 import java.util.List;
 
-public class BinaryCrossEntropyCostFunction implements CostFunction {
+public class BinaryCrossEntropyCostFunction<M> implements CostFunction<M> {
 
     private static final double log2 = Math.log(2);
     private static final long serialVersionUID = -5304955386755460591L;
     private static final String NAME = "Binary Cross Entropy";
 
     @Override
-    public double calculateCostFunction(final List<NetworkInput> tData) {
+    public double calculateCostFunction(final List<NetworkInput<M>> tData) {
 
-        NetworkInput firstElement = tData.get(0);
-        OjAlgoMatrix firstData = firstElement.getData();
+        NetworkInput<M> firstElement = tData.get(0);
+        Matrix<M> firstData = firstElement.getData();
 
-        OjAlgoMatrix onesData = firstData.ones(firstData.rows(), 1);
-        OjAlgoMatrix onesLabel = firstData.ones(firstElement.getLabel().rows(), 1);
+        Matrix<M> onesData = firstData.ones(firstData.rows(), 1);
+        Matrix<M> onesLabel = firstData.ones(firstElement.getLabel().rows(), 1);
 
         double total = 0;
-        for (NetworkInput s : tData) {
+        for (var s : tData) {
 
-            OjAlgoMatrix label = s.getLabel();
-            OjAlgoMatrix data = s.getData();
+            Matrix<M> label = s.getLabel();
+            Matrix<M> data = s.getData();
 
-            OjAlgoMatrix log2Data = label.multiply(data.mapElements(e -> Math.log(e) / log2));
-            OjAlgoMatrix onesMinusLabel = onesLabel.subtract(label);
-            OjAlgoMatrix onesMinusData = onesData.subtract(data);
-            OjAlgoMatrix partTwo = onesMinusLabel.multiply(onesMinusData.mapElements(e -> Math.log(e) / log2));
+            Matrix<M> log2Data = label.multiply(data.mapElements(e -> Math.log(e) / log2));
+            Matrix<M> onesMinusLabel = onesLabel.subtract(label);
+            Matrix<M> onesMinusData = onesData.subtract(data);
+            Matrix<M> partTwo = onesMinusLabel.multiply(onesMinusData.mapElements(e -> Math.log(e) / log2));
 
-            OjAlgoMatrix out = log2Data.add(partTwo);
+            Matrix<M> out = log2Data.add(partTwo);
             total += out.sum() / data.rows();
         }
         return (-total) / tData.size();
     }
 
     @Override
-    public OjAlgoMatrix applyCostFunctionGradient(final OjAlgoMatrix in, final OjAlgoMatrix correct) {
+    public Matrix<M> applyCostFunctionGradient(final Matrix<M> in, final Matrix<M> correct) {
         return in.subtract(correct);
     }
 

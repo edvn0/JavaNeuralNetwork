@@ -1,10 +1,11 @@
 package math.activations.functional;
 
+import math.linearalgebra.Matrix;
 
 public interface DifferentiableFunction<M> {
 
-    M function(M m);
+    Matrix<M> function(Matrix<M> m);
 
-    M derivative(M m);
+    Matrix<M> derivative(Matrix<M> m);
 
 }

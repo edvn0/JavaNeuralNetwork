@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 import lombok.extern.slf4j.Slf4j;
 
-public abstract class ActivationFunction implements DifferentiableFunction<OjAlgoMatrix>, Serializable {
+public abstract class ActivationFunction<M> implements DifferentiableFunction<M>, Serializable {
 
     /**
      *
@@ -19,7 +19,7 @@ public abstract class ActivationFunction implements DifferentiableFunction<OjAlg
 
     }
 
-    public OjAlgoMatrix derivativeOnInput(OjAlgoMatrix input, OjAlgoMatrix out) {
+    public Matrix<M> derivativeOnInput(Matrix<M> input, Matrix<M> out) {
         return out.hadamard(derivative(input));
     }
 
