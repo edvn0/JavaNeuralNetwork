@@ -21,6 +21,7 @@ import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import math.optimizers.ADAM;
+import math.optimizers.StochasticGradientDescent;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
@@ -74,7 +75,7 @@ public class SandboxMnist extends AbstractDemo<Primitive64Matrix> {
                 new NetworkBuilder<Primitive64Matrix>(4).setFirstLayer(784).setLayer(10, f).setLayer(10, f)
                         .setLastLayer(10, new SoftmaxFunction<>()).setCostFunction(new CrossEntropyCostFunction<>())
                         .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
-                        .setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
+                        .setOptimizer(new ADAM<>(0.01, 0.9, 0.999)), // new ADAM<>(0.01, 0.9, 0.999)),
                 new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
     }
 

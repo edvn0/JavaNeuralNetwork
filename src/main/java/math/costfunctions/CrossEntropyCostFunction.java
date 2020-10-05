@@ -7,7 +7,6 @@ import java.util.List;
 
 public class CrossEntropyCostFunction<M> implements CostFunction<M> {
 
-    private static final long serialVersionUID = 5041727275192756048L;
     private static final String NAME = "Cross Entropy";
 
     @Override

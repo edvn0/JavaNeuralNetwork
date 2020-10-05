@@ -11,7 +11,7 @@ import java.util.List;
  * "incorrect" its predictions have been, and at the same time represent the
  * gradient of the multidimensional function of the network.
  */
-public interface CostFunction<M> extends Serializable {
+public interface CostFunction<M> {
 
     /**
      * The cost function which maps the space of validation set to a scalar (the
