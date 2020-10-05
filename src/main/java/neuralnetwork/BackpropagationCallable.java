@@ -4,23 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
+import math.linearalgebra.Matrix;
 import neuralnetwork.NeuralNetwork.BackPropContainer;
 import neuralnetwork.inputs.NetworkInput;
 
-public class BackpropagationCallable implements Callable<NeuralNetwork.BackPropContainer> {
+public class BackpropagationCallable<M> implements Callable<NeuralNetwork.BackPropContainer<M>> {
 
-    private NeuralNetwork n;
-    private List<List<NetworkInput>> threadSplits;
+    private NeuralNetwork<M> n;
+    private List<List<NetworkInput<M>>> threadSplits;
 
-    public BackpropagationCallable(int batchSize, NeuralNetwork clone, List<NetworkInput> splitBatch) {
+    public BackpropagationCallable(int batchSize, NeuralNetwork<M> clone, List<NetworkInput<M>> splitBatch) {
         this.n = clone;
         this.threadSplits = getSplitBatch(splitBatch, batchSize);
     }
 
-    private List<List<NetworkInput>> getSplitBatch(final List<NetworkInput> list, final int splitSize) {
+    private List<List<NetworkInput<M>>> getSplitBatch(final List<NetworkInput<M>> list, final int splitSize) {
         int partitionSize = splitSize;
-        List<List<NetworkInput>> partitions = new ArrayList<>();
+        List<List<NetworkInput<M>>> partitions = new ArrayList<>();
 
         for (int i = 0; i < list.size(); i += partitionSize) {
             partitions.add(list.subList(i, Math.min(i + partitionSize, list.size())));
@@ -29,11 +29,11 @@ public class BackpropagationCallable implements Callable<NeuralNetwork.BackPropC
     }
 
     @Override
-    public BackPropContainer call() throws Exception {
+    public BackPropContainer<M> call() throws Exception {
         final int size = threadSplits.get(0).size() * threadSplits.size();
         double loss = 1d;// / (size);
-        final List<OjAlgoMatrix> deltaWeights = n.getdW();
-        final List<OjAlgoMatrix> deltaBiases = n.getdB();
+        final List<Matrix<M>> deltaWeights = n.getdW();
+        final List<Matrix<M>> deltaBiases = n.getdB();
         threadSplits.forEach(e -> {
             this.n.evaluateTrainingExample(e);
             for (int i = 0; i < deltaBiases.size(); i++) {
@@ -43,7 +43,7 @@ public class BackpropagationCallable implements Callable<NeuralNetwork.BackPropC
             this.n.learnFromDeltas();
         });
 
-        return new BackPropContainer(deltaWeights, deltaBiases);
+        return new BackPropContainer<>(deltaWeights, deltaBiases);
 
     }
 
