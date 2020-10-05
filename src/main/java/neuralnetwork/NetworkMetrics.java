@@ -1,6 +1,5 @@
 package neuralnetwork;
 
-import lombok.extern.slf4j.Slf4j;
 import org.knowm.xchart.*;
 import org.knowm.xchart.BitmapEncoder.BitmapFormat;
 import org.knowm.xchart.style.Styler.LegendPosition;

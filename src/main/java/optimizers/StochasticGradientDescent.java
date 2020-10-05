@@ -7,10 +7,6 @@ import math.linearalgebra.Matrix;
 
 public class StochasticGradientDescent<M> implements Optimizer<M> {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 3872768343431121671L;
     private static final String NAME = "Stochastic Gradient Descent";
     private final double learningRate;
 

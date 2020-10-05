@@ -1,5 +1,12 @@
 package neuralnetwork;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -11,22 +18,7 @@ import me.tongfei.progressbar.ProgressBar;
 import neuralnetwork.initialiser.ParameterInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import optimizers.Optimizer;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Marker;
-
 import utilities.NetworkUtilities;
-
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A class which can be both a single layer perceptron, and at the same time: an
@@ -291,7 +283,11 @@ public class NeuralNetwork<M> {
         int info = epochs / 8;
         try (ProgressBar bar = new ProgressBar("Backpropagation", epochs)) {
             for (int i = 0; i < epochs; i++) {
-                randomisedBatchTraining(training, batchSize);
+
+                split.forEach(e -> {
+                    this.evaluateTrainingExample(e);
+                    this.learnFromDeltas();
+                });
 
                 if ((i + 1) % info == 0) {
                     // Feed forward the test data
@@ -377,99 +373,8 @@ public class NeuralNetwork<M> {
         log.info("Charts outputted.");
     }
 
-    private void randomisedBatchTraining(final List<NetworkInput<M>> examples, int batchSize) {
-        // Send off current state of weights and biases to separate thread
-        // Make the threads train on the batch of split.
-        // Retrieve the deltas of weights and biases back
-        // Update the current weights by the mean of those deltas, weighted by average
-        // loss of thread?
-
-        ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
-        int splitSize = examples.size() / 8;
-        List<List<NetworkInput<M>>> inputs = this.getSplitBatch(examples, splitSize);
-
-        List<Future<BackPropContainer<M>>> futures = new ArrayList<>();
-
-        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
-            futures.add(
-                    service.submit(new BackpropagationCallable<>(batchSize, new NeuralNetwork<>(this), inputs.get(i))));
-        }
-
-        List<BackPropContainer<M>> out = new ArrayList<>();
-        for (var c : futures) {
-            try {
-                out.add(c.get());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        List<Matrix<M>> biases = new ArrayList<>(this.dB);
-        List<Matrix<M>> weights = new ArrayList<>(this.dW);
-        final int size = out.size();
-        final double factor = 1d / size;
-        for (int i = 0; i < size; i++) {
-            List<Matrix<M>> calledBiases = out.get(i).deltaBiases;
-            List<Matrix<M>> calledWeights = out.get(i).deltaWeights;
-            for (int layer = 0; layer < this.dB.size(); layer++) {
-                biases.set(layer, biases.get(layer).add(calledBiases.get(layer).multiply(factor)));
-                weights.set(layer, weights.get(layer).add(calledWeights.get(layer).multiply(factor)));
-            }
-        }
-
-        this.dW = weights;
-        this.dB = biases;
-
-        this.learnFromDeltas();
-
-        this.dW = initialiser.getDeltaWeightParameters();
-        this.dB = initialiser.getDeltaBiasParameters();
-    }
-
     private int[] weightDimensions(final int i) {
         return new int[] { (this.weights.get(i).rows()), (this.weights.get(i).cols()) };
-    }
-
-    /**
-     * A helper method to construct a batch of a List, "indexed" by the batch size.
-     * For example: 0 to 10, 10 to 20, 20 to 30, etc...
-     *
-     * @param k         index into the list.
-     * @param training  the list.
-     * @param batchSize the batch size.
-     * @return a slice of the list starting at k*batchSize.
-     */
-    private List<NetworkInput<M>> getBatch(final int k, final List<NetworkInput<M>> training, final int batchSize) {
-        final int fromIx = k * batchSize;
-        final int toIx = Math.min(training.size(), (k + 1) * batchSize);
-        return Collections.unmodifiableList(training.subList(fromIx, toIx));
-    }
-
-    private List<List<NetworkInput<M>>> getSplitBatch(final List<NetworkInput<M>> list, final int splitSize) {
-        int partitionSize = splitSize;
-        List<List<NetworkInput<M>>> partitions = new ArrayList<>();
-
-        for (int i = 0; i < list.size(); i += partitionSize) {
-            partitions.add(list.subList(i, Math.min(i + partitionSize, list.size())));
-        }
-        return partitions;
-    }
-
-    /**
-     * A helper method to construct a batch in a Stream format, "indexed" by the
-     * batch size. For example: 0 to 10, 10 to 20, 20 to 30, etc...
-     *
-     * @param k         index into the list.
-     * @param training  the list.
-     * @param batchSize the batch size.
-     * @return a slice of the list starting at k*batchSize.
-     */
-    private Stream<NetworkInput<M>> getBatchStream(final int k, final List<NetworkInput<M>> training,
-            final int batchSize) {
-        final int fromIx = k * batchSize;
-        final int toIx = Math.min(training.size(), (k + 1) * batchSize);
-        return Collections.unmodifiableList(training.subList(fromIx, toIx)).parallelStream();
     }
 
     public void display() {

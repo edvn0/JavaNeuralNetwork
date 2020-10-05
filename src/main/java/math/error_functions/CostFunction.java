@@ -1,7 +1,6 @@
 package math.error_functions;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.inputs.NetworkInput;
 
 import java.io.Serializable;

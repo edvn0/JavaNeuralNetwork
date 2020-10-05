@@ -1,14 +1,10 @@
 package math.error_functions;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.inputs.NetworkInput;
 
 import java.util.List;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
 public class CrossEntropyCostFunction<M> implements CostFunction<M> {
 
     private static final long serialVersionUID = 5041727275192756048L;

@@ -1,16 +1,14 @@
 package optimizers;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
  * The optimizer for the gradient descent, represents some strategy for the
  * neural network.
  */
-public interface Optimizer<M> extends Serializable {
+public interface Optimizer<M> {
 
     /**
      * Changes the networks weights (immutably, returns a new set of weights) with

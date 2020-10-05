@@ -1,7 +1,6 @@
 package neuralnetwork.initialiser;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import math.linearalgebra.ujmp.UJMPMatrix;
 
 import java.util.ArrayList;

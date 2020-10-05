@@ -1,11 +1,13 @@
 package demos;
 
-import demos.implementations.ujmp.SandboxXOR;
+import org.ojalgo.matrix.Primitive64Matrix;
+
+import demos.implementations.ojalgo.SandboxMnist;
 
 public class Sandbox {
 
     public static void main(String[] args) {
-        AbstractDemo<org.ujmp.core.Matrix> mnist = new SandboxXOR();
+        AbstractDemo<Primitive64Matrix> mnist = new SandboxMnist();
         mnist.demo();
     }
 

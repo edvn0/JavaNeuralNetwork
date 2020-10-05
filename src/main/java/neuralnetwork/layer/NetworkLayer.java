@@ -30,4 +30,9 @@ public class NetworkLayer<M> {
             return out;
         }
     }
+
+    public int getNeurons() {
+        return neurons;
+    }
+
 }

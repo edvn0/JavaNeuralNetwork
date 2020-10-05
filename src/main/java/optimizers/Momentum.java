@@ -7,10 +7,7 @@ import math.linearalgebra.Matrix;
 
 public class Momentum<M> implements Optimizer<M> {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
+
     private static final String NAME = "Momentum";
     private final double lR;
     private final double momentumRate;

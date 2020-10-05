@@ -7,10 +7,7 @@ import math.linearalgebra.Matrix;
 
 public class ADAM<M> implements Optimizer<M> {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = -1433313645095435888L;
+
     private static final String NAME = "Adaptive Moment Estimation";
     private static final double epsilon = 1e-8;
     private final double lR;

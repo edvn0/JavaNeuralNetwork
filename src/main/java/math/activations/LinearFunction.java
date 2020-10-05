@@ -1,11 +1,9 @@
 package math.activations;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class LinearFunction<M> extends ActivationFunction<M> {
 
-    private static final long serialVersionUID = 1398037053480589797L;
     private final double value;
 
     public LinearFunction(double value) {

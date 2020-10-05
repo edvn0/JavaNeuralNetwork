@@ -1,9 +1,7 @@
 package neuralnetwork.inputs;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
-import java.io.Serializable;
 
 /**
  * A wrapper to contain a input to a Neural Network, with both the label and the
@@ -11,12 +9,8 @@ import java.io.Serializable;
  * 
  * @param M
  */
-public class NetworkInput<M> implements Serializable {
+public class NetworkInput<M> {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = -8743845031383184256L;
     private final Matrix<M> data;
     private final Matrix<M> label;
 

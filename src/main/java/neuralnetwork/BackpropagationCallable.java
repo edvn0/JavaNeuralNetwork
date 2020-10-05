@@ -30,7 +30,6 @@ public class BackpropagationCallable<M> implements Callable<NeuralNetwork.BackPr
 
     @Override
     public BackPropContainer<M> call() throws Exception {
-        final int size = threadSplits.get(0).size() * threadSplits.size();
         double loss = 1d;// / (size);
         final List<Matrix<M>> deltaWeights = n.getdW();
         final List<Matrix<M>> deltaBiases = n.getdB();

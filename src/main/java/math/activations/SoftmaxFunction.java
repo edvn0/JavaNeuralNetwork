@@ -1,12 +1,9 @@
 package math.activations;
 
-import lombok.extern.slf4j.Slf4j;
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class SoftmaxFunction<M> extends ActivationFunction<M> {
 
-    private static final long serialVersionUID = -5298468440584699205L;
 
     /**
      * Takes as input a vector of size NX1 and returns a SoftMax Vector of that

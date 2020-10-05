@@ -1,11 +1,9 @@
 package math.activations;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class TanhFunction<M> extends ActivationFunction<M> {
 
-    private static final long serialVersionUID = 9220582961801243285L;
 
     private double tanh(double a) {
         return Math.tanh(a);

@@ -1,7 +1,6 @@
 package math.evaluation;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.inputs.NetworkInput;
 
 import java.util.List;

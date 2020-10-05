@@ -1,10 +1,8 @@
 package math.activations;
 
 import math.linearalgebra.Matrix;
-import math.linearalgebra.ojalgo.OjAlgoMatrix;
 
 public class ReluFunction<M> extends ActivationFunction<M> {
-    private static final long serialVersionUID = 1430626027686849916L;
 
     public ReluFunction() {
         super();

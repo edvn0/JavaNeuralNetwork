@@ -3,7 +3,6 @@ package demos;
 import java.util.List;
 
 import org.apache.log4j.BasicConfigurator;
-import org.ojalgo.matrix.Primitive64Matrix;
 
 import lombok.extern.slf4j.Slf4j;
 import neuralnetwork.NeuralNetwork;
