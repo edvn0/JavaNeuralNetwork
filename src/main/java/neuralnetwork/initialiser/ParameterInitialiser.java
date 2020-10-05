@@ -7,7 +7,8 @@ import java.util.List;
 public abstract class ParameterInitialiser<M> {
 
     protected int[] sizes;
-    protected InitialisationMethod wM, bM;
+    protected InitialisationMethod wM;
+    protected InitialisationMethod bM;
 
     public ParameterInitialiser(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
         this.wM = weightMethod;

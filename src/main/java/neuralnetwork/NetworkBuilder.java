@@ -2,9 +2,9 @@ package neuralnetwork;
 
 import math.activations.ActivationFunction;
 import math.activations.DoNothingFunction;
-import math.error_functions.CostFunction;
+import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
-import optimizers.Optimizer;
+import math.optimizers.Optimizer;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -12,15 +12,15 @@ import org.ojalgo.matrix.Primitive64Matrix;
 import demos.AbstractDemo;
 import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
-import math.error_functions.CrossEntropyCostFunction;
+import math.costfunctions.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
-import neuralnetwork.initialiser.InitialisationMethod;
+import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitialiser;
 import neuralnetwork.inputs.NetworkInput;
-import optimizers.ADAM;
+import math.optimizers.ADAM;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
@@ -47,11 +47,11 @@ public class SandboxMnist extends AbstractDemo<Primitive64Matrix> {
         String train = "/mnist_train.csv";
         String path = "/Volumes/Toshiba 1,5TB/mnist";
 
-        try {
-            List<NetworkInput<Primitive64Matrix>> trainData = Files.lines(Paths.get(path + train)).map(this::toMnist)
+        try (var trainInData = Files.lines(Paths.get(path + train));
+                var testInData = Files.lines(Paths.get(path + test))) {
+            List<NetworkInput<Primitive64Matrix>> trainData = trainInData.map(this::toMnist)
                     .collect(Collectors.toList());
-            List<NetworkInput<Primitive64Matrix>> testData = Files.lines(Paths.get(path + test)).map(this::toMnist)
-                    .collect(Collectors.toList());
+            List<NetworkInput<Primitive64Matrix>> testData = testInData.map(this::toMnist).collect(Collectors.toList());
             int totalSize = trainData.size();
             int splitIndex = (int) (totalSize * 0.75);
 
@@ -70,13 +70,12 @@ public class SandboxMnist extends AbstractDemo<Primitive64Matrix> {
     @Override
     protected NeuralNetwork<Primitive64Matrix> createNetwork() {
         var f = new LeakyReluFunction<Primitive64Matrix>(0.01);
-        NeuralNetwork<Primitive64Matrix> network = new NeuralNetwork<>(
+        return new NeuralNetwork<>(
                 new NetworkBuilder<Primitive64Matrix>(4).setFirstLayer(784).setLayer(10, f).setLayer(10, f)
                         .setLastLayer(10, new SoftmaxFunction<>()).setCostFunction(new CrossEntropyCostFunction<>())
                         .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
                         .setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
-                new OjAlgoInitialiser(InitialisationMethod.XAVIER, InitialisationMethod.SCALAR));
-        return network;
+                new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
     }
 
     private NetworkInput<Primitive64Matrix> toMnist(String toMnist) {

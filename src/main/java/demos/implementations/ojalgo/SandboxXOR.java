@@ -11,15 +11,15 @@ import demos.AbstractDemo;
 import math.activations.ActivationFunction;
 import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
-import math.error_functions.CrossEntropyCostFunction;
+import math.costfunctions.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
-import neuralnetwork.initialiser.InitialisationMethod;
+import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitialiser;
 import neuralnetwork.inputs.NetworkInput;
-import optimizers.StochasticGradientDescent;
+import math.optimizers.StochasticGradientDescent;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
@@ -68,14 +68,12 @@ public class SandboxXOR extends AbstractDemo<Primitive64Matrix> {
     @Override
     protected NeuralNetwork<Primitive64Matrix> createNetwork() {
         ActivationFunction<Primitive64Matrix> f = new LeakyReluFunction<>(0.1);
-        NeuralNetwork<Primitive64Matrix> network = new NeuralNetwork<Primitive64Matrix>(
+        return new NeuralNetwork<>(
                 new NetworkBuilder<Primitive64Matrix>(5).setFirstLayer(2).setLayer(3, f).setLayer(3, f).setLayer(2, f)
                         .setLastLayer(2, new SoftmaxFunction<>()).setCostFunction(new CrossEntropyCostFunction<>())
                         .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
                         .setOptimizer(new StochasticGradientDescent<>(0.1)),
-                new OjAlgoInitialiser(InitialisationMethod.XAVIER, InitialisationMethod.SCALAR));
-
-        return network;
+                new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
     }
 
 }

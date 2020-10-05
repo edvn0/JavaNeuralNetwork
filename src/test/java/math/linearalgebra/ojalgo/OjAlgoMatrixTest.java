@@ -27,7 +27,7 @@ public class OjAlgoMatrixTest {
 
     @Test
     public void multiply() {
-        OjAlgoMatrix id = new OjAlgoMatrix(new double[] { 1, 1, 1, 1 }, 2, 2);
+        OjAlgoMatrix id = new OjAlgoMatrix(new double[][] { { 1, 0 }, { 0, 1 } }, 2, 2);
         OjAlgoMatrix out = new OjAlgoMatrix(new double[] { 2, 3, 1, 5 }, 2, 2);
         OjAlgoMatrix expectedIdOut = new OjAlgoMatrix(out);
 

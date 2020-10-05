@@ -7,7 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -39,11 +39,9 @@ public class NetworkUtilities {
      */
     public static <M> List<NetworkInput<M>> importFromInputPath(String path, int offset,
             Function<String[], NetworkInput<M>> f) throws IOException {
-        List<NetworkInput<M>> output = new ArrayList<>();
-        try (var lines = Files.lines(Paths.get(path))) {
-            output = lines.skip(offset).map(line -> line.split(",")).map(f).collect(toList());
+        try (var data = Files.lines(Path.of(path))) {
+            return data.skip(1).map(line -> line.split(",")).map(f).collect(toList());
         }
-        return output;
     }
 
     public static <M> List<NetworkInput<M>> importFromInputStream(final Stream<String> test, int size,
@@ -53,12 +51,7 @@ public class NetworkUtilities {
 
     public static <M> List<NetworkInput<M>> importFromInputStream(Stream<String> path, int size, int offset,
             Function<String[], NetworkInput<M>> f) {
-
-        List<NetworkInput<M>> fromStream;
-
-        fromStream = path.limit(size).skip(offset).map(line -> line.split(",")).map(f).collect(toList());
-
-        return fromStream;
+        return path.limit(size).skip(offset).map(line -> line.split(",")).map(f).collect(toList());
     }
 
     public static <M> List<NetworkInput<M>> readGzip(final String fileName) {

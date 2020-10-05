@@ -1,6 +1,11 @@
 package utilities;
 
 public final class OsUtils {
+
+    private OsUtils() {
+
+    }
+
     private static String OS = null;
 
     public static String getOsName() {

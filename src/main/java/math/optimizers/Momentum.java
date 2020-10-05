@@ -1,4 +1,4 @@
-package optimizers;
+package math.optimizers;
 
 import java.util.ArrayList;
 import java.util.List;

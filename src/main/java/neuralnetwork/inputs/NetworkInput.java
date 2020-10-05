@@ -2,7 +2,6 @@ package neuralnetwork.inputs;
 
 import math.linearalgebra.Matrix;
 
-
 /**
  * A wrapper to contain a input to a Neural Network, with both the label and the
  * data.

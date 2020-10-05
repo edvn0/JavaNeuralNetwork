@@ -10,12 +10,11 @@ import org.ojalgo.matrix.Primitive64Matrix;
 
 public class OjAlgoInitialiser extends ParameterInitialiser<Primitive64Matrix> {
 
-    private int[] sizes;
-
     public OjAlgoInitialiser(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
         super(weightMethod, biasMethod);
     }
 
+    @Override
     public void init(int[] sizes) {
         this.sizes = sizes.clone();
     }
@@ -39,17 +38,19 @@ public class OjAlgoInitialiser extends ParameterInitialiser<Primitive64Matrix> {
         return biases;
     }
 
+    @Override
     public List<Matrix<Primitive64Matrix>> getDeltaWeightParameters() {
         return getDeltaParameters(false);
     }
 
+    @Override
     public List<Matrix<Primitive64Matrix>> getDeltaBiasParameters() {
         return getDeltaParameters(true);
     }
 
     protected List<Matrix<Primitive64Matrix>> getDeltaParameters(boolean isBias) {
         List<Matrix<Primitive64Matrix>> deltaParams = new ArrayList<>();
-        InitialisationMethod m = InitialisationMethod.ZERO;
+        InitialisationMethod m = MethodConstants.ZERO;
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             int next = isBias ? 1 : this.sizes[i];

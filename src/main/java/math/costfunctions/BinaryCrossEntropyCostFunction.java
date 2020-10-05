@@ -1,4 +1,4 @@
-package math.error_functions;
+package math.costfunctions;
 
 import math.linearalgebra.Matrix;
 import neuralnetwork.inputs.NetworkInput;

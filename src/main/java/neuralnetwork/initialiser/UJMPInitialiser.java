@@ -8,17 +8,10 @@ import java.util.List;
 
 public class UJMPInitialiser extends ParameterInitialiser<org.ujmp.core.Matrix> {
 
-    private int[] sizes;
-    private InitialisationMethod wM, bM;
-
     public UJMPInitialiser(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
         super(weightMethod, biasMethod);
         this.wM = weightMethod;
         this.bM = biasMethod;
-    }
-
-    public void init(int[] sizes) {
-        this.sizes = sizes.clone();
     }
 
     public List<Matrix<org.ujmp.core.Matrix>> getWeightParameters() {
@@ -40,17 +33,19 @@ public class UJMPInitialiser extends ParameterInitialiser<org.ujmp.core.Matrix> 
         return biases;
     }
 
+    @Override
     public List<Matrix<org.ujmp.core.Matrix>> getDeltaWeightParameters() {
         return getDeltaParameters(false);
     }
 
+    @Override
     public List<Matrix<org.ujmp.core.Matrix>> getDeltaBiasParameters() {
         return getDeltaParameters(true);
     }
 
     protected List<Matrix<org.ujmp.core.Matrix>> getDeltaParameters(boolean isBias) {
         List<Matrix<org.ujmp.core.Matrix>> deltaParams = new ArrayList<>();
-        InitialisationMethod m = InitialisationMethod.ZERO;
+        InitialisationMethod m = MethodConstants.ZERO;
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             int next = isBias ? 1 : this.sizes[i];

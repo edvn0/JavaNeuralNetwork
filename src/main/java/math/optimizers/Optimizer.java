@@ -1,4 +1,4 @@
-package optimizers;
+package math.optimizers;
 
 import math.linearalgebra.Matrix;
 

@@ -11,13 +11,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import math.activations.ActivationFunction;
-import math.error_functions.CostFunction;
+import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import me.tongfei.progressbar.ProgressBar;
 import neuralnetwork.initialiser.ParameterInitialiser;
 import neuralnetwork.inputs.NetworkInput;
-import optimizers.Optimizer;
+import math.optimizers.Optimizer;
 import utilities.NetworkUtilities;
 
 /**

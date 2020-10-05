@@ -1,15 +1,6 @@
 package neuralnetwork.initialiser;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 public interface InitialisationMethod {
-    InitialisationMethod XAVIER = (previous, rows, cols) -> (2 * ThreadLocalRandom.current().nextDouble() - 1) * Math.sqrt(6d / (rows + cols));
-
-    InitialisationMethod RANDOM = (previous, rows, cols) -> ThreadLocalRandom.current().nextDouble();
-
-    InitialisationMethod SCALAR = (a, b, c) -> 0.01;
-
-    InitialisationMethod ZERO = (a, b, c) -> 0;
 
     double calculateInitialisation(double previous, int rows, int cols);
 

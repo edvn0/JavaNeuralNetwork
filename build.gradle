@@ -4,6 +4,7 @@ plugins {
     id 'application'
 }
 
+
 group 'com.edwin.neural'
 version '7.2.1'
 

@@ -1,4 +1,4 @@
-package optimizers;
+package math.optimizers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,9 +7,8 @@ import math.linearalgebra.Matrix;
 
 public class ADAM<M> implements Optimizer<M> {
 
-
     private static final String NAME = "Adaptive Moment Estimation";
-    private static final double epsilon = 1e-8;
+    private static final double EPSILON = 1e-8;
     private final double lR;
     private final double beta1;
     private final double beta2;
@@ -59,7 +58,7 @@ public class ADAM<M> implements Optimizer<M> {
             }
             mHat = M.get(i).divide((1 - Math.pow(beta1, exponent)));
             vHat = N.get(i).divide((1 - Math.pow(beta2, exponent)));
-            Matrix<M> deNom = vHat.mapElements(Math::sqrt).add(epsilon);
+            Matrix<M> deNom = vHat.mapElements(Math::sqrt).add(EPSILON);
             Matrix<M> num = mHat.multiply(this.lR);
             Matrix<M> adam = num.divide(deNom);
             newOut.set(i, inParams.get(i).subtract(adam));
