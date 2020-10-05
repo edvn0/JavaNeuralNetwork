@@ -1,7 +1,5 @@
 package math.linearalgebra.ojalgo;
 
-import lombok.extern.slf4j.Slf4j;
-import math.linearalgebra.Matrix;
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +27,7 @@ public class OjAlgoMatrixTest {
 
     @Test
     public void multiply() {
-        OjAlgoMatrix id = new OjAlgoMatrix(null, Matrix.MatrixType.IDENTITY, 2, 2);
+        OjAlgoMatrix id = new OjAlgoMatrix(new double[] { 1, 1, 1, 1 }, 2, 2);
         OjAlgoMatrix out = new OjAlgoMatrix(new double[] { 2, 3, 1, 5 }, 2, 2);
         OjAlgoMatrix expectedIdOut = new OjAlgoMatrix(out);
 

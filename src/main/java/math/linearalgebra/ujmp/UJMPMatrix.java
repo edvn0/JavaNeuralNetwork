@@ -1,0 +1,203 @@
+package math.linearalgebra.ujmp;
+
+import java.util.function.Function;
+
+import math.MatrixException;
+import math.linearalgebra.Matrix;
+import utilities.MatrixUtilities;
+
+public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
+
+    private static final String NAME = "UJMPMatrix";
+    private org.ujmp.core.Matrix delegate;
+
+    public UJMPMatrix(org.ujmp.core.Matrix in) {
+        this.delegate = in;
+    }
+
+    public UJMPMatrix(double[] values, int rows, int cols) {
+        if (values.length != rows * cols) {
+            throw new IllegalArgumentException("The size of input array does not match rows and columns");
+        }
+
+        double[][] matrix = MatrixUtilities.fromFlat(values, rows, cols);
+        this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(matrix);
+    }
+
+    public UJMPMatrix(double[][] out, int rows, int cols) {
+        this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(out);
+    }
+
+    public UJMPMatrix(UJMPMatrix out) {
+        this.delegate = out.delegate;
+    }
+
+    @Override
+    public int rows() {
+        return (int) this.delegate.getRowCount();
+    }
+
+    @Override
+    public int cols() {
+        return (int) this.delegate.getColumnCount();
+    }
+
+    @Override
+    public UJMPMatrix multiply(Matrix<org.ujmp.core.Matrix> otherMatrix) {
+        return new UJMPMatrix(this.delegate.mtimes(otherMatrix.delegate()));
+    }
+
+    @Override
+    public UJMPMatrix multiply(double scalar) {
+        return new UJMPMatrix(this.delegate.times(scalar));
+    }
+
+    @Override
+    public UJMPMatrix add(Matrix<org.ujmp.core.Matrix> in) {
+        return new UJMPMatrix(this.delegate.plus(in.delegate()));
+    }
+
+    @Override
+    public UJMPMatrix add(double in) {
+        return new UJMPMatrix(this.delegate.plus(in));
+    }
+
+    @Override
+    public UJMPMatrix subtract(double in) {
+        return new UJMPMatrix(this.delegate.minus(in));
+    }
+
+    @Override
+    public UJMPMatrix subtract(Matrix<org.ujmp.core.Matrix> in) {
+        return new UJMPMatrix(this.delegate.minus(in.delegate()));
+    }
+
+    @Override
+    public UJMPMatrix divide(double in) {
+        return new UJMPMatrix(this.delegate.divide(in));
+    }
+
+    @Override
+    public double map(Function<Matrix<org.ujmp.core.Matrix>, Double> mapping) {
+        return mapping.apply(this);
+    }
+
+    @Override
+    public UJMPMatrix mapElements(Function<Double, Double> mapping) {
+        double[][] elements = this.delegate.toDoubleArray();
+        double[][] out = new double[elements.length][elements[0].length];
+        for (int i = 0; i < elements.length; i++) {
+            for (int j = 0; j < elements[0].length; j++) {
+                out[i][j] = mapping.apply(elements[i][j]);
+            }
+        }
+        return new UJMPMatrix(out, rows(), cols());
+    }
+
+    @Override
+    public double sum() {
+        return this.delegate.getValueSum();
+    }
+
+    @Override
+    public double max() {
+        return this.delegate.max(org.ujmp.core.calculation.Calculation.Ret.NEW, 0).doubleValue();
+    }
+
+    @Override
+    public UJMPMatrix transpose() {
+        return new UJMPMatrix(this.delegate.transpose());
+    }
+
+    @Override
+    public org.ujmp.core.Matrix delegate() {
+        return this.delegate;
+    }
+
+    @Override
+    public UJMPMatrix divide(Matrix<org.ujmp.core.Matrix> right) {
+        return new UJMPMatrix(this.delegate.divide(right.delegate()));
+    }
+
+    @Override
+    public UJMPMatrix maxVector() {
+        double max = this.max();
+
+        double[][] vector = new double[rows()][1];
+        for (int i = 0; i < rows(); i++) {
+            vector[i][0] = max;
+        }
+
+        return new UJMPMatrix(vector, rows(), 1);
+    }
+
+    @Override
+    public UJMPMatrix zeroes(int rows, int cols) {
+        return new UJMPMatrix(org.ujmp.core.Matrix.Factory.zeros(rows, cols));
+    }
+
+    @Override
+    public UJMPMatrix ones(int rows, int cols) {
+        return new UJMPMatrix(org.ujmp.core.Matrix.Factory.ones(rows, cols));
+    }
+
+    @Override
+    public UJMPMatrix identity(int rows, int cols) {
+        return new UJMPMatrix(org.ujmp.core.Matrix.Factory.eye(rows, cols));
+    }
+
+    @Override
+    public int argMax() {
+        double[] array = this.delegate.toDoubleArray()[0];
+        int argMax = -1;
+        double best = Double.MIN_VALUE;
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] > best) {
+                best = array[i];
+                argMax = i;
+            }
+        }
+
+        return argMax;
+
+    }
+
+    @Override
+    public String toString() {
+        return delegate.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        UJMPMatrix matrix = (UJMPMatrix) o;
+        return delegate.equals(matrix.delegate);
+    }
+
+    @Override
+    public int hashCode() {
+        return delegate.hashCode();
+    }
+
+    @Override
+    public UJMPMatrix hadamard(Matrix<org.ujmp.core.Matrix> otherMatrix) {
+        return new UJMPMatrix(this.delegate.times(otherMatrix.delegate()));
+    }
+
+    @Override
+    public double norm() {
+
+        if (cols() != 1)
+            throw new MatrixException("Not a vector.");
+
+        return new UJMPMatrix(this.delegate.times(this.delegate)).map(e -> e.sum());
+    }
+
+    @Override
+    public String name() {
+        return NAME;
+    }
+}

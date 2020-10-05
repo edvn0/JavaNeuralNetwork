@@ -1,21 +1,16 @@
 package math.linearalgebra.ojalgo;
 
 import math.linearalgebra.Matrix;
+
 import org.ojalgo.function.aggregator.Aggregator;
 import org.ojalgo.matrix.Primitive64Matrix;
-import utilities.MathUtilities;
 import utilities.MatrixUtilities;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.function.Function;
 
 public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = -5585460400424961830L;
     private static final String NAME = "OjAlgo";
     protected Primitive64Matrix delegate;
 
@@ -34,44 +29,6 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 
     public OjAlgoMatrix(OjAlgoMatrix out) {
         this.delegate = out.delegate.copy().build();
-    }
-
-    public OjAlgoMatrix(double[] values, MatrixType type, int rows, int cols) {
-        switch (type) {
-            case VECTOR:
-                this.delegate = Primitive64Matrix.FACTORY.rows(values);
-                break;
-            case SQUARE:
-                if (!MathUtilities.isSquare(values.length)) {
-                    throw new IllegalArgumentException("Need to provide values of size NXN");
-                }
-                int sqrt = (int) Math.sqrt(values.length);
-                this.delegate = Primitive64Matrix.FACTORY.rows(MatrixUtilities.fromFlat(values, sqrt, sqrt));
-                break;
-            case ONES:
-                double[][] ones = new double[rows][cols];
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < rows; j++) {
-                        ones[i][j] = 1;
-                    }
-                }
-                this.delegate = Primitive64Matrix.FACTORY.rows(ones);
-                break;
-            case ZEROES:
-                double[][] zeroes = new double[rows][cols];
-                for (int i = 0; i < rows; i++) {
-                    for (int j = 0; j < rows; j++) {
-                        zeroes[i][j] = 0;
-                    }
-                }
-                this.delegate = Primitive64Matrix.FACTORY.rows(zeroes);
-                break;
-            case IDENTITY:
-                this.delegate = Primitive64Matrix.FACTORY.makeEye(rows, cols);
-                break;
-            default:
-                throw new IllegalArgumentException("Need to supply a matrix type");
-        }
     }
 
     public OjAlgoMatrix(Primitive64Matrix matrix, int rows, int cols) {
@@ -213,7 +170,7 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
     }
 
     @Override
-    public double square() {
+    public double norm() {
         if (cols() != 1)
             throw new IllegalArgumentException("Trying to take the norm of matrix... sus.");
 
