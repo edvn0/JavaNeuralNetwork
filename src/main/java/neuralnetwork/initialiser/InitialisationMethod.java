@@ -2,6 +2,8 @@ package neuralnetwork.initialiser;
 
 public interface InitialisationMethod {
 
+    String getName();
+
     double calculateInitialisation(double previous, int rows, int cols);
 
     default double[][] initialisationValues(double previous, int rows, int cols) {
@@ -13,5 +15,4 @@ public interface InitialisationMethod {
         }
         return out;
     }
-
 }

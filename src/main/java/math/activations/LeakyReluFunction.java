@@ -4,11 +4,19 @@ import math.linearalgebra.Matrix;
 
 public class LeakyReluFunction<M> extends ReluFunction<M> {
 
-    private final double alpha;
+    private double alpha;
 
     public LeakyReluFunction(double alpha) {
         super();
         this.alpha = alpha;
+    }
+
+    public LeakyReluFunction() {
+    }
+
+    @Override
+    public void setValues(double in) {
+        this.alpha = in;
     }
 
     @Override

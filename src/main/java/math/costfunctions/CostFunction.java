@@ -3,7 +3,6 @@ package math.costfunctions;
 import math.linearalgebra.Matrix;
 import neuralnetwork.inputs.NetworkInput;
 
-import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -31,6 +30,6 @@ public interface CostFunction<M> {
      */
     Matrix<M> applyCostFunctionGradient(Matrix<M> in, Matrix<M> correct);
 
-    String toString();
+    String name();
 
 }

@@ -24,6 +24,10 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
         this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(matrix);
     }
 
+    public UJMPMatrix(double[][] data) {
+        this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(data);
+    }
+
     public UJMPMatrix(double[][] out, int rows, int cols) {
         this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(out);
     }
@@ -199,5 +203,10 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
     @Override
     public String name() {
         return NAME;
+    }
+
+    @Override
+    public double[][] rawCopy() {
+        return this.delegate.toDoubleArray();
     }
 }

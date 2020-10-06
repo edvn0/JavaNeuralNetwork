@@ -7,7 +7,6 @@ import java.util.List;
 
 public class MeanSquaredCostFunction<M> implements CostFunction<M> {
 
-    private static final long serialVersionUID = 4470711763150915089L;
     private static final String NAME = "Mean Squared Error";
 
     @Override
@@ -23,7 +22,7 @@ public class MeanSquaredCostFunction<M> implements CostFunction<M> {
     }
 
     @Override
-    public String toString() {
+    public String name() {
         return NAME;
     }
 }

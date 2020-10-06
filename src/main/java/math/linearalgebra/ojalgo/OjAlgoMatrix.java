@@ -27,6 +27,10 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
         this.delegate = Primitive64Matrix.FACTORY.rows(values);
     }
 
+    public OjAlgoMatrix(double[][] data) {
+        this.delegate = Primitive64Matrix.FACTORY.rows(data);
+    }
+
     public OjAlgoMatrix(OjAlgoMatrix out) {
         this.delegate = out.delegate.copy().build();
     }
@@ -233,5 +237,10 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
     @Override
     public double map(Function<Matrix<Primitive64Matrix>, Double> mapping) {
         return mapping.apply(this);
+    }
+
+    @Override
+    public double[][] rawCopy() {
+        return this.delegate.toRawCopy2D();
     }
 }

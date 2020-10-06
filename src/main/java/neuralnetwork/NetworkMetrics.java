@@ -176,12 +176,13 @@ public class NetworkMetrics {
     private XYChart generateChart(final String heading, final String yLabel, final String function,
             final List<Integer> xValues, final List<Double> yValues, double maxX, double minY, double maxY) {
 
-        final XYChart chart = new XYChartBuilder().width(600).height(400).title(heading).theme(ChartTheme.GGPlot2)
+        final XYChart chart = new XYChartBuilder().width(600).height(400).title(heading)
                 .xAxisTitle(NetworkMetrics.EPOCH).yAxisTitle(yLabel).build();
         chart.getStyler().setXAxisMin((double) 0);
         chart.getStyler().setXAxisMax(maxX);
         chart.getStyler().setYAxisMin(minY);
         chart.getStyler().setYAxisMax(maxY);
+        chart.addSeries("label", xValues, yValues);
         return chart;
     }
 

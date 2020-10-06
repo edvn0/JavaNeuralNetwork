@@ -1,6 +1,5 @@
 package demos;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.BasicConfigurator;
@@ -14,7 +13,7 @@ import utilities.types.Triple;
 @Slf4j
 public abstract class AbstractDemo<M> {
 
-    void demo() {
+    protected void demo() {
         BasicConfigurator.configure();
         final NeuralNetwork<M> network = createNetwork();
         final Triple<List<NetworkInput<M>>, List<NetworkInput<M>>, List<NetworkInput<M>>> trainValidateTest = getData();
@@ -50,7 +49,6 @@ public abstract class AbstractDemo<M> {
         double loss = network.testLoss(trainValidateTest.getRight());
         log.info("\nCorrectly evaluated {}% of the test set.\nFinal loss: {}", confusion * 100, loss);
         log.info("\nTotal time taken for training: {}.", (t2 - t1) * 1e-6);
-
     }
 
     /**

@@ -3,22 +3,22 @@ package math.evaluation;
 import math.linearalgebra.Matrix;
 import neuralnetwork.inputs.NetworkInput;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class ThresholdEvaluationFunction<M> implements EvaluationFunction<M> {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 2502293428392120484L;
     private static final String NAME = "Threshold Evaluation";
-    private final double threshHold;
+    private double threshold;
 
     public ThresholdEvaluationFunction(double a) {
-        this.threshHold = a;
+        this.threshold = a;
     }
 
-    /**
+    public ThresholdEvaluationFunction() {
+	}
+
+	/**
      * {@inheritDoc}
      */
     @Override
@@ -31,7 +31,7 @@ public class ThresholdEvaluationFunction<M> implements EvaluationFunction<M> {
             double fedEl = fed.sum();
             double corrEl = corr.sum();
 
-            if (Math.abs(fedEl - corrEl) < this.threshHold) {
+            if (Math.abs(fedEl - corrEl) < this.threshold) {
                 correct++;
             }
         }
@@ -39,7 +39,20 @@ public class ThresholdEvaluationFunction<M> implements EvaluationFunction<M> {
     }
 
     @Override
-    public String toString() {
+    public String name() {
         return NAME;
+    }
+
+    @Override
+    public LinkedHashMap<String, Double> params() {
+        LinkedHashMap<String, Double> oMap = new LinkedHashMap<>();
+        oMap.put("threshold", threshold);
+        return oMap;
+    }
+
+    @Override
+    public void init(double... in) {
+        this.threshold = in[0];
+
     }
 }

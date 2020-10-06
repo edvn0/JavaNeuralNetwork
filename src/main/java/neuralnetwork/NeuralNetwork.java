@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
+import org.ojalgo.matrix.Primitive64Matrix;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,10 +17,10 @@ import math.activations.ActivationFunction;
 import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
+import math.optimizers.Optimizer;
 import me.tongfei.progressbar.ProgressBar;
 import neuralnetwork.initialiser.ParameterInitialiser;
 import neuralnetwork.inputs.NetworkInput;
-import math.optimizers.Optimizer;
 import utilities.NetworkUtilities;
 
 /**
@@ -42,14 +43,14 @@ public class NeuralNetwork<M> {
     private final int totalLayers;
     // The structure of the network
     private final int[] sizes;
-    private final ParameterInitialiser<M> initialiser;
+    private transient final ParameterInitialiser<M> initialiser;
     // Weights and biases of the network
     private List<Matrix<M>> weights;
     private List<Matrix<M>> biases;
-    private List<Matrix<M>> dW;
-    private List<Matrix<M>> dB;
-    private List<Matrix<M>> deltaWeights;
-    private List<Matrix<M>> deltaBias;
+    private transient List<Matrix<M>> dW;
+    private transient List<Matrix<M>> dB;
+    private transient List<Matrix<M>> deltaWeights;
+    private transient List<Matrix<M>> deltaBias;
 
     public NeuralNetwork(final NetworkBuilder<M> b, final ParameterInitialiser<M> parameterSupplier) {
 
@@ -65,11 +66,11 @@ public class NeuralNetwork<M> {
         this.optimizer = b.optimizer;
         this.optimizer.initializeOptimizer(totalLayers, null, null);
 
-        this.weights = parameterSupplier.getWeightParameters();
+        this.weights = b.weights == null ? parameterSupplier.getWeightParameters() : b.weights;
         this.dW = parameterSupplier.getDeltaWeightParameters();
         this.deltaWeights = parameterSupplier.getDeltaWeightParameters();
 
-        this.biases = parameterSupplier.getBiasParameters();
+        this.biases = b.biases == null ? parameterSupplier.getBiasParameters() : b.biases;
         this.dB = parameterSupplier.getDeltaBiasParameters();
         this.deltaBias = parameterSupplier.getDeltaBiasParameters();
     }
@@ -90,6 +91,22 @@ public class NeuralNetwork<M> {
         this.biases = initialiser.getBiasParameters();
         this.dB = initialiser.getDeltaBiasParameters();
         this.deltaBias = initialiser.getDeltaBiasParameters();
+    }
+
+    protected List<Matrix<M>> getdB() {
+        return this.dB;
+    }
+
+    protected List<Matrix<M>> getdW() {
+        return this.dW;
+    }
+
+    protected Matrix<M> getSingleDb(int i) {
+        return this.dB.get(i);
+    }
+
+    protected Matrix<M> getSingleDw(int i) {
+        return this.dW.get(i);
     }
 
     /**
@@ -444,21 +461,5 @@ public class NeuralNetwork<M> {
     static class BackPropContainer<U> {
         private List<Matrix<U>> deltaWeights;
         private List<Matrix<U>> deltaBiases;
-    }
-
-    protected List<Matrix<M>> getdB() {
-        return this.dB;
-    }
-
-    protected List<Matrix<M>> getdW() {
-        return this.dW;
-    }
-
-    protected Matrix<M> getSingleDb(int i) {
-        return this.dB.get(i);
-    }
-
-    protected Matrix<M> getSingleDw(int i) {
-        return this.dW.get(i);
     }
 }

@@ -1,32 +1,80 @@
 package demos.implementations.ojalgo;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.log4j.BasicConfigurator;
 import org.ojalgo.matrix.Primitive64Matrix;
 
 import demos.AbstractDemo;
+import lombok.extern.slf4j.Slf4j;
 import math.activations.ActivationFunction;
 import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
 import math.costfunctions.CrossEntropyCostFunction;
-import math.evaluation.ArgMaxEvaluationFunction;
+import math.evaluation.ThresholdEvaluationFunction;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
+import math.optimizers.ADAM;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitialiser;
 import neuralnetwork.inputs.NetworkInput;
-import math.optimizers.StochasticGradientDescent;
+import utilities.serialise.serialisers.OjAlgoSerializer;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
+@Slf4j
 public class SandboxXOR extends AbstractDemo<Primitive64Matrix> {
     private static final double[][] xorData = new double[][] { { 0, 1 }, { 0, 0 }, { 1, 1 }, { 1, 0 } };
     private static final double[][] xorLabel = new double[][] { { 1, 0 }, { 0, 1 }, { 0, 1 }, { 1, 0 } };
+
+    @Override
+    protected void demo() {
+        BasicConfigurator.configure();
+        final NeuralNetwork<Primitive64Matrix> network = createNetwork();
+        final Triple<List<NetworkInput<Primitive64Matrix>>, List<NetworkInput<Primitive64Matrix>>, List<NetworkInput<Primitive64Matrix>>> trainValidateTest = getData();
+        final Pair<Integer, Integer> epochBatch = epochBatch();
+        final TrainingMethod trainingMethod = networkTrainingMethod();
+        final String outputPath = outputDirectory();
+
+        network.display();
+
+        long t1 = System.nanoTime();
+
+        switch (trainingMethod) {
+            case METRICS:
+                network.trainWithMetrics(trainValidateTest.getLeft(), trainValidateTest.getMiddle(), epochBatch.left(),
+                        epochBatch.right(), outputPath);
+                break;
+            case NORMAL:
+                network.train(trainValidateTest.getLeft(), trainValidateTest.getMiddle(), epochBatch.left(),
+                        epochBatch.right());
+                break;
+            case VERBOSE:
+                network.trainVerbose(trainValidateTest.getLeft(), trainValidateTest.getMiddle(), epochBatch.left(),
+                        epochBatch.right());
+                break;
+            default:
+                break;
+
+        }
+
+        long t2 = System.nanoTime();
+
+        double confusion = network.testEvaluation(trainValidateTest.getRight(), 50);
+        double loss = network.testLoss(trainValidateTest.getRight());
+        log.info("\nCorrectly evaluated {}% of the test set.\nFinal loss: {}", confusion * 100, loss);
+        log.info("\nTotal time taken for training: {}.", (t2 - t1) * 1e-6);
+
+        OjAlgoSerializer ser = new OjAlgoSerializer();
+        ser.serialise(new File(
+                "/Users/edwincarlsson/Documents/Programmering/Java/NeuralNetwork/src/main/resources/xor/serial.json"),
+                network);
+    }
 
     @Override
     protected String outputDirectory() {
@@ -72,8 +120,8 @@ public class SandboxXOR extends AbstractDemo<Primitive64Matrix> {
         return new NeuralNetwork<>(
                 new NetworkBuilder<Primitive64Matrix>(5).setFirstLayer(2).setLayer(3, f).setLayer(3, f).setLayer(2, f)
                         .setLastLayer(2, new SoftmaxFunction<>()).setCostFunction(new CrossEntropyCostFunction<>())
-                        .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
-                        .setOptimizer(new StochasticGradientDescent<>(0.1)),
+                        .setEvaluationFunction(new ThresholdEvaluationFunction<>(0.1))
+                        .setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
                 new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
     }
 }

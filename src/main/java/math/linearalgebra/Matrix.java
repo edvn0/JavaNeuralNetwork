@@ -202,6 +202,8 @@ public interface Matrix<M> {
      */
     public String name();
 
+    public double[][] rawCopy();
+
     /**
      * Returns AA = A^2 for square matrix.
      * 

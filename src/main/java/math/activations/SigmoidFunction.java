@@ -27,4 +27,8 @@ public class SigmoidFunction<M> extends ActivationFunction<M> {
     public Matrix<M> derivative(Matrix<M> m) {
         return m.mapElements(this::sigmoidDerivative);
     }
+
+    @Override
+    public void setValues(double in) {
+    }
 }

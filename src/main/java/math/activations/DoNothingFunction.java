@@ -4,7 +4,6 @@ import math.linearalgebra.Matrix;
 
 public class DoNothingFunction<M> extends ActivationFunction<M> {
 
-
     public DoNothingFunction() {
     }
 
@@ -26,6 +25,11 @@ public class DoNothingFunction<M> extends ActivationFunction<M> {
     @Override
     public Matrix<M> derivativeOnInput(Matrix<M> input, Matrix<M> out) {
         return out.hadamard(derivative(input));
+    }
+
+    @Override
+    public void setValues(double in) {
+
     }
 
 }

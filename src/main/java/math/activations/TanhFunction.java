@@ -4,7 +4,6 @@ import math.linearalgebra.Matrix;
 
 public class TanhFunction<M> extends ActivationFunction<M> {
 
-
     private double tanh(double a) {
         return Math.tanh(a);
     }
@@ -26,5 +25,10 @@ public class TanhFunction<M> extends ActivationFunction<M> {
     @Override
     public Matrix<M> derivative(Matrix<M> m) {
         return m.mapElements(this::tanhDerivative);
+    }
+
+    @Override
+    public void setValues(double in) {
+
     }
 }

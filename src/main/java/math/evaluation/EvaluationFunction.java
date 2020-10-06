@@ -1,17 +1,18 @@
 package math.evaluation;
 
 import neuralnetwork.inputs.NetworkInput;
+import utilities.serialise.NetworkSerialisable;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
-
 
 /**
  * Evaluate a set of test data against some strategy, like thresholds or
  * ArgMaxing.
  */
-public interface EvaluationFunction<M> extends Serializable {
+public interface EvaluationFunction<M> extends NetworkSerialisable<String, Double> {
+
+    public void init(double... in);
 
     /**
      * Evaluates a list of {@link NetworkInput}, either training or test data.
@@ -31,6 +32,6 @@ public interface EvaluationFunction<M> extends Serializable {
         return evaluatePrediction(Collections.singletonList(toEvaluate));
     }
 
-    String toString();
+    String name();
 
 }

@@ -4,12 +4,15 @@ import math.activations.ActivationFunction;
 import math.activations.DoNothingFunction;
 import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
+import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.ojalgo.matrix.Primitive64Matrix;
 
 public class NetworkBuilder<M> {
 
@@ -23,7 +26,9 @@ public class NetworkBuilder<M> {
     protected Optimizer<M> optimizer;
     protected int total;
 
-    Map<Integer, ActivationFunction<M>> functionMap;
+    protected Map<Integer, ActivationFunction<M>> functionMap;
+    protected List<Matrix<M>> weights;
+    protected List<Matrix<M>> biases;
 
     public NetworkBuilder(int[] structure) {
         this.structure = structure;
@@ -110,6 +115,14 @@ public class NetworkBuilder<M> {
         this.structure[index] = i;
         this.functionMap.put(total - 1, f);
         return this;
+    }
+
+    public void setWeights(List<Matrix<M>> weights) {
+        this.weights = weights;
+    }
+
+    public void setBiases(List<Matrix<M>> biases) {
+        this.biases = biases;
     }
 
 }

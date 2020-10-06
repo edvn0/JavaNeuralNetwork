@@ -4,10 +4,13 @@ import math.linearalgebra.Matrix;
 
 public class LinearFunction<M> extends ActivationFunction<M> {
 
-    private final double value;
+    private double value;
 
     public LinearFunction(double value) {
         this.value = value;
+    }
+
+    public LinearFunction() {
     }
 
     @Override
@@ -23,5 +26,10 @@ public class LinearFunction<M> extends ActivationFunction<M> {
     @Override
     public Matrix<M> derivative(Matrix<M> m) {
         return m.mapElements((e) -> value);
+    }
+
+    @Override
+    public void setValues(double in) {
+        this.value = in;
     }
 }

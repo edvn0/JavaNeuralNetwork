@@ -1,17 +1,29 @@
 package math.optimizers;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import math.linearalgebra.Matrix;
 
 public class StochasticGradientDescent<M> implements Optimizer<M> {
 
     private static final String NAME = "Stochastic Gradient Descent";
-    private final double learningRate;
+    private double learningRate;
 
     public StochasticGradientDescent(double l) {
         this.learningRate = l;
+    }
+
+    public StochasticGradientDescent() {
+	}
+
+	@Override
+    public LinkedHashMap<String, Double> params() {
+        LinkedHashMap<String, Double> oMap = new LinkedHashMap<>();
+        oMap.put("learningRate", learningRate);
+        return oMap;
     }
 
     @Override
@@ -42,7 +54,12 @@ public class StochasticGradientDescent<M> implements Optimizer<M> {
     }
 
     @Override
-    public String toString() {
+    public String name() {
         return NAME;
+    }
+
+    @Override
+    public void init(double... in) {
+        this.learningRate = in[0];
     }
 }

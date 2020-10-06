@@ -4,7 +4,6 @@ import math.linearalgebra.Matrix;
 
 public class SoftmaxFunction<M> extends ActivationFunction<M> {
 
-
     /**
      * Takes as input a vector of size NX1 and returns a SoftMax Vector of that
      * input.
@@ -32,7 +31,7 @@ public class SoftmaxFunction<M> extends ActivationFunction<M> {
 
     @Override
     public String getName() {
-        return "SOFTMAX";
+        return "Softmax";
     }
 
     @Override
@@ -43,5 +42,10 @@ public class SoftmaxFunction<M> extends ActivationFunction<M> {
     @Override
     public Matrix<M> derivative(Matrix<M> m) {
         return null;
+    }
+
+    @Override
+    public void setValues(double in) {
+
     }
 }

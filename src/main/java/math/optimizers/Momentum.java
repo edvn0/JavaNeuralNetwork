@@ -1,16 +1,17 @@
 package math.optimizers;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import math.linearalgebra.Matrix;
 
 public class Momentum<M> implements Optimizer<M> {
 
-
     private static final String NAME = "Momentum";
-    private final double lR;
-    private final double momentumRate;
+    private double lR;
+    private double momentumRate;
 
     private List<Matrix<M>> lastDeltaWeights, lastDeltaBiases;
 
@@ -18,6 +19,17 @@ public class Momentum<M> implements Optimizer<M> {
         this.lR = lR;
         this.momentumRate = momentum;
 
+    }
+
+    public Momentum() {
+	}
+
+	@Override
+    public LinkedHashMap<String, Double> params() {
+        LinkedHashMap<String, Double> oMap = new LinkedHashMap<>();
+        oMap.put("learningRate", lR);
+        oMap.put("momentumRate", momentumRate);
+        return oMap;
     }
 
     @Override
@@ -51,7 +63,14 @@ public class Momentum<M> implements Optimizer<M> {
     }
 
     @Override
-    public String toString() {
+    public String name() {
         return NAME;
+    }
+
+    @Override
+    public void init(double... in) {
+        this.lR = in[0];
+        this.momentumRate = in[1];
+
     }
 }

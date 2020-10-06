@@ -1,7 +1,9 @@
 package math.optimizers;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import math.linearalgebra.Matrix;
 
@@ -9,9 +11,9 @@ public class ADAM<M> implements Optimizer<M> {
 
     private static final String NAME = "Adaptive Moment Estimation";
     private static final double EPSILON = 1e-8;
-    private final double lR;
-    private final double beta1;
-    private final double beta2;
+    private double lR;
+    private double beta1;
+    private double beta2;
     private List<Matrix<M>> weightM, weightN;
     private List<Matrix<M>> biasM, biasN;
 
@@ -19,6 +21,18 @@ public class ADAM<M> implements Optimizer<M> {
         this.lR = alpha;
         this.beta1 = beta1;
         this.beta2 = beta2;
+    }
+
+    public ADAM() {
+	}
+
+	@Override
+    public LinkedHashMap<String, Double> params() {
+        LinkedHashMap<String, Double> oMap = new LinkedHashMap<>();
+        oMap.put("learningRate", lR);
+        oMap.put("beta1", beta1);
+        oMap.put("beta2", beta2);
+        return oMap;
     }
 
     @Override
@@ -82,7 +96,14 @@ public class ADAM<M> implements Optimizer<M> {
     }
 
     @Override
-    public String toString() {
+    public String name() {
         return NAME;
+    }
+
+    @Override
+    public void init(double... in) {
+        this.lR = in[0];
+        this.beta1 = in[1];
+        this.beta2 = in[2];
     }
 }

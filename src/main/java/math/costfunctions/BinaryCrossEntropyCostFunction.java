@@ -8,7 +8,6 @@ import java.util.List;
 public class BinaryCrossEntropyCostFunction<M> implements CostFunction<M> {
 
     private static final double log2 = Math.log(2);
-    private static final long serialVersionUID = -5304955386755460591L;
     private static final String NAME = "Binary Cross Entropy";
 
     @Override
@@ -43,7 +42,7 @@ public class BinaryCrossEntropyCostFunction<M> implements CostFunction<M> {
     }
 
     @Override
-    public String toString() {
+    public String name() {
         return NAME;
     }
 }

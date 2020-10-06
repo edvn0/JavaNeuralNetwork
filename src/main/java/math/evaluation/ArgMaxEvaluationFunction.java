@@ -3,6 +3,7 @@ package math.evaluation;
 import math.linearalgebra.Matrix;
 import neuralnetwork.inputs.NetworkInput;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -11,10 +12,6 @@ import java.util.List;
  */
 public class ArgMaxEvaluationFunction<M> implements EvaluationFunction<M> {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 3730260463010183881L;
     private static final String NAME = "Argmax Evaluation";
 
     /**
@@ -37,7 +34,16 @@ public class ArgMaxEvaluationFunction<M> implements EvaluationFunction<M> {
     }
 
     @Override
-    public String toString() {
+    public String name() {
         return NAME;
+    }
+
+    @Override
+    public LinkedHashMap<String, Double> params() {
+        return null;
+    }
+
+    @Override
+    public void init(double... in) {
     }
 }

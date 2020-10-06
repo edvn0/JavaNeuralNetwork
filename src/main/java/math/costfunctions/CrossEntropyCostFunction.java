@@ -24,7 +24,7 @@ public class CrossEntropyCostFunction<M> implements CostFunction<M> {
     }
 
     @Override
-    public String toString() {
+    public String name() {
         return NAME;
     }
 }
