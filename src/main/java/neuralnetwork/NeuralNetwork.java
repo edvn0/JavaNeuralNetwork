@@ -448,9 +448,9 @@ public class NeuralNetwork<M> {
                     .append("\n");
         }
 
-        b.append("\n").append("The error function: ").append(this.costFunction).append("\n")
-                .append("The evaluation function: ").append(this.evaluationFunction).append("\n")
-                .append("The optimizer: ").append(this.optimizer).append("\n")
+        b.append("\n").append("The error function: ").append(this.costFunction.name()).append("\n")
+                .append("The evaluation function: ").append(this.evaluationFunction.name()).append("\n")
+                .append("The optimizer: ").append(this.optimizer.name()).append("\n")
                 .append("======================================================================");
 
         log.info(b.toString());
