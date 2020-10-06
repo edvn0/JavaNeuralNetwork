@@ -2,8 +2,11 @@ package demos.implementations.ujmp;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
+import org.ujmp.core.Matrix;
 
 import demos.AbstractDemo;
 import math.activations.ActivationFunction;
@@ -74,5 +77,4 @@ public class SandboxXOR extends AbstractDemo<org.ujmp.core.Matrix> {
                         .setOptimizer(new StochasticGradientDescent<>(0.1)),
                 new UJMPInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
     }
-
 }

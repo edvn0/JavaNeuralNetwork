@@ -2,6 +2,7 @@ package demos.implementations.ojalgo;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -75,5 +76,4 @@ public class SandboxXOR extends AbstractDemo<Primitive64Matrix> {
                         .setOptimizer(new StochasticGradientDescent<>(0.1)),
                 new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
     }
-
 }

@@ -2,6 +2,7 @@ package neuralnetwork;
 
 import org.knowm.xchart.*;
 import org.knowm.xchart.BitmapEncoder.BitmapFormat;
+import org.knowm.xchart.style.Styler.ChartTheme;
 import org.knowm.xchart.style.Styler.LegendPosition;
 
 import java.io.IOException;
@@ -143,8 +144,9 @@ public class NetworkMetrics {
     }
 
     private void chartForTimeMetrics(final String path) throws IOException {
-        CategoryChart cg = new CategoryChartBuilder().width(800).height(500).title("Time Metrics, for each epoch (s)")
-                .xAxisTitle("Statistical measures").yAxisTitle("Time Taken").build();
+        CategoryChart cg = new CategoryChartBuilder().width(800).height(500).theme(ChartTheme.GGPlot2)
+                .title("Time Metrics, for each epoch (s)").xAxisTitle("Statistical measures").yAxisTitle("Time Taken")
+                .build();
 
         cg.getStyler().setLegendPosition(LegendPosition.InsideNW);
         cg.getStyler().setHasAnnotations(true);
@@ -174,7 +176,8 @@ public class NetworkMetrics {
     private XYChart generateChart(final String heading, final String yLabel, final String function,
             final List<Integer> xValues, final List<Double> yValues, double maxX, double minY, double maxY) {
 
-        final XYChart chart = QuickChart.getChart(heading, NetworkMetrics.EPOCH, yLabel, function, xValues, yValues);
+        final XYChart chart = new XYChartBuilder().width(600).height(400).title(heading).theme(ChartTheme.GGPlot2)
+                .xAxisTitle(NetworkMetrics.EPOCH).yAxisTitle(yLabel).build();
         chart.getStyler().setXAxisMin((double) 0);
         chart.getStyler().setXAxisMax(maxX);
         chart.getStyler().setYAxisMin(minY);

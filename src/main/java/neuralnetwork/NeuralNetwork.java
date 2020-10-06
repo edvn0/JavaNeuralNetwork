@@ -3,7 +3,9 @@ package neuralnetwork;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -213,6 +215,19 @@ public class NeuralNetwork<M> {
         return copy;
     }
 
+    private List<NetworkInput<M>> feedForwardData(final Iterator<NetworkInput<M>> test) {
+        final List<NetworkInput<M>> copy = new ArrayList<>();
+
+        while (test.hasNext()) {
+            var networkInput = test.next();
+            final Matrix<M> out = this.predict(networkInput.getData());
+            final NetworkInput<M> newOut = new NetworkInput<M>(out, networkInput.getLabel());
+            copy.add(newOut);
+        }
+
+        return copy;
+    }
+
     public double testEvaluation(final List<NetworkInput<M>> imagesTest, final int size) {
         double avg = 0;
         final List<NetworkInput<M>> d = this.feedForwardData(imagesTest);
@@ -232,6 +247,32 @@ public class NeuralNetwork<M> {
 
     private double evaluate(final List<NetworkInput<M>> data) {
         return this.evaluationFunction.evaluatePrediction(data);
+    }
+
+    public void train(final Iterator<NetworkInput<M>> training, Iterator<NetworkInput<M>> validation, final int epochs,
+            final int batchSize) {
+
+        Supplier<Iterator<NetworkInput<M>>> supp = () -> training;
+        for (int i = 0; i < epochs; i++) {
+            var clone = supp.get();
+            List<NetworkInput<M>> totalBatch = new ArrayList<>();
+            int batch = 0;
+            while (clone.hasNext()) {
+                totalBatch.add(clone.next());
+                if (batch >= batchSize) {
+                    this.learnFromDeltas();
+                    totalBatch.clear();
+                }
+            }
+        }
+        // Feed forward the test data
+        final List<NetworkInput<M>> feedForwardData = this.feedForwardData(validation);
+        // Evaluate prediction with the interface EvaluationFunction.
+        double correct = evaluate(feedForwardData);
+        // Calculate cost/loss with the interface CostFunction
+        double loss = this.loss(feedForwardData);
+
+        log.info("\nThe network correctly evaluted \t {}\nThe network has a loss of {}.\n", correct * 100, loss);
     }
 
     /**
