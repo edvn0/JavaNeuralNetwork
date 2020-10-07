@@ -26,7 +26,11 @@ import neuralnetwork.NeuralNetwork;
 
 public class OjAlgoSerializer {
 
-    public void serialise(File f, NeuralNetwork<Primitive64Matrix> ojAlgoNetwork) {
+    private Gson gson;
+    private Type network = new TypeToken<NeuralNetwork<Primitive64Matrix>>() {
+    }.getType();
+
+    public OjAlgoSerializer() {
 
         GsonBuilder gsonb = new GsonBuilder();
 
@@ -61,13 +65,14 @@ public class OjAlgoSerializer {
                 JsonObject inner = new JsonObject();
                 var info = src.params();
 
-                inner.addProperty("name", src.name());
                 if (info != null) {
                     int i = 1;
                     for (var e : info.values()) {
-                        inner.addProperty("v" + i, String.valueOf(e));
+                        inner.addProperty("v" + i, e);
+                        i++;
                     }
                 }
+                inner.addProperty("name", src.name());
 
                 return inner;
             }
@@ -83,7 +88,7 @@ public class OjAlgoSerializer {
 
                 inner.addProperty("name", src.name());
                 if (info != null)
-                    info.forEach((a, b) -> inner.addProperty("value", String.valueOf(b)));
+                    info.forEach((a, b) -> inner.addProperty("value", b));
 
                 return inner;
             }
@@ -125,11 +130,10 @@ public class OjAlgoSerializer {
             }
         });
 
-        Type network = new TypeToken<NeuralNetwork<Primitive64Matrix>>() {
-        }.getType();
-        gsonb.setPrettyPrinting();
-        Gson gson = gsonb.create();
+        this.gson = gsonb.create();
+    }
 
+    public void serialise(File f, NeuralNetwork<Primitive64Matrix> ojAlgoNetwork) {
         String json = gson.toJson(ojAlgoNetwork, network);
 
         try (FileWriter fw = new FileWriter(f, false)) {
@@ -138,6 +142,10 @@ public class OjAlgoSerializer {
 
         }
 
+    }
+
+    public String serialiseToString(NeuralNetwork<Primitive64Matrix> ojAlgoNetwork) {
+        return gson.toJson(ojAlgoNetwork, network);
     }
 
 }

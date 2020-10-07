@@ -44,9 +44,6 @@ public class OjAlgoNetwork {
         OjAlgoInitialiser initialiser = new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR);
         initialiser.init(paramSizes);
 
-        System.out.println(Arrays.toString(paramSizes));
-        System.out.println(initialiser.getBiasParameters());
-
         NeuralNetwork<Primitive64Matrix> out = new NeuralNetwork<>(builder, initialiser);
 
         return out;

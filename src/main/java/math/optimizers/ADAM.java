@@ -3,7 +3,6 @@ package math.optimizers;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import math.linearalgebra.Matrix;
 
@@ -24,14 +23,14 @@ public class ADAM<M> implements Optimizer<M> {
     }
 
     public ADAM() {
-	}
+    }
 
-	@Override
+    @Override
     public LinkedHashMap<String, Double> params() {
         LinkedHashMap<String, Double> oMap = new LinkedHashMap<>();
-        oMap.put("learningRate", lR);
-        oMap.put("beta1", beta1);
-        oMap.put("beta2", beta2);
+        oMap.put("v1", lR);
+        oMap.put("v2", beta1);
+        oMap.put("v3", beta2);
         return oMap;
     }
 

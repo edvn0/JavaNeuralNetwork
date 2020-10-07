@@ -4,7 +4,6 @@ import math.linearalgebra.Matrix;
 import utilities.serialise.NetworkSerialisable;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * The optimizer for the gradient descent, represents some strategy for the

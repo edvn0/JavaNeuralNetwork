@@ -1,7 +1,6 @@
 package utilities.serialise.adapters;
 
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.JsonDeserializationContext;
@@ -18,7 +17,6 @@ import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
-import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import utilities.serialise.OjAlgoNetwork;
 

@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
-import org.ojalgo.matrix.Primitive64Matrix;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

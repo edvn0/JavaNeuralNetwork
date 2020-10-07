@@ -16,9 +16,9 @@ public class ThresholdEvaluationFunction<M> implements EvaluationFunction<M> {
     }
 
     public ThresholdEvaluationFunction() {
-	}
+    }
 
-	/**
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -46,7 +46,7 @@ public class ThresholdEvaluationFunction<M> implements EvaluationFunction<M> {
     @Override
     public LinkedHashMap<String, Double> params() {
         LinkedHashMap<String, Double> oMap = new LinkedHashMap<>();
-        oMap.put("threshold", threshold);
+        oMap.put("v1", threshold);
         return oMap;
     }
 

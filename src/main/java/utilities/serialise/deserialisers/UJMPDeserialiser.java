@@ -5,8 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +34,7 @@ import utilities.serialise.adapters.OjAlgoNetworkDeserializer;
 
 public class UJMPDeserialiser {
 
-    public void deserialise(String file) {
+    public NeuralNetwork<org.ujmp.core.Matrix> deserialise(String file) {
         GsonBuilder gsonb = new GsonBuilder();
 
         Type activationFunctions = new TypeToken<List<ActivationFunction<org.ujmp.core.Matrix>>>() {
@@ -65,14 +64,29 @@ public class UJMPDeserialiser {
                 });
 
         gsonb.registerTypeAdapter(optimiser, new JsonDeserializer<Optimizer<org.ujmp.core.Matrix>>() {
+
+            private double tryToFind(JsonObject obj, String el) {
+                double v1 = 0;
+                try {
+                    v1 = obj.get("v1").getAsDouble();
+                } catch (ClassCastException | IllegalStateException e) {
+                    v1 = 0;
+                }
+                return v1;
+            }
+
             @Override
             public Optimizer<org.ujmp.core.Matrix> deserialize(JsonElement json, Type typeOfT,
                     JsonDeserializationContext context) throws JsonParseException {
                 JsonObject obj = json.getAsJsonObject();
 
                 Optimizer<org.ujmp.core.Matrix> op = ConverterUtil.ujmpOptimisers.get(obj.get("name").getAsString());
-                double[] vals = new double[] { obj.get("learningRate").getAsDouble(), obj.get("beta1").getAsDouble(),
-                        obj.get("beta2").getAsDouble() };
+
+                double lR = tryToFind(obj, "v1"); // always learning rate
+                double v2 = tryToFind(obj, "v2"); // beta1 or momentum
+                double v3 = tryToFind(obj, "v3"); // beta2
+
+                double[] vals = new double[] { lR, v2, v3 };
 
                 op.init(vals);
 
@@ -141,20 +155,14 @@ public class UJMPDeserialiser {
         gsonb.registerTypeAdapter(network, new OjAlgoNetworkDeserializer());
         gsonb.setPrettyPrinting();
         Gson gson = gsonb.create();
-        try {
-            JsonReader reader = new JsonReader(new FileReader(new File(file)));
-            try {
-                NeuralNetwork<org.ujmp.core.Matrix> out = gson.fromJson(reader, network);
-                out.display();
-            } catch (JsonSyntaxException exception) {
-                exception.printStackTrace();
-            }
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
+        NeuralNetwork<org.ujmp.core.Matrix> out = null;
+        try (JsonReader reader = new JsonReader(new FileReader(new File(file)))) {
+                out = gson.fromJson(reader, network);            
+        } catch (IOException | JsonSyntaxException e) {
             e.printStackTrace();
         }
 
-        // out.display();
+        return out;
     }
 
 }

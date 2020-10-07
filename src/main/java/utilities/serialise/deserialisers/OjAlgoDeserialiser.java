@@ -5,8 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +35,11 @@ import utilities.serialise.adapters.OjAlgoNetworkDeserializer;
 
 public class OjAlgoDeserialiser {
 
-    public NeuralNetwork<Primitive64Matrix> deserialise(String file) {
+    private Gson gson;
+    private Type network = new TypeToken<NeuralNetwork<Primitive64Matrix>>() {
+    }.getType();
+
+    public OjAlgoDeserialiser() {
         GsonBuilder gsonb = new GsonBuilder();
 
         Type activationFunctions = new TypeToken<List<ActivationFunction<Primitive64Matrix>>>() {
@@ -66,16 +69,6 @@ public class OjAlgoDeserialiser {
                 });
 
         gsonb.registerTypeAdapter(optimiser, new JsonDeserializer<Optimizer<Primitive64Matrix>>() {
-
-            private double tryToFind(JsonObject obj, String el) {
-                double v1 = 0;
-                try {
-                    v1 = obj.get("v1").getAsDouble();
-                } catch (ClassCastException | IllegalStateException e) {
-                    v1 = 0;
-                }
-                return v1;
-            }
 
             @Override
             public Optimizer<Primitive64Matrix> deserialize(JsonElement json, Type typeOfT,
@@ -115,7 +108,7 @@ public class OjAlgoDeserialiser {
                 EvaluationFunction<Primitive64Matrix> cf = ConverterUtil.ojEvaluators
                         .get(obj.get("name").getAsString());
 
-                double val = obj.get("value").getAsDouble();
+                double val = tryToFind(obj, "v1");
 
                 cf.init(val);
 
@@ -151,24 +144,35 @@ public class OjAlgoDeserialiser {
             }
         });
 
-        Type network = new TypeToken<NeuralNetwork<Primitive64Matrix>>() {
-        }.getType();
         gsonb.registerTypeAdapter(network, new OjAlgoNetworkDeserializer());
-        gsonb.setPrettyPrinting();
-        Gson gson = gsonb.create();
+        this.gson = gsonb.create();
+    }
+
+    public NeuralNetwork<Primitive64Matrix> deserialise(File jsonFile) {
+
         NeuralNetwork<Primitive64Matrix> out = null;
-        try {
-            JsonReader reader = new JsonReader(new FileReader(new File(file)));
-            try {
-                out = gson.fromJson(reader, network);
-            } catch (JsonSyntaxException exception) {
-                exception.printStackTrace();
-            }
-        } catch (FileNotFoundException e) {
+        try (JsonReader reader = new JsonReader(new FileReader(jsonFile))) {
+            out = gson.fromJson(reader, network);
+        } catch (IOException | JsonSyntaxException e) {
             e.printStackTrace();
         }
 
         return out;
+    }
+
+    public NeuralNetwork<Primitive64Matrix> deserialise(String json) {
+        json = json.trim();
+        return gson.fromJson(json, network);
+    }
+
+    private double tryToFind(JsonObject obj, String el) {
+        double val = 0;
+        try {
+            val = obj.get(el).getAsDouble();
+        } catch (NullPointerException | ClassCastException | IllegalStateException e) {
+            val = 0;
+        }
+        return val;
     }
 
 }

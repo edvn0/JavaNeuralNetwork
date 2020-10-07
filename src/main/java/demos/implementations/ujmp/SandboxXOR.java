@@ -2,11 +2,9 @@ package demos.implementations.ujmp;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-import org.ujmp.core.Matrix;
 
 import demos.AbstractDemo;
 import math.activations.ActivationFunction;

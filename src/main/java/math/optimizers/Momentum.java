@@ -3,7 +3,6 @@ package math.optimizers;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import math.linearalgebra.Matrix;
 
@@ -27,8 +26,8 @@ public class Momentum<M> implements Optimizer<M> {
 	@Override
     public LinkedHashMap<String, Double> params() {
         LinkedHashMap<String, Double> oMap = new LinkedHashMap<>();
-        oMap.put("learningRate", lR);
-        oMap.put("momentumRate", momentumRate);
+        oMap.put("v1", lR);
+        oMap.put("v2", momentumRate);
         return oMap;
     }
 

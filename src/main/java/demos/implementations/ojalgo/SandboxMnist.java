@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +21,6 @@ import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import math.optimizers.ADAM;
-import math.optimizers.StochasticGradientDescent;
 import utilities.types.Pair;
 import utilities.types.Triple;
 

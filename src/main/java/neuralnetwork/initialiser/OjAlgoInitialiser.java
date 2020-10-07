@@ -10,8 +10,6 @@ import org.ojalgo.matrix.Primitive64Matrix;
 
 public class OjAlgoInitialiser extends ParameterInitialiser<Primitive64Matrix> {
 
-    private final static String NAME = "OjAlgoInitialiser";
-
     public OjAlgoInitialiser(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
         super(weightMethod, biasMethod);
     }

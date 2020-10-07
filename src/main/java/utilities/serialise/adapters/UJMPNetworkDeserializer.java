@@ -1,7 +1,6 @@
 package utilities.serialise.adapters;
 
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.List;
 
 import com.google.gson.JsonDeserializationContext;
@@ -11,16 +10,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
-import org.ojalgo.matrix.Primitive64Matrix;
-
 import math.activations.ActivationFunction;
 import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
-import neuralnetwork.NetworkBuilder;
+
 import neuralnetwork.NeuralNetwork;
-import utilities.serialise.OjAlgoNetwork;
 import utilities.serialise.UJMPNetwork;
 
 public class UJMPNetworkDeserializer implements JsonDeserializer<NeuralNetwork<org.ujmp.core.Matrix>> {
