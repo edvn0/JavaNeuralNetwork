@@ -1,5 +1,6 @@
 package demos.implementations.ojalgo;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,6 +13,7 @@ import org.ojalgo.matrix.Primitive64Matrix;
 import demos.AbstractDemo;
 import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
+import math.activations.TanhFunction;
 import math.costfunctions.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
@@ -21,6 +23,7 @@ import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import math.optimizers.ADAM;
+import utilities.serialise.serialisers.OjAlgoSerializer;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
@@ -38,7 +41,7 @@ public class SandboxMnist extends AbstractDemo<Primitive64Matrix> {
 
     @Override
     protected Pair<Integer, Integer> epochBatch() {
-        return Pair.of(9, 128);
+        return Pair.of(30, 64);
     }
 
     @Override
@@ -70,12 +73,17 @@ public class SandboxMnist extends AbstractDemo<Primitive64Matrix> {
     @Override
     protected NeuralNetwork<Primitive64Matrix> createNetwork() {
         var f = new LeakyReluFunction<Primitive64Matrix>(0.01);
-        return new NeuralNetwork<>(
-                new NetworkBuilder<Primitive64Matrix>(4).setFirstLayer(784).setLayer(10, f).setLayer(10, f)
-                        .setLastLayer(10, new SoftmaxFunction<>()).setCostFunction(new CrossEntropyCostFunction<>())
-                        .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
-                        .setOptimizer(new ADAM<>(0.01, 0.9, 0.999)), // new ADAM<>(0.01, 0.9, 0.999)),
+        return new NeuralNetwork<>(new NetworkBuilder<Primitive64Matrix>(5).setFirstLayer(784).setLayer(100, f)
+                .setLayer(50, new TanhFunction<>()).setLayer(30, f).setLastLayer(10, new SoftmaxFunction<>())
+                .setCostFunction(new CrossEntropyCostFunction<>())
+                .setEvaluationFunction(new ArgMaxEvaluationFunction<>()).setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
                 new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
+    }
+
+    @Override
+    protected void serialise(NeuralNetwork<Primitive64Matrix> in) {
+        OjAlgoSerializer serializer = new OjAlgoSerializer();
+        serializer.serialise(new File(this.outputDirectory() + "/OjAlgo_XOR_Network.json"), in);
     }
 
     private NetworkInput<Primitive64Matrix> toMnist(String toMnist) {
@@ -94,7 +102,6 @@ public class SandboxMnist extends AbstractDemo<Primitive64Matrix> {
             values[i] = Double.parseDouble(rest[i]) / 255;
         }
 
-        return new NetworkInput<Primitive64Matrix>(new OjAlgoMatrix(values, imageSize, 1),
-                new OjAlgoMatrix(labels, labelSize, 1));
+        return new NetworkInput<Primitive64Matrix>(new OjAlgoMatrix(values), new OjAlgoMatrix(labels));
     }
 }

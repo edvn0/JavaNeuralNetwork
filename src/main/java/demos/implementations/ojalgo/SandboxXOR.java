@@ -100,8 +100,8 @@ public class SandboxXOR extends AbstractDemo<Primitive64Matrix> {
             int rd = ThreadLocalRandom.current().nextInt(xorData.length);
             cData = xorData[rd];
             cLabel = xorLabel[rd];
-            OjAlgoMatrix dataMatrix = new OjAlgoMatrix(cData, 2, 1);
-            OjAlgoMatrix labelMatrix = new OjAlgoMatrix(cLabel, 2, 1);
+            OjAlgoMatrix dataMatrix = new OjAlgoMatrix(cData);
+            OjAlgoMatrix labelMatrix = new OjAlgoMatrix(cLabel);
             NetworkInput<Primitive64Matrix> in = new NetworkInput<>(dataMatrix, labelMatrix);
             data.add(in);
         }
@@ -123,5 +123,11 @@ public class SandboxXOR extends AbstractDemo<Primitive64Matrix> {
                         .setEvaluationFunction(new ThresholdEvaluationFunction<>(0.1))
                         .setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
                 new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
+    }
+
+    @Override
+    protected void serialise(NeuralNetwork<Primitive64Matrix> in) {
+        OjAlgoSerializer serializer = new OjAlgoSerializer();
+        serializer.serialise(new File(this.outputDirectory() + "/OjAlgo_XOR_Network.json"), in);
     }
 }

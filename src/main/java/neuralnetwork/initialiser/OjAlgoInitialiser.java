@@ -24,7 +24,7 @@ public class OjAlgoInitialiser extends ParameterInitialiser<Primitive64Matrix> {
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             int next = this.sizes[i];
-            weights.add(new OjAlgoMatrix(wM.initialisationValues(0, current, next), current, next));
+            weights.add(new OjAlgoMatrix(wM.initialisationValues(0, current, next)));
         }
         return weights;
     }
@@ -33,7 +33,7 @@ public class OjAlgoInitialiser extends ParameterInitialiser<Primitive64Matrix> {
         List<Matrix<Primitive64Matrix>> biases = new ArrayList<>();
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
-            biases.add(new OjAlgoMatrix(bM.initialisationValues(0, current, 1), current, 1));
+            biases.add(new OjAlgoMatrix(bM.initialisationValues(0, current, 1)));
         }
         return biases;
     }
@@ -54,7 +54,7 @@ public class OjAlgoInitialiser extends ParameterInitialiser<Primitive64Matrix> {
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             int next = isBias ? 1 : this.sizes[i];
-            deltaParams.add(new OjAlgoMatrix(m.initialisationValues(0, current, next), current, next));
+            deltaParams.add(new OjAlgoMatrix(m.initialisationValues(0, current, next)));
         }
         return deltaParams;
     }

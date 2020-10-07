@@ -177,8 +177,8 @@ public class NetworkMetrics {
             final List<Integer> xValues, final List<Double> yValues, double maxX, double minY, double maxY) {
 
         final XYChart chart = new XYChartBuilder().width(600).height(400).title(heading)
-                .xAxisTitle(NetworkMetrics.EPOCH).yAxisTitle(yLabel).build();
-        chart.getStyler().setXAxisMin((double) 0);
+                .xAxisTitle(NetworkMetrics.EPOCH).theme(ChartTheme.GGPlot2).yAxisTitle(yLabel).build();
+        chart.getStyler().setXAxisMin(0d);
         chart.getStyler().setXAxisMax(maxX);
         chart.getStyler().setYAxisMin(minY);
         chart.getStyler().setYAxisMax(maxY);

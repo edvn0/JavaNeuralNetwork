@@ -4,7 +4,6 @@ import java.util.function.Function;
 
 import math.MatrixException;
 import math.linearalgebra.Matrix;
-import utilities.MatrixUtilities;
 
 public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
 
@@ -15,21 +14,12 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
         this.delegate = in;
     }
 
-    public UJMPMatrix(double[] values, int rows, int cols) {
-        if (values.length != rows * cols) {
-            throw new IllegalArgumentException("The size of input array does not match rows and columns");
-        }
-
-        double[][] matrix = MatrixUtilities.fromFlat(values, rows, cols);
-        this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(matrix);
+    public UJMPMatrix(double[] values) {
+        this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(values);
     }
 
     public UJMPMatrix(double[][] data) {
         this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(data);
-    }
-
-    public UJMPMatrix(double[][] out, int rows, int cols) {
-        this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(out);
     }
 
     public UJMPMatrix(UJMPMatrix out) {
@@ -95,7 +85,7 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
                 out[i][j] = mapping.apply(elements[i][j]);
             }
         }
-        return new UJMPMatrix(out, rows(), cols());
+        return new UJMPMatrix(out);
     }
 
     @Override
@@ -132,7 +122,7 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
             vector[i][0] = max;
         }
 
-        return new UJMPMatrix(vector, rows(), 1);
+        return new UJMPMatrix(vector);
     }
 
     @Override

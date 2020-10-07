@@ -4,7 +4,6 @@ import math.linearalgebra.Matrix;
 
 import org.ojalgo.function.aggregator.Aggregator;
 import org.ojalgo.matrix.Primitive64Matrix;
-import utilities.MatrixUtilities;
 
 import java.util.Arrays;
 import java.util.function.Function;
@@ -18,13 +17,8 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
         this.delegate = in;
     }
 
-    public OjAlgoMatrix(double[] values, int rows, int cols) {
-        double[][] nested = MatrixUtilities.fromFlat(values, rows, cols);
-        this.delegate = Primitive64Matrix.FACTORY.rows(nested);
-    }
-
-    public OjAlgoMatrix(double[][] values, int rows, int cols) {
-        this.delegate = Primitive64Matrix.FACTORY.rows(values);
+    public OjAlgoMatrix(double[] values) {
+        this.delegate = Primitive64Matrix.FACTORY.columns(values);
     }
 
     public OjAlgoMatrix(double[][] data) {
@@ -33,10 +27,6 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 
     public OjAlgoMatrix(OjAlgoMatrix out) {
         this.delegate = out.delegate.copy().build();
-    }
-
-    public OjAlgoMatrix(Primitive64Matrix matrix, int rows, int cols) {
-        this.delegate = matrix;
     }
 
     @Override
@@ -78,7 +68,7 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
                 out[i][j] = mapping.apply(elements[i][j]);
             }
         }
-        OjAlgoMatrix m = new OjAlgoMatrix(out, rows(), cols());
+        OjAlgoMatrix m = new OjAlgoMatrix(out);
         return m;
     }
 
@@ -133,7 +123,7 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
                 array[i][j] /= other[i][j];
             }
         }
-        return new OjAlgoMatrix(array, rows(), cols());
+        return new OjAlgoMatrix(array);
     }
 
     @Override
@@ -143,7 +133,7 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
         double[] values = new double[rows()];
         Arrays.fill(values, max);
 
-        return new OjAlgoMatrix(values, rows(), 1);
+        return new OjAlgoMatrix(values);
     }
 
     @Override
@@ -190,7 +180,7 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
                 out[i][j] *= (elements[i][j]);
             }
         }
-        OjAlgoMatrix m = new OjAlgoMatrix(out, rows(), cols());
+        OjAlgoMatrix m = new OjAlgoMatrix(out);
         return m;
     }
 

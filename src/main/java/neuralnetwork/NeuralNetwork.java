@@ -46,8 +46,8 @@ public class NeuralNetwork<M> {
     // Weights and biases of the network
     private List<Matrix<M>> weights;
     private List<Matrix<M>> biases;
-    private transient List<Matrix<M>> dW;
-    private transient List<Matrix<M>> dB;
+    private transient volatile List<Matrix<M>> dW;
+    private transient volatile List<Matrix<M>> dB;
     private transient List<Matrix<M>> deltaWeights;
     private transient List<Matrix<M>> deltaBias;
 
@@ -143,18 +143,17 @@ public class NeuralNetwork<M> {
     /**
      * Updates weights and biases and resets the batch adjusted deltas.
      */
-    void learnFromDeltas() {
+    private synchronized void learnFromDeltas() {
         this.weights = this.optimizer.changeWeights(this.weights, this.dW);
         this.biases = this.optimizer.changeBiases(this.biases, this.dB);
 
         this.dB = this.initialiser.getDeltaBiasParameters();
         this.dW = this.initialiser.getDeltaWeightParameters();
-
     }
 
     private BackPropContainer<M> backPropagate(final NetworkInput<M> in) {
-        this.deltaWeights = this.initialiser.getDeltaBiasParameters();
-        this.deltaBias = this.initialiser.getDeltaWeightParameters();
+        this.deltaWeights = this.initialiser.getDeltaWeightParameters();
+        this.deltaBias = this.initialiser.getDeltaBiasParameters();
 
         final List<Matrix<M>> activations = this.feedForward(in.getData());
 
@@ -168,11 +167,8 @@ public class NeuralNetwork<M> {
 
             final Matrix<M> differentiate = this.functions.get(k + 1).derivativeOnInput(aCurr, deltaError);
 
-            final Matrix<M> dB = differentiate;
-            final Matrix<M> dW = differentiate.multiply(aNext.transpose());
-
-            this.deltaBias.set(k, dB);
-            this.deltaWeights.set(k, dW);
+            this.deltaBias.set(k, differentiate);
+            this.deltaWeights.set(k, differentiate.multiply(aNext.transpose()));
 
             deltaError = this.weights.get(k).transpose().multiply(differentiate);
         }
@@ -181,7 +177,7 @@ public class NeuralNetwork<M> {
     }
 
     /**
-     * Feed forward inside the back propagation, mutates the actives list.
+     * Feed forward inside the back propagation
      *
      * @param starter Input NeuralNetworkMatrix<M><Matrix<M>>
      * @return
@@ -231,22 +227,9 @@ public class NeuralNetwork<M> {
         return copy;
     }
 
-    private List<NetworkInput<M>> feedForwardData(final Iterator<NetworkInput<M>> test) {
-        final List<NetworkInput<M>> copy = new ArrayList<>();
-
-        while (test.hasNext()) {
-            var networkInput = test.next();
-            final Matrix<M> out = this.predict(networkInput.getData());
-            final NetworkInput<M> newOut = new NetworkInput<M>(out, networkInput.getLabel());
-            copy.add(newOut);
-        }
-
-        return copy;
-    }
-
-    public double testEvaluation(final List<NetworkInput<M>> imagesTest, final int size) {
+    public double testEvaluation(final List<NetworkInput<M>> test, final int size) {
         double avg = 0;
-        final List<NetworkInput<M>> d = this.feedForwardData(imagesTest);
+        final List<NetworkInput<M>> d = this.feedForwardData(test);
         for (int i = 0; i < size; i++) {
             avg += evaluate(d);
         }
@@ -263,32 +246,6 @@ public class NeuralNetwork<M> {
 
     private double evaluate(final List<NetworkInput<M>> data) {
         return this.evaluationFunction.evaluatePrediction(data);
-    }
-
-    public void train(final Iterator<NetworkInput<M>> training, Iterator<NetworkInput<M>> validation, final int epochs,
-            final int batchSize) {
-
-        Supplier<Iterator<NetworkInput<M>>> supp = () -> training;
-        for (int i = 0; i < epochs; i++) {
-            var clone = supp.get();
-            List<NetworkInput<M>> totalBatch = new ArrayList<>();
-            int batch = 0;
-            while (clone.hasNext()) {
-                totalBatch.add(clone.next());
-                if (batch >= batchSize) {
-                    this.learnFromDeltas();
-                    totalBatch.clear();
-                }
-            }
-        }
-        // Feed forward the test data
-        final List<NetworkInput<M>> feedForwardData = this.feedForwardData(validation);
-        // Evaluate prediction with the interface EvaluationFunction.
-        double correct = evaluate(feedForwardData);
-        // Calculate cost/loss with the interface CostFunction
-        double loss = this.loss(feedForwardData);
-
-        log.info("\nThe network correctly evaluted \t {}\nThe network has a loss of {}.\n", correct * 100, loss);
     }
 
     /**
@@ -341,7 +298,7 @@ public class NeuralNetwork<M> {
         try (ProgressBar bar = new ProgressBar("Backpropagation", epochs)) {
             for (int i = 0; i < epochs; i++) {
 
-                split.forEach(e -> {
+                split.parallelStream().forEach(e -> {
                     this.evaluateTrainingExample(e);
                     this.learnFromDeltas();
                 });
@@ -391,13 +348,15 @@ public class NeuralNetwork<M> {
         // Evaluate prediction with the interface EvaluationFunction.
         double correct = evaluate(ffD);
         double loss = this.loss(ffD);
+        log.info("\n Ground truth before training: \n Loss: \t {}\n Correct: \t {}", loss, correct * 100);
+
         metrics.initialPlotData(correct, loss);
 
         for (int i = 1; i <= epochs; i++) {
 
             // Calculates a batch of training data and update the deltas.
             t1 = System.nanoTime();
-            split.stream().forEach(e -> {
+            split.forEach(e -> {
                 this.evaluateTrainingExample(e);
                 this.learnFromDeltas();
             });
@@ -416,8 +375,9 @@ public class NeuralNetwork<M> {
             // lists of xValues, correctValues, lossValues.
             metrics.addPlotData(i, correct, loss, (t2 - t1));
 
-            if ((i - 1) % (epochs / 8) == 0) {
-                log.info("\n {} / {} epochs are finished.\n Loss: \t {}", (i), epochs, loss);
+            if ((i) % (epochs / 8) == 0) {
+                log.info("\n {} / {} epochs are finished.\n Loss: \t {}\n Correct: \t {}", (i), epochs, loss,
+                        correct * 100);
             }
         }
 

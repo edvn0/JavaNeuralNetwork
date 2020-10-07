@@ -1,10 +1,10 @@
 package demos.implementations.ujmp;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-
 
 import demos.AbstractDemo;
 import math.activations.ActivationFunction;
@@ -19,6 +19,7 @@ import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.UJMPInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import math.optimizers.StochasticGradientDescent;
+import utilities.serialise.serialisers.UJMPSerializer;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
@@ -50,8 +51,8 @@ public class SandboxXOR extends AbstractDemo<org.ujmp.core.Matrix> {
             int rd = ThreadLocalRandom.current().nextInt(xorData.length);
             cData = xorData[rd];
             cLabel = xorLabel[rd];
-            UJMPMatrix dataMatrix = new UJMPMatrix(cData, 2, 1);
-            UJMPMatrix labelMatrix = new UJMPMatrix(cLabel, 2, 1);
+            UJMPMatrix dataMatrix = new UJMPMatrix(cData);
+            UJMPMatrix labelMatrix = new UJMPMatrix(cLabel);
             NetworkInput<org.ujmp.core.Matrix> in = new NetworkInput<>(dataMatrix, labelMatrix);
             data.add(in);
         }
@@ -74,5 +75,11 @@ public class SandboxXOR extends AbstractDemo<org.ujmp.core.Matrix> {
                         .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
                         .setOptimizer(new StochasticGradientDescent<>(0.1)),
                 new UJMPInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
+    }
+
+    @Override
+    protected void serialise(NeuralNetwork<org.ujmp.core.Matrix> in) {
+        UJMPSerializer serializer = new UJMPSerializer();
+        serializer.serialise(new File(this.outputDirectory() + "/UJMP_XOR_Network.json"), in);
     }
 }

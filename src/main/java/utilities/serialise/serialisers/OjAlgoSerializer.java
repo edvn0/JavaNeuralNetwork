@@ -134,7 +134,7 @@ public class OjAlgoSerializer {
     }
 
     public void serialise(File f, NeuralNetwork<Primitive64Matrix> ojAlgoNetwork) {
-        String json = gson.toJson(ojAlgoNetwork, network);
+        String json = serialiseToString(ojAlgoNetwork);
 
         try (FileWriter fw = new FileWriter(f, false)) {
             fw.write(json);

@@ -19,7 +19,7 @@ public class UJMPInitialiser extends ParameterInitialiser<org.ujmp.core.Matrix> 
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             int next = this.sizes[i];
-            weights.add(new UJMPMatrix(this.wM.initialisationValues(0, current, next), current, next));
+            weights.add(new UJMPMatrix(this.wM.initialisationValues(0, current, next)));
         }
         return weights;
     }
@@ -28,7 +28,7 @@ public class UJMPInitialiser extends ParameterInitialiser<org.ujmp.core.Matrix> 
         List<Matrix<org.ujmp.core.Matrix>> biases = new ArrayList<>();
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
-            biases.add(new UJMPMatrix(this.bM.initialisationValues(0, current, 1), current, 1));
+            biases.add(new UJMPMatrix(this.bM.initialisationValues(0, current, 1)));
         }
         return biases;
     }
@@ -49,7 +49,7 @@ public class UJMPInitialiser extends ParameterInitialiser<org.ujmp.core.Matrix> 
         for (int i = 0; i < this.sizes.length - 1; i++) {
             int current = this.sizes[i + 1];
             int next = isBias ? 1 : this.sizes[i];
-            deltaParams.add(new UJMPMatrix(m.initialisationValues(0, current, next), current, next));
+            deltaParams.add(new UJMPMatrix(m.initialisationValues(0, current, next)));
         }
         return deltaParams;
     }

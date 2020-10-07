@@ -1,5 +1,6 @@
 package demos.implementations.ujmp;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,6 +20,7 @@ import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.UJMPInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import math.optimizers.ADAM;
+import utilities.serialise.serialisers.UJMPSerializer;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
@@ -77,6 +79,12 @@ public class SandboxMnist extends AbstractDemo<org.ujmp.core.Matrix> {
                 new UJMPInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
     }
 
+    @Override
+    protected void serialise(NeuralNetwork<org.ujmp.core.Matrix> in) {
+        UJMPSerializer serializer = new UJMPSerializer();
+        serializer.serialise(new File(this.outputDirectory() + "/UJMP_Mnist_Network.json"), in);
+    }
+
     private NetworkInput<org.ujmp.core.Matrix> toMnist(String toMnist) {
         int imageSize = 28 * 28;
         int labelSize = 10;
@@ -93,8 +101,7 @@ public class SandboxMnist extends AbstractDemo<org.ujmp.core.Matrix> {
             values[i] = Double.parseDouble(rest[i]) / 255;
         }
 
-        return new NetworkInput<org.ujmp.core.Matrix>(new UJMPMatrix(values, imageSize, 1),
-                new UJMPMatrix(labels, labelSize, 1));
+        return new NetworkInput<org.ujmp.core.Matrix>(new UJMPMatrix(values), new UJMPMatrix(labels));
     }
 
 }
