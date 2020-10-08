@@ -1,5 +1,6 @@
 package math.linearalgebra.ujmp;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 import math.MatrixException;
@@ -15,7 +16,13 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
     }
 
     public UJMPMatrix(double[] values) {
-        this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(values);
+        double[][] transpose = new double[values.length][1];
+        int i = 0;
+        for (var d : values) {
+            transpose[i++] = new double[] { d };
+        } // Hack, need to transpose, because UJMP thinks everyone just LOOOVEs row
+          // vectors.
+        this.delegate = org.ujmp.core.Matrix.Factory.importFromArray(transpose);
     }
 
     public UJMPMatrix(double[][] data) {

@@ -18,6 +18,7 @@ import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.UJMPInitialiser;
 import neuralnetwork.inputs.NetworkInput;
+import math.optimizers.ADAM;
 import math.optimizers.StochasticGradientDescent;
 import utilities.serialise.serialisers.UJMPSerializer;
 import utilities.types.Pair;
@@ -68,12 +69,10 @@ public class SandboxXOR extends AbstractDemo<org.ujmp.core.Matrix> {
     @Override
     protected NeuralNetwork<org.ujmp.core.Matrix> createNetwork() {
         ActivationFunction<org.ujmp.core.Matrix> f = new LeakyReluFunction<>(0.1);
-        return new NeuralNetwork<>(
-                new NetworkBuilder<org.ujmp.core.Matrix>(5).setFirstLayer(2).setLayer(3, f).setLayer(3, f)
-                        .setLayer(2, f).setLastLayer(2, new SoftmaxFunction<>())
-                        .setCostFunction(new CrossEntropyCostFunction<>())
-                        .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
-                        .setOptimizer(new StochasticGradientDescent<>(0.1)),
+        return new NeuralNetwork<>(new NetworkBuilder<org.ujmp.core.Matrix>(5).setFirstLayer(2).setLayer(3, f)
+                .setLayer(3, f).setLayer(2, f).setLastLayer(2, new SoftmaxFunction<>())
+                .setCostFunction(new CrossEntropyCostFunction<>())
+                .setEvaluationFunction(new ArgMaxEvaluationFunction<>()).setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
                 new UJMPInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
     }
 

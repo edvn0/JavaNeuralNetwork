@@ -28,7 +28,6 @@ import utilities.serialise.serialisers.OjAlgoSerializer;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
-@Slf4j
 public class SandboxXOR extends AbstractDemo<Primitive64Matrix> {
     private static final double[][] xorData = new double[][] { { 0, 1 }, { 0, 0 }, { 1, 1 }, { 1, 0 } };
     private static final double[][] xorLabel = new double[][] { { 1, 0 }, { 0, 1 }, { 0, 1 }, { 1, 0 } };

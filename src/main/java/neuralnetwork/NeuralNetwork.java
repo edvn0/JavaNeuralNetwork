@@ -203,7 +203,7 @@ public class NeuralNetwork<M> {
      * @return classified values.
      */
     public Matrix<M> predict(final Matrix<M> in) {
-        Matrix<M> input = in; // row vector, from Nx1 to 1XN
+        Matrix<M> input = in;
 
         for (int i = 0; i < this.totalLayers; i++) {
             final Matrix<M> wI = this.weights.get(i).multiply(input);

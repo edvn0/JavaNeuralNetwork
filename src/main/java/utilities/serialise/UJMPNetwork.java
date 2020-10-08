@@ -42,9 +42,6 @@ public class UJMPNetwork {
         UJMPInitialiser initialiser = new UJMPInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR);
         initialiser.init(paramSizes);
 
-        System.out.println(Arrays.toString(paramSizes));
-        System.out.println(initialiser.getBiasParameters());
-
         NeuralNetwork<org.ujmp.core.Matrix> out = new NeuralNetwork<>(builder, initialiser);
 
         return out;

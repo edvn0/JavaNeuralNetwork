@@ -48,7 +48,7 @@ public abstract class AbstractDemo<M> {
         double confusion = network.testEvaluation(trainValidateTest.getRight(), 50);
         double loss = network.testLoss(trainValidateTest.getRight());
         log.info("\nCorrectly evaluated {}% of the test set.\nFinal loss: {}", confusion * 100, loss);
-        log.info("\nTotal time taken for training: {}.", ((t2 - t1) * 1e-9));
+        log.info("\nTotal time taken for training: {} seconds.", ((t2 - t1) * 1e-9));
 
         serialise(network);
         log.info("Serialised the network.");

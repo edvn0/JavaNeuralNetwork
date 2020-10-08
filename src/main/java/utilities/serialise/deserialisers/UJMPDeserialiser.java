@@ -31,6 +31,7 @@ import math.optimizers.Optimizer;
 import neuralnetwork.NeuralNetwork;
 import utilities.serialise.ConverterUtil;
 import utilities.serialise.adapters.OjAlgoNetworkDeserializer;
+import utilities.serialise.adapters.UJMPNetworkDeserializer;
 
 public class UJMPDeserialiser {
 
@@ -144,7 +145,7 @@ public class UJMPDeserialiser {
             }
         });
 
-        gsonb.registerTypeAdapter(network, new OjAlgoNetworkDeserializer());
+        gsonb.registerTypeAdapter(network, new UJMPNetworkDeserializer());
         this.gson = gsonb.create();
     }
 
