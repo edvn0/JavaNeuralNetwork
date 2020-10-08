@@ -46,8 +46,8 @@ public class NeuralNetwork<M> {
     // Weights and biases of the network
     private List<Matrix<M>> weights;
     private List<Matrix<M>> biases;
-    private transient volatile List<Matrix<M>> dW;
-    private transient volatile List<Matrix<M>> dB;
+    private transient List<Matrix<M>> dW;
+    private transient List<Matrix<M>> dB;
     private transient List<Matrix<M>> deltaWeights;
     private transient List<Matrix<M>> deltaBias;
 
@@ -127,7 +127,7 @@ public class NeuralNetwork<M> {
         final double inverse = 1d / size;
 
         for (final var data : trainingExamples) {
-            final BackPropContainer<M> deltas = backPropagate(data);
+            final BackPropContainer deltas = backPropagate(data);
             final List<Matrix<M>> deltaW = deltas.getDeltaWeights();
             final List<Matrix<M>> deltaB = deltas.getDeltaBiases();
 
@@ -151,7 +151,7 @@ public class NeuralNetwork<M> {
         this.dW = this.initialiser.getDeltaWeightParameters();
     }
 
-    private BackPropContainer<M> backPropagate(final NetworkInput<M> in) {
+    private BackPropContainer backPropagate(final NetworkInput<M> in) {
         this.deltaWeights = this.initialiser.getDeltaWeightParameters();
         this.deltaBias = this.initialiser.getDeltaBiasParameters();
 
@@ -173,7 +173,7 @@ public class NeuralNetwork<M> {
             deltaError = this.weights.get(k).transpose().multiply(differentiate);
         }
 
-        return new BackPropContainer<>(this.deltaWeights, this.deltaBias);
+        return new BackPropContainer(this.deltaWeights, this.deltaBias);
     }
 
     /**
@@ -321,8 +321,7 @@ public class NeuralNetwork<M> {
     }
 
     /**
-     * Trains this network on training data, and validates on validation data. Uses
-     * a {@link Optimizer} to optimize the gradient descent.
+     * Trains this network on training data, and validates on validation data.
      *
      * @param training   a Collections object with {@link NetworkInput<M>} objects,
      *                   NetworkInput<M>.getData() is the data,
@@ -346,7 +345,7 @@ public class NeuralNetwork<M> {
         // to establish a ground truth value
         final var ffD = this.feedForwardData(validation);
         // Evaluate prediction with the interface EvaluationFunction.
-        double correct = evaluate(ffD);
+        double correct = this.evaluate(ffD);
         double loss = this.loss(ffD);
         log.info("\n Ground truth before training: \n Loss: \t {}\n Correct: \t {}", loss, correct * 100);
 
@@ -417,8 +416,8 @@ public class NeuralNetwork<M> {
 
     @Data
     @AllArgsConstructor
-    static class BackPropContainer<U> {
-        private List<Matrix<U>> deltaWeights;
-        private List<Matrix<U>> deltaBiases;
+    private class BackPropContainer {
+        private List<Matrix<M>> deltaWeights;
+        private List<Matrix<M>> deltaBiases;
     }
 }

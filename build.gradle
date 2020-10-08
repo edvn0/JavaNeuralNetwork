@@ -1,24 +1,16 @@
 plugins {
     id 'java'
-    id "com.github.johnrengelman.shadow" version "5.1.0"
-    id 'application'
 }
 
 
 group 'com.edwin.neural'
-version '8.0'
+version '8.2'
 
 sourceCompatibility = 1.11
 
 repositories {
     mavenCentral()
 }
-
-run {
-    args = ["MNIST_OJ_ALGO"]
-}
-
-mainClassName = "demos.Sandbox"
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
@@ -39,15 +31,12 @@ dependencies {
 }
 
 jar {
-    doFirst {
-        manifest {
-            if (!configurations.compile.isEmpty()) {
-                attributes(
-                        'Class-Path': configurations.compile.collect { it.toURI().toString() }.join(' '),
-                        'Main-Class': 'demos.Sandbox.java')
-            }
-        }
+    manifest {
+        attributes(
+                'Main-Class': 'demos.Sandbox'
+        )
     }
-}
-
-
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+ }

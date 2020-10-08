@@ -11,7 +11,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
@@ -25,7 +24,11 @@ import neuralnetwork.NeuralNetwork;
 
 public class UJMPSerializer {
 
-    public void serialise(File f, NeuralNetwork<org.ujmp.core.Matrix> ojAlgoNetwork) {
+    private Gson gson;
+    private Type network = new TypeToken<NeuralNetwork<org.ujmp.core.Matrix>>() {
+    }.getType();
+
+    public UJMPSerializer() {
 
         GsonBuilder gsonb = new GsonBuilder();
 
@@ -60,9 +63,14 @@ public class UJMPSerializer {
                 JsonObject inner = new JsonObject();
                 var info = src.params();
 
+                if (info != null) {
+                    int i = 1;
+                    for (var e : info.values()) {
+                        inner.addProperty("v" + i, e);
+                        i++;
+                    }
+                }
                 inner.addProperty("name", src.name());
-                if (info != null)
-                    info.forEach((a, b) -> inner.addProperty(a, String.valueOf(b)));
 
                 return inner;
             }
@@ -78,7 +86,7 @@ public class UJMPSerializer {
 
                 inner.addProperty("name", src.name());
                 if (info != null)
-                    info.forEach((a, b) -> inner.addProperty(a, String.valueOf(b)));
+                    info.forEach((a, b) -> inner.addProperty("value", b));
 
                 return inner;
             }
@@ -88,7 +96,9 @@ public class UJMPSerializer {
             @Override
             public JsonElement serialize(CostFunction<org.ujmp.core.Matrix> src, Type typeOfSrc,
                     JsonSerializationContext context) {
-                return new JsonPrimitive(src.name());
+                JsonObject name = new JsonObject();
+                name.addProperty("name", src.name());
+                return name;
             }
         });
 
@@ -118,10 +128,11 @@ public class UJMPSerializer {
             }
         });
 
-        Type network = new TypeToken<NeuralNetwork<org.ujmp.core.Matrix>>() {
-        }.getType();
-        Gson gson = gsonb.create();
-        String json = gson.toJson(ojAlgoNetwork, network);
+        this.gson = gsonb.create();
+    }
+
+    public void serialise(File f, NeuralNetwork<org.ujmp.core.Matrix> ojAlgoNetwork) {
+        String json = serialiseToString(ojAlgoNetwork);
 
         try (FileWriter fw = new FileWriter(f, false)) {
             fw.write(json);
@@ -129,6 +140,10 @@ public class UJMPSerializer {
 
         }
 
+    }
+
+    public String serialiseToString(NeuralNetwork<org.ujmp.core.Matrix> ojAlgoNetwork) {
+        return gson.toJson(ojAlgoNetwork, network);
     }
 
 }
