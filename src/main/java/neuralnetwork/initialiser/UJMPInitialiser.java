@@ -54,4 +54,9 @@ public class UJMPInitialiser extends ParameterInitialiser<org.ujmp.core.Matrix> 
         return deltaParams;
     }
 
+    @Override
+    public Matrix<org.ujmp.core.Matrix> getFirstBias() {
+        return new UJMPMatrix(this.bM.initialisationValues(0, this.sizes[0], 1));
+    }
+
 }

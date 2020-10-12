@@ -34,10 +34,6 @@ public abstract class AbstractDemo<M> {
                 network.train(trainValidateTest.getLeft(), trainValidateTest.getMiddle(), epochBatch.left(),
                         epochBatch.right());
                 break;
-            case VERBOSE:
-                network.trainVerbose(trainValidateTest.getLeft(), trainValidateTest.getMiddle(), epochBatch.left(),
-                        epochBatch.right());
-                break;
             default:
                 break;
 
@@ -90,7 +86,7 @@ public abstract class AbstractDemo<M> {
     protected abstract NeuralNetwork<M> createNetwork();
 
     public enum TrainingMethod {
-        VERBOSE, METRICS, NORMAL
+        METRICS, NORMAL
     }
 
 }

@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import math.linearalgebra.Matrix;
+import neuralnetwork.layer.NetworkLayer;
 
 public class Momentum<M> implements Optimizer<M> {
 
@@ -21,9 +22,9 @@ public class Momentum<M> implements Optimizer<M> {
     }
 
     public Momentum() {
-	}
+    }
 
-	@Override
+    @Override
     public LinkedHashMap<String, Double> params() {
         LinkedHashMap<String, Double> oMap = new LinkedHashMap<>();
         oMap.put("v1", lR);
@@ -72,4 +73,17 @@ public class Momentum<M> implements Optimizer<M> {
         this.momentumRate = in[1];
 
     }
+
+    @Override
+    public void changeBias(int layerIndex, NetworkLayer<M> bias, Matrix<M> deltaBias) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void changeWeight(int layerIndex, NetworkLayer<M> weight, Matrix<M> deltaWeight) {
+        // TODO Auto-generated method stub
+
+    }
+
 }

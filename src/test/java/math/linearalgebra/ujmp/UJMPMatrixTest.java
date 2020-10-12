@@ -74,4 +74,12 @@ public class UJMPMatrixTest {
     @Test
     public void mapElements() {
     }
+
+    @Test
+    public void mutableMapTest() {
+        UJMPMatrix m = new UJMPMatrix(new double[][] { { 9, 1_000_000, 4 }, { 1, 16, 49 }, { 25, 81, 100 } });
+        m.mapElementsMutable(Math::sqrt);
+
+        assertEquals(new UJMPMatrix(new double[][] { { 3, 1000, 2 }, { 1, 4, 7 }, { 5, 9, 10 } }), m);
+    }
 }

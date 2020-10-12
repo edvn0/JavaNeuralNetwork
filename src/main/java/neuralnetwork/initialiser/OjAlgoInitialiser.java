@@ -59,4 +59,9 @@ public class OjAlgoInitialiser extends ParameterInitialiser<Primitive64Matrix> {
         return deltaParams;
     }
 
+    @Override
+    public Matrix<Primitive64Matrix> getFirstBias() {
+        return new OjAlgoMatrix(this.bM.initialisationValues(0, this.sizes[0], 1));
+    }
+
 }

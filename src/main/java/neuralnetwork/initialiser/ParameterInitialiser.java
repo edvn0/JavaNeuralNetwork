@@ -33,4 +33,6 @@ public abstract class ParameterInitialiser<M> {
 
     protected abstract List<Matrix<M>> getDeltaParameters(boolean isBias);
 
+    public abstract Matrix<M> getFirstBias();
+
 }

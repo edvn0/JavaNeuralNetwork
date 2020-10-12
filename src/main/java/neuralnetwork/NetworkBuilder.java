@@ -6,6 +6,7 @@ import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
+import neuralnetwork.initialiser.ParameterInitialiser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ public class NetworkBuilder<M> {
     protected Map<Integer, ActivationFunction<M>> functionMap;
     protected List<Matrix<M>> weights;
     protected List<Matrix<M>> biases;
+    protected ParameterInitialiser<M> initialiser;
 
     public NetworkBuilder(int[] structure) {
         this.structure = structure;
@@ -40,7 +42,7 @@ public class NetworkBuilder<M> {
         this.functionMap = new HashMap<>();
     }
 
-    public NetworkBuilder<M> compile() {
+    public NeuralNetwork<M> compile() {
         if (costFunction == null || evaluationFunction == null || optimizer == null) {
             throw new IllegalArgumentException(
                     "You need to chose an implementation or implement a cost function, evaluation function and an optimizer.");
@@ -52,7 +54,7 @@ public class NetworkBuilder<M> {
             }
         }
 
-        return this;
+        return new NeuralNetwork<M>(this);
     }
 
     public NetworkBuilder<M> setFirstLayer(final int i) {
@@ -70,6 +72,11 @@ public class NetworkBuilder<M> {
         structure[index] = i;
         this.functionMap.put(index, f);
         index++;
+        return this;
+    }
+
+    public NetworkBuilder<M> setInitialiser(final ParameterInitialiser<M> pi) {
+        this.initialiser = pi;
         return this;
     }
 

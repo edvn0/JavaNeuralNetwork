@@ -1,6 +1,7 @@
 package math.optimizers;
 
 import math.linearalgebra.Matrix;
+import neuralnetwork.layer.NetworkLayer;
 import utilities.serialise.NetworkSerialisable;
 
 import java.util.List;
@@ -32,6 +33,10 @@ public interface Optimizer<M> extends NetworkSerialisable<String, Double> {
      * @return biases representing the iteration of the strategy
      */
     List<Matrix<M>> changeBiases(List<Matrix<M>> biases, List<Matrix<M>> deltas);
+
+    void changeBias(int layerIndex, NetworkLayer<M> bias, Matrix<M> deltaBias);
+
+    void changeWeight(int layerIndex, NetworkLayer<M> weight, Matrix<M> deltaWeight);
 
     /**
      * Some optimizers need to initialise some base case parameters, here you do

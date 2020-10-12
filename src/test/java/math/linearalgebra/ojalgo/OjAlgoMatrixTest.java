@@ -77,4 +77,12 @@ public class OjAlgoMatrixTest {
         assertEquals(new OjAlgoMatrix(new double[][] { { 3, 1000, 2 }, { 1, 4, 7 }, { 5, 9, 10 } }),
                 m.mapElements(Math::sqrt));
     }
+
+    @Test
+    public void mutableMapTest() {
+        OjAlgoMatrix m = new OjAlgoMatrix(new double[][] { { 9, 1_000_000, 4 }, { 1, 16, 49 }, { 25, 81, 100 } });
+        m.mapElementsMutable(Math::sqrt);
+
+        assertEquals(new OjAlgoMatrix(new double[][] { { 3, 1000, 2 }, { 1, 4, 7 }, { 5, 9, 10 } }), m);
+    }
 }

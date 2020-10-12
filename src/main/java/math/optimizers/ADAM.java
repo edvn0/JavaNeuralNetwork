@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import math.linearalgebra.Matrix;
+import neuralnetwork.layer.NetworkLayer;
 
 public class ADAM<M> implements Optimizer<M> {
 
@@ -95,6 +96,43 @@ public class ADAM<M> implements Optimizer<M> {
     }
 
     @Override
+    public void changeBias(int layerIndex, NetworkLayer<M> layer, Matrix<M> deltaBias) {
+        layer.setBias(adamSingleDeltas(layerIndex, layer.getBias(), deltaBias, this.weightM, this.weightN));
+
+    }
+
+    @Override
+    public void changeWeight(int layerIndex, NetworkLayer<M> layer, Matrix<M> deltaWeight) {
+        layer.setWeight(adamSingleDeltas(layerIndex, layer.getWeight(), deltaWeight, this.weightM, this.weightN));
+    }
+
+    private Matrix<M> adamSingleDeltas(int i, Matrix<M> parameters, Matrix<M> deltaForLayer, List<Matrix<M>> M,
+            List<Matrix<M>> N) {
+
+        int exponent = i + 1;
+        Matrix<M> mHat;
+        Matrix<M> vHat;
+        if (M.get(i) != null && N.get(i) != null) {
+            // m = beta_1 * m + (1 - beta_1) * g
+            // v = beta_2 * v + (1 - beta_2) * np.power(g, 2)
+            Matrix<M> m = M.get(i).multiply(beta1).add(deltaForLayer.multiply((1 - beta1)));
+            Matrix<M> v = N.get(i).multiply(beta2).add(deltaForLayer.hadamard(deltaForLayer).multiply((1 - beta2)));
+            M.set(i, m);
+            N.set(i, v);
+        } else {
+            M.set(i, deltaForLayer.multiply(1 - beta1));
+            Matrix<M> fix = deltaForLayer.hadamard(deltaForLayer).multiply(1 - beta2);
+            N.set(i, fix);
+        }
+        mHat = M.get(i).divide((1 - Math.pow(beta1, exponent)));
+        vHat = N.get(i).divide((1 - Math.pow(beta2, exponent)));
+        Matrix<M> deNom = vHat.mapElements(Math::sqrt).add(EPSILON);
+        Matrix<M> num = mHat.multiply(this.lR);
+        Matrix<M> adam = num.divide(deNom);
+        return parameters.subtract(adam);
+    }
+
+    @Override
     public String name() {
         return NAME;
     }
@@ -105,4 +143,5 @@ public class ADAM<M> implements Optimizer<M> {
         this.beta1 = in[1];
         this.beta2 = in[2];
     }
+
 }

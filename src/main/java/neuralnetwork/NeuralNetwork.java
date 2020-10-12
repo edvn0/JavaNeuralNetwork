@@ -3,9 +3,7 @@ package neuralnetwork;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -17,7 +15,6 @@ import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
-import me.tongfei.progressbar.ProgressBar;
 import neuralnetwork.initialiser.ParameterInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import utilities.NetworkUtilities;
@@ -74,6 +71,28 @@ public class NeuralNetwork<M> {
         this.deltaBias = parameterSupplier.getDeltaBiasParameters();
     }
 
+    public NeuralNetwork(final NetworkBuilder<M> b) {
+        this.sizes = b.structure;
+        this.functions = b.getActivationFunctions();
+        this.costFunction = b.costFunction;
+        this.evaluationFunction = b.evaluationFunction;
+        this.totalLayers = b.total - 1;
+
+        // Initialize the optimizer and the parameters.
+        this.initialiser = b.initialiser;
+        this.initialiser.init(this.sizes);
+        this.optimizer = b.optimizer;
+        this.optimizer.initializeOptimizer(totalLayers, null, null);
+
+        this.weights = b.weights == null ? this.initialiser.getWeightParameters() : b.weights;
+        this.dW = this.initialiser.getDeltaWeightParameters();
+        this.deltaWeights = this.initialiser.getDeltaWeightParameters();
+
+        this.biases = b.biases == null ? this.initialiser.getBiasParameters() : b.biases;
+        this.dB = this.initialiser.getDeltaBiasParameters();
+        this.deltaBias = this.initialiser.getDeltaBiasParameters();
+    }
+
     public NeuralNetwork(NeuralNetwork<M> n) {
         this.sizes = n.sizes;
         this.functions = n.functions;
@@ -116,6 +135,8 @@ public class NeuralNetwork<M> {
     public void train(final NetworkInput<M> input) {
         evaluateTrainingExample(Collections.singletonList(input));
         learnFromDeltas();
+        log.info("\nLoss: {}, Correct: {}", this.testLoss(Collections.singletonList(input)),
+                this.testEvaluation(Collections.singletonList(input), 5));
     }
 
     /**
@@ -266,56 +287,9 @@ public class NeuralNetwork<M> {
             final int epochs, final int batchSize) {
         final List<List<NetworkInput<M>>> split = NetworkUtilities.batchSplitData(training, batchSize);
         for (int i = 0; i < epochs; i++) {
-            // Randomize training sample.
-            // randomisedBatchTraining(split);
-
             for (final var l : split) {
                 this.evaluateTrainingExample(l);
                 this.learnFromDeltas();
-            }
-        }
-    }
-
-    /**
-     * Trains this network on training data, and validates on validation data. Uses
-     * a {@link Optimizer} to optimize the gradient descent.
-     * <p>
-     * Displays a progress bar!
-     *
-     * @param training  a Collections object with {@link NetworkInput<M>} objects,
-     *                  NetworkInput<M>.getData() is the data,
-     *                  NetworkInput<M>.getLabel() is the label.
-     * @param epochs    how many iterations are we doing the descent for
-     * @param batchSize how big is the batch size, typically 32. See
-     *                  https://stats.stackexchange.com/q/326663
-     */
-    public void trainVerbose(@NotNull final List<NetworkInput<M>> training, final List<NetworkInput<M>> validation,
-            final int epochs, final int batchSize) {
-        log.info("Started stochastic gradient descent, verbose mode on.%n");
-        // How many times will we decrease the learning rate?
-        final List<List<NetworkInput<M>>> split = NetworkUtilities.batchSplitData(training, batchSize);
-        int info = epochs / 8;
-        try (ProgressBar bar = new ProgressBar("Backpropagation", epochs)) {
-            for (int i = 0; i < epochs; i++) {
-
-                split.parallelStream().forEach(e -> {
-                    this.evaluateTrainingExample(e);
-                    this.learnFromDeltas();
-                });
-
-                if ((i + 1) % info == 0) {
-                    // Feed forward the test data
-                    final List<NetworkInput<M>> feedForwardData = this.feedForwardData(validation);
-                    // Evaluate prediction with the interface EvaluationFunction.
-                    double correct = evaluate(feedForwardData);
-                    // Calculate cost/loss with the interface CostFunction
-                    double loss = this.loss(feedForwardData);
-
-                    log.info("\nThe network correctly evaluted \t {}\nThe network has a loss of {}.\n", correct * 100,
-                            loss);
-                }
-
-                bar.step();
             }
         }
     }
