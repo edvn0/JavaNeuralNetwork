@@ -26,13 +26,28 @@ public class LayeredNetworkBuilder<M> {
 		this.networkInputSize = networkInputSize;
 	}
 
+	public LayeredNetworkBuilder(LayeredNeuralNetwork<M> other) {
+		this.initializer = other.getInitializer();
+		this.costFunction = other.getCostFunction();
+		this.evaluationFunction = other.getEvaluationFunction();
+		this.optimizer = other.getOptimizer();
+
+		var otherLayers = other.getLayers();
+
+		for (int i = 0; i < otherLayers.size(); i++) {
+			NetworkLayer<M> newLayer = otherLayers.get(i);
+			this.layers.add(newLayer);
+		}
+
+	}
+
 	public LayeredNetworkBuilder<M> evaluationFunction(EvaluationFunction<M> evaluationFunction) {
 		this.evaluationFunction = evaluationFunction;
 		return this;
 	}
 
-	public LayeredNetworkBuilder<M> initialiser(ParameterInitialiser<M> initialiser) {
-		this.initializer = initialiser;
+	public LayeredNetworkBuilder<M> initializer(ParameterInitialiser<M> initializer) {
+		this.initializer = initializer;
 		return this;
 	}
 

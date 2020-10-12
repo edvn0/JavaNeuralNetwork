@@ -1,5 +1,6 @@
 package neuralnetwork.layer;
 
+import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 import math.activations.ActivationFunction;
 import math.linearalgebra.Matrix;
@@ -48,13 +49,13 @@ public class NetworkLayer<M> {
 		return this.activated.get();
 	}
 
-	public void addDeltas(Matrix<M> deltaWeights, Matrix<M> deltaBias) {
+	public synchronized void addDeltas(Matrix<M> deltaWeights, Matrix<M> deltaBias) {
 		this.deltaWeight = this.deltaWeight.add(deltaWeights);
 		this.deltaBias = this.deltaBias.add(deltaBias);
 		this.deltasAdded.incrementAndGet();
 	}
 
-	public void fit(int index, Optimizer<M> optimizer) {
+	public synchronized void fit(int index, Optimizer<M> optimizer) {
 		int added = this.deltasAdded.get();
 		if (added > 0) {
 			var averageDeltaW = this.deltaWeight.mapElements(e -> e / added);
@@ -65,6 +66,7 @@ public class NetworkLayer<M> {
 			this.deltaWeight.mapElementsMutable(e -> 0d);
 			this.deltaBias.mapElementsMutable(e -> 0d);
 
+			this.deltasAdded.set(0);
 		}
 	}
 
@@ -93,7 +95,7 @@ public class NetworkLayer<M> {
 	}
 
 	public boolean hasPrecedingLayer() {
-		return this.previousLayer == null;
+		return this.previousLayer != null;
 	}
 
 	public ActivationFunction<M> getFunction() {
@@ -108,10 +110,29 @@ public class NetworkLayer<M> {
 		this.previousLayer = prev;
 	}
 
+
 	@Override
 	public String toString() {
-		return String.format("[%d], function: %s", this.neurons,
-			this.activationFunction.getName());
+
+		if (this.weight == null) {
+			return new StringJoiner(", ", NetworkLayer.class.getSimpleName() + "[", "]")
+				.add("activationFunction=" + activationFunction.getName()).add("neurons=" + neurons)
+				.toString();
+		}
+
+		return new StringJoiner(", ", NetworkLayer.class.getSimpleName() + "[", "]")
+			.add("activationFunction=" + activationFunction.getName())
+			.add("weight=[" + weight.rows()).add(weight.cols() + "]")
+			.add("bias=[" + bias.rows()).add(bias.cols() + "]")
+			.add("neurons=" + neurons)
+			.toString();
 	}
 
+	public void setDeltaWeight(final Matrix<M> layerDeltaWeight) {
+		this.deltaWeight = layerDeltaWeight;
+	}
+
+	public void setDeltaBias(final Matrix<M> layerDeltaWeight) {
+		this.deltaBias = layerDeltaWeight;
+	}
 }

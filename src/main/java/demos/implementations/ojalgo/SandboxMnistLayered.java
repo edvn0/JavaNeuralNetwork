@@ -10,23 +10,23 @@ import java.util.List;
 import java.util.stream.Collectors;
 import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
-import math.activations.TanhFunction;
 import math.costfunctions.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import math.optimizers.ADAM;
 import neuralnetwork.DeepLearnable;
-import neuralnetwork.NetworkBuilder;
+import neuralnetwork.LayeredNetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitialiser;
 import neuralnetwork.inputs.NetworkInput;
+import neuralnetwork.layer.NetworkLayer;
 import org.ojalgo.matrix.Primitive64Matrix;
 import utilities.serialise.serialisers.OjAlgoSerializer;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
-public class SandboxMnist extends AbstractDemo<Primitive64Matrix> {
+public class SandboxMnistLayered extends AbstractDemo<Primitive64Matrix> {
 
 	@Override
 	protected String outputDirectory() {
@@ -35,7 +35,7 @@ public class SandboxMnist extends AbstractDemo<Primitive64Matrix> {
 
 	@Override
 	protected TrainingMethod networkTrainingMethod() {
-		return TrainingMethod.METRICS;
+		return TrainingMethod.NORMAL;
 	}
 
 	@Override
@@ -72,16 +72,21 @@ public class SandboxMnist extends AbstractDemo<Primitive64Matrix> {
 	}
 
 	@Override
-	protected NeuralNetwork<Primitive64Matrix> createNetwork() {
-		var f = new LeakyReluFunction<Primitive64Matrix>(0.01);
-		return new NeuralNetwork<>(
-			new NetworkBuilder<Primitive64Matrix>(5).setFirstLayer(784).setLayer(10, f)
-				.setLayer(10, new TanhFunction<>()).setLayer(10, f)
-				.setLastLayer(10, new SoftmaxFunction<>())
-				.setCostFunction(new CrossEntropyCostFunction<>())
-				.setEvaluationFunction(new ArgMaxEvaluationFunction<>())
-				.setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
-			new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
+	protected DeepLearnable<Primitive64Matrix> createNetwork() {
+		LeakyReluFunction<Primitive64Matrix> f = new LeakyReluFunction<>(0.01);
+		var softMax = new SoftmaxFunction<Primitive64Matrix>();
+		var b = new LayeredNetworkBuilder<Primitive64Matrix>(28 * 28)
+			.layer(new NetworkLayer<>(f, 784))
+			.layer(new NetworkLayer<>(f, 30))
+			.layer(new NetworkLayer<>(f, 70))
+			.layer(new NetworkLayer<>(f, 90))
+			.layer(new NetworkLayer<>(f, 50))
+			.layer(new NetworkLayer<>(softMax, 10))
+			.costFunction(new CrossEntropyCostFunction<>())
+			.evaluationFunction(new ArgMaxEvaluationFunction<>())
+			.optimizer(new ADAM<>(0.1, 0.9, 0.999))
+			.initializer(new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
+		return b.create();
 	}
 
 	@Override

@@ -1,36 +1,33 @@
 package demos.implementations.ojalgo;
 
+import demos.AbstractDemo;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-
-import org.apache.log4j.BasicConfigurator;
-import org.ojalgo.matrix.Primitive64Matrix;
-
-import demos.AbstractDemo;
-import lombok.extern.slf4j.Slf4j;
 import math.activations.ActivationFunction;
 import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
 import math.costfunctions.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
-import math.evaluation.ThresholdEvaluationFunction;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import math.optimizers.ADAM;
+import neuralnetwork.DeepLearnable;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitialiser;
 import neuralnetwork.inputs.NetworkInput;
+import org.ojalgo.matrix.Primitive64Matrix;
 import utilities.serialise.serialisers.OjAlgoSerializer;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
 public class SandboxXOR extends AbstractDemo<Primitive64Matrix> {
-    private static final double[][] xorData = new double[][] { { 0, 1 }, { 0, 0 }, { 1, 1 }, { 1, 0 } };
-    private static final double[][] xorLabel = new double[][] { { 1, 0 }, { 0, 1 }, { 0, 1 }, { 1, 0 } };
+
+    private static final double[][] xorData = new double[][]{{0, 1}, {0, 0}, {1, 1}, {1, 0}};
+    private static final double[][] xorLabel = new double[][]{{1, 0}, {0, 1}, {0, 1}, {1, 0}};
 
     @Override
     protected String outputDirectory() {
@@ -74,18 +71,21 @@ public class SandboxXOR extends AbstractDemo<Primitive64Matrix> {
     protected NeuralNetwork<Primitive64Matrix> createNetwork() {
         ActivationFunction<Primitive64Matrix> f = new LeakyReluFunction<>(0.1);
         return new NeuralNetwork<>(
-                new NetworkBuilder<Primitive64Matrix>(5).setFirstLayer(2).setLayer(3, f).setLayer(3, f).setLayer(2, f)
-                        .setLastLayer(2, new SoftmaxFunction<>()).setCostFunction(new CrossEntropyCostFunction<>())
-                        .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
-                        .setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
-                new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
+            new NetworkBuilder<Primitive64Matrix>(5).setFirstLayer(2).setLayer(3, f).setLayer(3, f)
+                .setLayer(2, f)
+                .setLastLayer(2, new SoftmaxFunction<>())
+                .setCostFunction(new CrossEntropyCostFunction<>())
+                .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
+                .setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
+            new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
     }
 
     @Override
-    protected void serialise(NeuralNetwork<Primitive64Matrix> in) {
+    protected void serialise(DeepLearnable<Primitive64Matrix> in) {
         OjAlgoSerializer serializer = new OjAlgoSerializer();
         var f = new File(this.outputDirectory() + "/OjAlgo_XOR_Network.json");
         System.out.println(f);
-        serializer.serialise(f, in);
+        NeuralNetwork<Primitive64Matrix> actual = (NeuralNetwork<Primitive64Matrix>) in;
+        serializer.serialise(f, actual);
     }
 }
