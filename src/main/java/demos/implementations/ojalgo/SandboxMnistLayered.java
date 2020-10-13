@@ -16,13 +16,13 @@ import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import math.optimizers.ADAM;
 import neuralnetwork.DeepLearnable;
 import neuralnetwork.LayeredNetworkBuilder;
-import neuralnetwork.NeuralNetwork;
+import neuralnetwork.LayeredNeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import neuralnetwork.layer.NetworkLayer;
 import org.ojalgo.matrix.Primitive64Matrix;
-import utilities.serialise.serialisers.OjAlgoSerializer;
+import utilities.serialise.serialisers.OjAlgoLayeredSerializer;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
@@ -40,7 +40,7 @@ public class SandboxMnistLayered extends AbstractDemo<Primitive64Matrix> {
 
 	@Override
 	protected Pair<Integer, Integer> epochBatch() {
-		return Pair.of(30, 64);
+		return Pair.of(2, 64);
 	}
 
 	@Override
@@ -84,16 +84,17 @@ public class SandboxMnistLayered extends AbstractDemo<Primitive64Matrix> {
 			.layer(new NetworkLayer<>(softMax, 10))
 			.costFunction(new CrossEntropyCostFunction<>())
 			.evaluationFunction(new ArgMaxEvaluationFunction<>())
-			.optimizer(new ADAM<>(0.1, 0.9, 0.999))
+			.optimizer(new ADAM<>(0.001, 0.9, 0.999))
 			.initializer(new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
 		return b.create();
 	}
 
 	@Override
 	protected void serialise(DeepLearnable<Primitive64Matrix> in) {
-		OjAlgoSerializer serializer = new OjAlgoSerializer();
-		NeuralNetwork<Primitive64Matrix> actual = (NeuralNetwork<Primitive64Matrix>) in;
-		serializer.serialise(new File(this.outputDirectory() + "/OjAlgo_XOR_Network.json"), actual);
+		OjAlgoLayeredSerializer layeredSerializer = new OjAlgoLayeredSerializer();
+		LayeredNeuralNetwork<Primitive64Matrix> actual = (LayeredNeuralNetwork<Primitive64Matrix>) in;
+		layeredSerializer
+			.serialise(new File(this.outputDirectory() + "/OjAlgo_XOR_Network.json"), actual);
 	}
 
 	private NetworkInput<Primitive64Matrix> toMnist(String toMnist) {

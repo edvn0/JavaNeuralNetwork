@@ -1,7 +1,6 @@
 package neuralnetwork.layer;
 
 import java.util.StringJoiner;
-import java.util.concurrent.atomic.AtomicInteger;
 import math.activations.ActivationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
@@ -12,13 +11,13 @@ public class NetworkLayer<M> {
 	private final int neurons;
 
 	// Represents the data after activating this layer
-	private final ThreadLocal<ZVector<M>> activated;
+	private transient final ThreadLocal<ZVector<M>> activated;
 	private Matrix<M> weight;
 	private Matrix<M> bias;
 
 	private NetworkLayer<M> previousLayer;
 
-	private final transient AtomicInteger deltasAdded;
+	private transient int deltasAdded;
 	private transient Matrix<M> deltaWeight;
 	private transient Matrix<M> deltaBias;
 
@@ -26,7 +25,7 @@ public class NetworkLayer<M> {
 		this.activationFunction = activationFunction;
 		this.activated = new ThreadLocal<>();
 		this.neurons = neurons;
-		this.deltasAdded = new AtomicInteger(0);
+		this.deltasAdded = 0;
 	}
 
 	public NetworkLayer(NetworkLayer<M> in) {
@@ -42,7 +41,7 @@ public class NetworkLayer<M> {
 			this.activated.set(out);
 		} else {
 			var out = new ZVector<>(
-				activationFunction.function(this.weight.multiply(in.getZVector()).add(bias)));
+				activationFunction.function(this.weight.multiply(in.getMatrix()).add(bias)));
 			this.activated.set(out);
 		}
 
@@ -52,22 +51,20 @@ public class NetworkLayer<M> {
 	public synchronized void addDeltas(Matrix<M> deltaWeights, Matrix<M> deltaBias) {
 		this.deltaWeight = this.deltaWeight.add(deltaWeights);
 		this.deltaBias = this.deltaBias.add(deltaBias);
-		this.deltasAdded.incrementAndGet();
+		this.deltasAdded++;
 	}
 
 	public synchronized void fit(int index, Optimizer<M> optimizer) {
-		int added = this.deltasAdded.get();
-		if (added > 0) {
-			var averageDeltaW = this.deltaWeight.mapElements(e -> e / added);
-			var averageDeltaB = this.deltaBias.mapElements(e -> e / added);
-			optimizer.changeBias(index, this, averageDeltaB);
-			optimizer.changeWeight(index, this, averageDeltaW);
-
-			this.deltaWeight.mapElementsMutable(e -> 0d);
-			this.deltaBias.mapElementsMutable(e -> 0d);
-
-			this.deltasAdded.set(0);
+		if (this.deltasAdded > 0) {
+			var averageDeltaW = this.deltaWeight.mapElements(e -> e / this.deltasAdded);
+			var averageDeltaB = this.deltaBias.mapElements(e -> e / this.deltasAdded);
+			this.bias = optimizer.changeBias(index, this.bias, averageDeltaB);
+			this.weight = optimizer.changeWeight(index, this.weight, averageDeltaW);
+			this.deltaWeight = this.deltaWeight.mapElements(e -> 0d);
+			this.deltaBias = this.deltaBias.mapElements(e -> 0d);
 		}
+		this.deltasAdded = 0;
+
 	}
 
 	public int getNeurons() {
@@ -91,7 +88,7 @@ public class NetworkLayer<M> {
 	}
 
 	public Matrix<M> activation() {
-		return this.activated.get().getZVector();
+		return this.activated.get().getMatrix();
 	}
 
 	public boolean hasPrecedingLayer() {

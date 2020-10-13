@@ -23,7 +23,7 @@ public class ZVector<M> {
 		this(in.zVector);
 	}
 
-	public Matrix<M> getZVector() {
+	public Matrix<M> getMatrix() {
 		return zVector;
 	}
 

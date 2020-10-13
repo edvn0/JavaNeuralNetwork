@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import math.linearalgebra.Matrix;
-import neuralnetwork.layer.NetworkLayer;
 
 public class ADAM<M> implements Optimizer<M> {
 
@@ -83,34 +82,6 @@ public class ADAM<M> implements Optimizer<M> {
 		return newOut;
 	}
 
-	@Override
-	public void initializeOptimizer(int layers, Matrix<M> weightSeed, Matrix<M> biasSeed) {
-		this.weightM = new ArrayList<>(layers);
-		this.weightN = new ArrayList<>(layers);
-		this.biasM = new ArrayList<>(layers);
-		this.biasN = new ArrayList<>(layers);
-
-		for (int i = 0; i < layers; i++) {
-			this.weightM.add(null);
-			this.weightN.add(null);
-			this.biasM.add(null);
-			this.biasN.add(null);
-		}
-	}
-
-	@Override
-	public void changeBias(int layerIndex, NetworkLayer<M> layer, Matrix<M> deltaBias) {
-		layer.setBias(
-			adamSingleDeltas(layerIndex, layer.getBias(), deltaBias, this.biasM, this.biasN));
-
-	}
-
-	@Override
-	public void changeWeight(int layerIndex, NetworkLayer<M> layer, Matrix<M> deltaWeight) {
-		layer.setWeight(adamSingleDeltas(layerIndex, layer.getWeight(), deltaWeight, this.weightM,
-			this.weightN));
-	}
-
 	private Matrix<M> adamSingleDeltas(int i, Matrix<M> parameters, Matrix<M> deltaForLayer,
 		List<Matrix<M>> M,
 		List<Matrix<M>> N) {
@@ -127,9 +98,9 @@ public class ADAM<M> implements Optimizer<M> {
 			M.set(i, m);
 			N.set(i, v);
 		} else {
-			M.set(i, deltaForLayer.multiply(1 - beta1));
-			Matrix<M> fix = deltaForLayer.hadamard(deltaForLayer).multiply(1 - beta2);
-			N.set(i, fix);
+			var m = deltaForLayer.zeroes(deltaForLayer.rows(), deltaForLayer.cols());
+			M.set(i, m);
+			N.set(i, m);
 		}
 		mHat = M.get(i).divide((1 - Math.pow(beta1, exponent)));
 		vHat = N.get(i).divide((1 - Math.pow(beta2, exponent)));
@@ -138,6 +109,36 @@ public class ADAM<M> implements Optimizer<M> {
 		Matrix<M> adam = num.divide(deNom);
 		return parameters.subtract(adam);
 	}
+
+	@Override
+	public void initializeOptimizer(int layers, Matrix<M> weightSeed, Matrix<M> biasSeed) {
+		this.weightM = new ArrayList<>(layers);
+		this.weightN = new ArrayList<>(layers);
+		this.biasM = new ArrayList<>(layers);
+		this.biasN = new ArrayList<>(layers);
+
+		for (int i = 0; i < layers; i++) {
+			this.weightM.add(null);
+			this.weightN.add(null);
+			this.biasM.add(null);
+			this.biasN.add(null);
+		}
+	}
+
+	@Override
+	public Matrix<M> changeBias(int layerIndex, Matrix<M> bias, Matrix<M> deltaBias) {
+		return
+			adamSingleDeltas(layerIndex, bias, deltaBias, this.biasM, this.biasN);
+
+	}
+
+	@Override
+	public Matrix<M> changeWeight(int layerIndex, Matrix<M> weight, Matrix<M> deltaWeight) {
+		return adamSingleDeltas(layerIndex, weight, deltaWeight, this.weightM,
+			this.weightN);
+
+	}
+
 
 	@Override
 	public String name() {

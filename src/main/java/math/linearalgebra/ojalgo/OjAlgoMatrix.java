@@ -120,8 +120,10 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 	public OjAlgoMatrix maxVector() {
 		double max = this.max();
 
-		double[] values = new double[rows()];
-		Arrays.fill(values, max);
+		double[][] values = new double[rows()][1];
+		for (int i = 0; i < rows(); i++) {
+			values[i][0] = max;
+		}
 
 		return new OjAlgoMatrix(values);
 	}
@@ -130,7 +132,7 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 	public OjAlgoMatrix zeroes(int rows, int cols) {
 		double[][] zeroes = new double[rows][cols];
 		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < rows; j++) {
+			for (int j = 0; j < cols; j++) {
 				zeroes[i][j] = 0;
 			}
 		}
@@ -141,7 +143,7 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 	public OjAlgoMatrix ones(int rows, int cols) {
 		double[][] ones = new double[rows][cols];
 		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < rows; j++) {
+			for (int j = 0; j < cols; j++) {
 				ones[i][j] = 1;
 			}
 		}

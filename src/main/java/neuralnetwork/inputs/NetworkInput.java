@@ -17,7 +17,7 @@ public class NetworkInput<M> {
 	}
 
 	public static <M> NetworkInput<M> of(final ZVector<M> a, final ZVector<M> b) {
-		return new NetworkInput<>(a.getZVector(), b.getZVector());
+		return new NetworkInput<>(a.getMatrix(), b.getMatrix());
 	}
 
 	public Matrix<M> getData() {

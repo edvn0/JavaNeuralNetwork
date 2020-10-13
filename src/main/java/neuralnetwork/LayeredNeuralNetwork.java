@@ -75,21 +75,32 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		final int epochs,
 		final int batchSize) {
 
-		var zVectorTraining = training.stream()
-			.map(e -> Pair.of(new ZVector<>(e.getData()), new ZVector<>(e.getLabel()))).collect(
-				Collectors.toList());
 		int batches = training.size() / batchSize;
-		for (int i = 0; i < batches; i++) {
-			double trainingEvaluation = getBatch(i, batchSize, zVectorTraining).parallelStream()
-				.map(e ->
-					Pair.of(this.evaluate(e.left(), e.right()), e.right())
-				).mapToDouble(e -> this.evaluationFunction
-					.evaluateSingle(NetworkInput.of(e.left(), e.right()))).reduce(Double::sum)
-				.orElse(0d) / batchSize;
 
-			log.info("Evaluation percentage: \t {}%.", trainingEvaluation * 100);
+		log.info("Prior to training:");
+		log.info("Initial loss: \t {}", this.testLoss(validation));
+		log.info("Initial evaluation percentage: \t {}%.\n",
+			this.testEvaluation(validation, 37) * 100);
 
-			this.fit();
+		for (int epoch = 0; epoch < epochs; epoch++) {
+			log.info("===================================================");
+			log.info("Epoch: \t {}", epoch + 1);
+			for (int i = 0; i <= batches; i++) {
+				Collections.shuffle(training);
+				getBatch(i, batchSize, training).parallelStream()
+					.forEach(e -> {
+						this.evaluate(e.getData(), e.getLabel());
+					});
+				this.fit();
+			}
+
+			if ((epoch + 1) % 5 == 0) {
+				log.info("Loss: \t {}", this.testLoss(validation));
+				log.info("Evaluation percentage: \t {}%.\n",
+					this.testEvaluation(validation, 37) * 100);
+			}
+
+			log.info("===================================================");
 		}
 	}
 
@@ -103,9 +114,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 	@Override
 	public double testEvaluation(final List<NetworkInput<M>> right, final int i) {
 		double correct = 0d;
-		var fedForward = right.stream().map(
-			e -> new NetworkInput<>(this.evaluate(e.getData(), null).getZVector(),
-				e.getLabel())).collect(Collectors.toList());
+		var fedForward = feedforward(right);
 		for (int j = 0; j < i; j++) {
 			correct += this.evaluationFunction.evaluatePrediction(fedForward);
 		}
@@ -128,8 +137,8 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 	private List<NetworkInput<M>> feedforward(List<NetworkInput<M>> data) {
 		return data.stream()
 			.map(e -> new NetworkInput<M>(
-				this.evaluate(new ZVector<>(e.getData()), new ZVector<M>(e.getLabel()))
-					.getZVector(),
+				this.evaluate(e.getData(), null)
+					.getMatrix(),
 				e.getLabel()))
 			.collect(Collectors.toList());
 	}
@@ -166,13 +175,14 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 
 	private void backPropagation(ZVector<M> label) {
 		var layer = getLastLayer();
+		var lastActivation = layer.activation();
 
 		var costDerivative = this.costFunction
-			.applyCostFunctionGradient(layer.activation(), label.getZVector());
+			.applyCostFunctionGradient(lastActivation, label.getMatrix());
 
 		do {
 			// Also deltaBias.
-			var dCdI = layer.getFunction().derivativeOnInput(layer.activation(), costDerivative);
+			var dCdI = layer.getFunction().derivativeOnInput(lastActivation, costDerivative);
 
 			Matrix<M> activation = layer.precedingLayer().activation().transpose();
 
@@ -183,6 +193,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 			costDerivative = layer.getWeight().transpose().multiply(dCdI);
 
 			layer = layer.precedingLayer();
+			lastActivation = layer.activation();
 
 		} while (layer.hasPrecedingLayer());
 
@@ -216,8 +227,8 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 	private List<NetworkInput<M>> feedforwardZVectors(
 		final List<Pair<ZVector<M>, ZVector<M>>> unfedTestingData) {
 		return unfedTestingData.stream()
-			.map(e -> new NetworkInput<M>(this.evaluate(e.left(), e.right()).getZVector(),
-				e.right().getZVector()))
+			.map(e -> new NetworkInput<M>(this.evaluate(e.left(), e.right()).getMatrix(),
+				e.right().getMatrix()))
 			.collect(Collectors.toList());
 	}
 

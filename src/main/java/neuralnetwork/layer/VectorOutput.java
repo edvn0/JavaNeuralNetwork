@@ -9,6 +9,6 @@ public class VectorOutput<M> extends ZVector<M> {
     }
 
     VectorOutput(VectorInput<M> in) {
-        super(in.getZVector());
+        super(in.getMatrix());
     }
 }

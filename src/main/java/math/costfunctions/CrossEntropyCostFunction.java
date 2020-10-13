@@ -12,9 +12,14 @@ public class CrossEntropyCostFunction<M> implements CostFunction<M> {
 	public double calculateCostFunction(final List<NetworkInput<M>> tData) {
 		double size = tData.size();
 
-		return -tData.parallelStream().map(e -> e.getData().mapElements(Math::log).hadamard(e.getLabel()))
-				.peek(System.out::println).mapToDouble(Matrix::sum).sum() / size;
+		double loss = 0d;
 
+		for (var data : tData) {
+			var inner = data.getLabel().hadamard(data.getData().add(1e-9).mapElements(Math::log));
+			loss += inner.sum();
+		}
+
+		return -loss / size;
 	}
 
 	@Override

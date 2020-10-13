@@ -34,10 +34,7 @@ public class LayeredNetworkBuilder<M> {
 
 		var otherLayers = other.getLayers();
 
-		for (int i = 0; i < otherLayers.size(); i++) {
-			NetworkLayer<M> newLayer = otherLayers.get(i);
-			this.layers.add(newLayer);
-		}
+		this.layers.addAll(otherLayers);
 
 	}
 

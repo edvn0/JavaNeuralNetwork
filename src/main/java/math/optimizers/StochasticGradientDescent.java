@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import math.linearalgebra.Matrix;
-import neuralnetwork.layer.NetworkLayer;
 
 public class StochasticGradientDescent<M> implements Optimizer<M> {
 
@@ -65,14 +64,13 @@ public class StochasticGradientDescent<M> implements Optimizer<M> {
 	}
 
 	@Override
-	public void changeBias(int index, NetworkLayer<M> layer, Matrix<M> deltaBias) {
-		Matrix<M> newBias = layer.getBias().subtract(deltaBias.multiply(this.learningRate));
-		layer.setBias(newBias);
+	public Matrix<M> changeBias(int index, Matrix<M> bias, Matrix<M> deltaBias) {
+		return bias.subtract(deltaBias.multiply(this.learningRate));
+
 	}
 
 	@Override
-	public void changeWeight(int index, NetworkLayer<M> layer, Matrix<M> deltaWeight) {
-		Matrix<M> newWeight = layer.getWeight().subtract(deltaWeight.multiply(this.learningRate));
-		layer.setWeight(newWeight);
+	public Matrix<M> changeWeight(int index, Matrix<M> weight, Matrix<M> deltaWeight) {
+		return weight.subtract(deltaWeight.multiply(this.learningRate));
 	}
 }
