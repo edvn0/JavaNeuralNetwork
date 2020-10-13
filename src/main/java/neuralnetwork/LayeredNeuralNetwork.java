@@ -12,9 +12,6 @@ import math.optimizers.Optimizer;
 import neuralnetwork.initialiser.ParameterInitialiser;
 import neuralnetwork.inputs.NetworkInput;
 import neuralnetwork.layer.NetworkLayer;
-import neuralnetwork.layer.ZVector;
-import org.jetbrains.annotations.NotNull;
-import utilities.types.Pair;
 
 @Slf4j
 public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
@@ -71,6 +68,35 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		}
 	}
 
+	public LayeredNeuralNetwork(LayeredNetworkBuilder<M> b, boolean deser) {
+		this.costFunction = b.costFunction;
+		this.evaluationFunction = b.evaluationFunction;
+
+		this.optimizer = b.optimizer;
+		this.optimizer.initializeOptimizer(b.total, null, null);
+
+		this.initializer = b.initializer;
+		initializer.init(b.calculateStructure());
+
+		this.networkLayers = new ArrayList<>();
+
+		var first = b.layers.get(0);
+		NetworkLayer<M> firstLayer = new NetworkLayer<>(first.getFunction(), first.getNeurons());
+		this.networkLayers.add(firstLayer);
+
+		for (int i = 1; i < b.total; i++) {
+			var layer = new NetworkLayer<>(b.layers.get(i));
+			this.networkLayers.add(layer);
+		}
+	}
+
+	private static <U> List<U> getBatch(final int i, final int batchSize,
+		final List<U> data) {
+		int fromIx = i * batchSize;
+		int toIx = Math.min(data.size(), (i + 1) * batchSize);
+		return Collections.unmodifiableList(data.subList(fromIx, toIx));
+	}
+
 	public void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation,
 		final int epochs,
 		final int batchSize) {
@@ -83,7 +109,6 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 			this.testEvaluation(validation, 37) * 100);
 
 		for (int epoch = 0; epoch < epochs; epoch++) {
-			log.info("===================================================");
 			log.info("Epoch: \t {}", epoch + 1);
 			for (int i = 0; i <= batches; i++) {
 				Collections.shuffle(training);
@@ -95,19 +120,17 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 			}
 
 			if ((epoch + 1) % 5 == 0) {
-				log.info("Loss: \t {}", this.testLoss(validation));
+				log.info("Loss: \t\t\t {}", this.testLoss(validation));
 				log.info("Evaluation percentage: \t {}%.\n",
 					this.testEvaluation(validation, 37) * 100);
 			}
-
-			log.info("===================================================");
 		}
 	}
 
 	@Override
-	public void trainWithMetrics(final List<NetworkInput<M>> left,
-		final List<NetworkInput<M>> middle,
-		final int left1, final int right, final String outputPath) {
+	public void trainWithMetrics(final List<NetworkInput<M>> training,
+		final List<NetworkInput<M>> validation,
+		final int epochs, final int batchSize, final String outputPath) {
 
 	}
 
@@ -118,7 +141,6 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		for (int j = 0; j < i; j++) {
 			correct += this.evaluationFunction.evaluatePrediction(fedForward);
 		}
-
 		return correct / (double) i;
 	}
 
@@ -137,31 +159,21 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 	private List<NetworkInput<M>> feedforward(List<NetworkInput<M>> data) {
 		return data.stream()
 			.map(e -> new NetworkInput<M>(
-				this.evaluate(e.getData(), null)
-					.getMatrix(),
+				this.checkEvaluate(e.getData(), null),
 				e.getLabel()))
 			.collect(Collectors.toList());
 	}
 
-	private ZVector<M> evaluate(final Matrix<M> data, final Matrix<M> label) {
-		ZVector<M> input = new ZVector<M>(data);
-		if (label != null) {
-			ZVector<M> correct = new ZVector<M>(label);
-			return evaluate(input, correct);
+	private Matrix<M> checkEvaluate(final Matrix<M> data, final Matrix<M> label) {
+		if (label == null) {
+			return this.evaluate(data, null);
+		} else {
+			return this.evaluate(data, label);
 		}
-		return evaluate(input, null);
-
 	}
 
-	private <U> List<U> getBatch(final int i, final int batchSize,
-		final List<U> data) {
-		int fromIx = i * batchSize;
-		int toIx = Math.min(data.size(), (i + 1) * batchSize);
-		return Collections.unmodifiableList(data.subList(fromIx, toIx));
-	}
-
-	private ZVector<M> evaluate(ZVector<M> input, ZVector<M> label) {
-		ZVector<M> toEvaluate = new ZVector<>(input);
+	private Matrix<M> evaluate(Matrix<M> input, Matrix<M> label) {
+		Matrix<M> toEvaluate = input;
 		for (var layer : networkLayers) {
 			toEvaluate = layer.calculate(toEvaluate);
 		}
@@ -173,12 +185,21 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		return toEvaluate;
 	}
 
-	private void backPropagation(ZVector<M> label) {
+
+	public Matrix<M> predict(Matrix<M> input) {
+		return this.checkEvaluate(input, null);
+	}
+
+	public Matrix<M> predict(Matrix<M> input, Matrix<M> label) {
+		return this.checkEvaluate(input, label);
+	}
+
+	private void backPropagation(Matrix<M> label) {
 		var layer = getLastLayer();
 		var lastActivation = layer.activation();
 
 		var costDerivative = this.costFunction
-			.applyCostFunctionGradient(lastActivation, label.getMatrix());
+			.applyCostFunctionGradient(lastActivation, label);
 
 		do {
 			// Also deltaBias.
@@ -210,34 +231,6 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 				layer.fit(i, this.optimizer);
 			}
 		}
-	}
-
-	public double feedforwardEvaluation(final List<Pair<ZVector<M>, ZVector<M>>> unfedTestingData) {
-		List<NetworkInput<M>> l = feedforwardZVectors(unfedTestingData);
-
-		double correct = 0d;
-		for (int i = 0; i < 100; i++) {
-			correct += this.evaluationFunction.evaluatePrediction(l);
-		}
-
-		return correct / 100;
-	}
-
-	@NotNull
-	private List<NetworkInput<M>> feedforwardZVectors(
-		final List<Pair<ZVector<M>, ZVector<M>>> unfedTestingData) {
-		return unfedTestingData.stream()
-			.map(e -> new NetworkInput<M>(this.evaluate(e.left(), e.right()).getMatrix(),
-				e.right().getMatrix()))
-			.collect(Collectors.toList());
-	}
-
-	public ZVector<M> predict(Matrix<M> input) {
-		return this.evaluate(new ZVector<>(input), null);
-	}
-
-	public ZVector<M> predict(Matrix<M> input, Matrix<M> label) {
-		return this.evaluate(new ZVector<>(input), new ZVector<>(label));
 	}
 
 	public int getInputSize() {

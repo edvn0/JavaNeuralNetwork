@@ -1,51 +1,40 @@
 package utilities.serialise;
 
 import java.util.List;
-import math.activations.ActivationFunction;
 import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
-import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
-import neuralnetwork.NetworkBuilder;
-import neuralnetwork.NeuralNetwork;
+import neuralnetwork.LayeredNetworkBuilder;
+import neuralnetwork.LayeredNeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitialiser;
+import neuralnetwork.layer.NetworkLayer;
 import org.ojalgo.matrix.Primitive64Matrix;
 
-public class OjAlgoNetwork {
+public class LayeredOjAlgoNetwork {
 
-	public static NeuralNetwork<Primitive64Matrix> create(List<Matrix<Primitive64Matrix>> weights,
-		List<Matrix<Primitive64Matrix>> biases, int layers, int[] sizes,
-		List<ActivationFunction<Primitive64Matrix>> functions,
+	public static LayeredNeuralNetwork<Primitive64Matrix> create(int inputSize,
+		List<NetworkLayer<Primitive64Matrix>> layers,
 		CostFunction<Primitive64Matrix> costFunc,
 		Optimizer<Primitive64Matrix> optimiser, EvaluationFunction<Primitive64Matrix> evaluator) {
 
-		NetworkBuilder<Primitive64Matrix> builder = new NetworkBuilder<>(layers);
-		builder.setCostFunction(costFunc);
-		builder.setEvaluationFunction(evaluator);
-		builder.setOptimizer(optimiser);
+		LayeredNetworkBuilder<Primitive64Matrix> builder = new LayeredNetworkBuilder<>(inputSize);
+		builder = builder.costFunction(costFunc);
+		builder = builder.evaluationFunction(evaluator);
+		builder = builder.optimizer(optimiser);
 
-		builder.setFirstLayer(sizes[0]);
-
-		int[] paramSizes = new int[sizes.length - 1];
-		for (int i = 1; i < sizes.length - 1; i++) {
-			builder.setLayer(sizes[i], functions.get(i));
-			paramSizes[i - 1] = sizes[i];
+		for (var l : layers) {
+			System.out.println(l);
+			builder = builder.layer(l);
 		}
-		paramSizes[paramSizes.length - 1] = sizes[sizes.length - 1];
 
-		builder.setLastLayer(sizes[sizes.length - 1], functions.get(functions.size() - 1));
-
-		builder.setWeights(weights);
-		builder.setBiases(biases);
-
-		OjAlgoInitialiser initialiser = new OjAlgoInitialiser(MethodConstants.XAVIER,
+		OjAlgoInitialiser initializer = new OjAlgoInitialiser(MethodConstants.XAVIER,
 			MethodConstants.SCALAR);
-		initialiser.init(paramSizes);
+		initializer.init(builder.calculateStructure());
 
-		NeuralNetwork<Primitive64Matrix> out = new NeuralNetwork<>(builder, initialiser);
+		builder = builder.initializer(initializer);
 
-		return out;
+		return builder.deserialize();
 	}
 
 }

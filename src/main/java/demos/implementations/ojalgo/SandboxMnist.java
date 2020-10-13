@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import math.activations.LeakyReluFunction;
 import math.activations.SoftmaxFunction;
-import math.activations.TanhFunction;
 import math.costfunctions.CrossEntropyCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
@@ -75,12 +74,12 @@ public class SandboxMnist extends AbstractDemo<Primitive64Matrix> {
 	protected NeuralNetwork<Primitive64Matrix> createNetwork() {
 		var f = new LeakyReluFunction<Primitive64Matrix>(0.01);
 		return new NeuralNetwork<>(
-			new NetworkBuilder<Primitive64Matrix>(5).setFirstLayer(784).setLayer(10, f)
-				.setLayer(10, new TanhFunction<>()).setLayer(10, f)
+			new NetworkBuilder<Primitive64Matrix>(6).setFirstLayer(784).setLayer(30, f)
+				.setLayer(70, f).setLayer(90, f).setLayer(50, f)
 				.setLastLayer(10, new SoftmaxFunction<>())
 				.setCostFunction(new CrossEntropyCostFunction<>())
 				.setEvaluationFunction(new ArgMaxEvaluationFunction<>())
-				.setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
+				.setOptimizer(new ADAM<>(0.001, 0.9, 0.999)),
 			new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
 	}
 

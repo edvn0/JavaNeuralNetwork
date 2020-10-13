@@ -3,11 +3,8 @@ package utilities.serialise.deserialisers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
@@ -23,151 +20,174 @@ import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import math.optimizers.Optimizer;
+import neuralnetwork.LayeredNeuralNetwork;
 import neuralnetwork.NeuralNetwork;
+import neuralnetwork.layer.NetworkLayer;
 import org.ojalgo.matrix.Primitive64Matrix;
 import utilities.serialise.ConverterUtil;
-import utilities.serialise.adapters.OjAlgoNetworkDeserializer;
+import utilities.serialise.adapters.LayeredOjAlgoNetworkDeserializer;
 
-public class OjAlgoDeserialiser {
+public class LayeredOjAlgoDeserialiser {
 
-    private Gson gson;
-    private Type network = new TypeToken<NeuralNetwork<Primitive64Matrix>>() {
-    }.getType();
+	private Gson gson;
+	private Type network = new TypeToken<LayeredNeuralNetwork<Primitive64Matrix>>() {
+	}.getType();
 
-    public OjAlgoDeserialiser() {
-        GsonBuilder gsonb = new GsonBuilder();
+	public LayeredOjAlgoDeserialiser() {
+		GsonBuilder gsonb = new GsonBuilder();
 
-        Type activationFunctions = new TypeToken<List<ActivationFunction<Primitive64Matrix>>>() {
-        }.getType();
-        Type optimiser = new TypeToken<Optimizer<Primitive64Matrix>>() {
-        }.getType();
-        Type evalFunction = new TypeToken<EvaluationFunction<Primitive64Matrix>>() {
-        }.getType();
-        Type costFunction = new TypeToken<CostFunction<Primitive64Matrix>>() {
-        }.getType();
-        Type matrices = new TypeToken<List<Matrix<Primitive64Matrix>>>() {
-        }.getType();
+		Type activationFunction = new TypeToken<ActivationFunction<Primitive64Matrix>>() {
+		}.getType();
+		Type optimiser = new TypeToken<Optimizer<Primitive64Matrix>>() {
+		}.getType();
+		Type evalFunction = new TypeToken<EvaluationFunction<Primitive64Matrix>>() {
+		}.getType();
+		Type costFunction = new TypeToken<CostFunction<Primitive64Matrix>>() {
+		}.getType();
+		Type matrix = new TypeToken<Matrix<Primitive64Matrix>>() {
+		}.getType();
+		Type layers = new TypeToken<List<NetworkLayer<Primitive64Matrix>>>() {
+		}.getType();
 
-        gsonb.registerTypeAdapter(activationFunctions,
-                new JsonDeserializer<List<ActivationFunction<Primitive64Matrix>>>() {
-                    @Override
-                    public List<ActivationFunction<Primitive64Matrix>> deserialize(JsonElement json, Type typeOfT,
-                            JsonDeserializationContext context) throws JsonParseException {
-                        JsonArray arr = json.getAsJsonArray();
-                        List<ActivationFunction<Primitive64Matrix>> functions = new ArrayList<>();
-                        for (var a : arr) {
-                            functions.add(ConverterUtil.ojFunctions.get(a.getAsString()));
-                        }
+		Type layer = new TypeToken<NetworkLayer<Primitive64Matrix>>() {
+		}.getType();
 
-                        return functions;
-                    }
-                });
+		gsonb.registerTypeAdapter(activationFunction,
+			(JsonDeserializer<ActivationFunction<Primitive64Matrix>>) (json, typeOfT, context) -> {
 
-        gsonb.registerTypeAdapter(optimiser, new JsonDeserializer<Optimizer<Primitive64Matrix>>() {
+				return ConverterUtil.ojFunctions.get(json.getAsString());
+			});
 
-            @Override
-            public Optimizer<Primitive64Matrix> deserialize(JsonElement json, Type typeOfT,
-                    JsonDeserializationContext context) throws JsonParseException {
-                JsonObject obj = json.getAsJsonObject();
+		gsonb.registerTypeAdapter(optimiser,
+			(JsonDeserializer<Optimizer<Primitive64Matrix>>) (json, typeOfT, context) -> {
+				JsonObject obj = json.getAsJsonObject();
 
-                Optimizer<Primitive64Matrix> op = ConverterUtil.ojOptimisers.get(obj.get("name").getAsString());
+				Optimizer<Primitive64Matrix> op = ConverterUtil.ojOptimisers
+					.get(obj.get("name").getAsString());
 
-                double lR = tryToFind(obj, "v1"); // always learning rate
-                double v2 = tryToFind(obj, "v2"); // beta1 or momentum
-                double v3 = tryToFind(obj, "v3"); // beta2
+				double lR = tryToFind(obj, "v1"); // always learning rate
+				double v2 = tryToFind(obj, "v2"); // beta1 or momentum
+				double v3 = tryToFind(obj, "v3"); // beta2
 
-                double[] vals = new double[] { lR, v2, v3 };
+				double[] vals = new double[]{lR, v2, v3};
 
-                op.init(vals);
+				op.init(vals);
 
-                return op;
-            }
-        });
-        gsonb.registerTypeAdapter(costFunction, new JsonDeserializer<CostFunction<Primitive64Matrix>>() {
-            @Override
-            public CostFunction<Primitive64Matrix> deserialize(JsonElement json, Type typeOfT,
-                    JsonDeserializationContext context) throws JsonParseException {
-                JsonObject obj = json.getAsJsonObject();
+				return op;
+			});
 
-                CostFunction<Primitive64Matrix> cf = ConverterUtil.ojCostFunctions.get(obj.get("name").getAsString());
+		gsonb.registerTypeAdapter(costFunction,
+			(JsonDeserializer<CostFunction<Primitive64Matrix>>) (json, typeOfT, context) -> {
+				JsonObject obj = json.getAsJsonObject();
 
-                return cf;
-            }
-        });
-        gsonb.registerTypeAdapter(evalFunction, new JsonDeserializer<EvaluationFunction<Primitive64Matrix>>() {
-            @Override
-            public EvaluationFunction<Primitive64Matrix> deserialize(JsonElement json, Type typeOfT,
-                    JsonDeserializationContext context) throws JsonParseException {
-                JsonObject obj = json.getAsJsonObject();
+				CostFunction<Primitive64Matrix> cf = ConverterUtil.ojCostFunctions
+					.get(obj.get("name").getAsString());
 
-                EvaluationFunction<Primitive64Matrix> cf = ConverterUtil.ojEvaluators
-                        .get(obj.get("name").getAsString());
+				return cf;
+			});
 
-                double val = tryToFind(obj, "v1");
+		gsonb.registerTypeAdapter(evalFunction,
+			(JsonDeserializer<EvaluationFunction<Primitive64Matrix>>) (json, typeOfT, context) -> {
+				JsonObject obj = json.getAsJsonObject();
 
-                cf.init(val);
+				EvaluationFunction<Primitive64Matrix> cf = ConverterUtil.ojEvaluators
+					.get(obj.get("name").getAsString());
 
-                return cf;
-            }
-        });
+				double val = tryToFind(obj, "v1");
 
-        gsonb.registerTypeAdapter(matrices, new JsonDeserializer<List<Matrix<Primitive64Matrix>>>() {
+				cf.init(val);
 
-            @Override
-            public List<Matrix<Primitive64Matrix>> deserialize(JsonElement json, Type typeOfT,
-                    JsonDeserializationContext context) throws JsonParseException {
-                JsonObject matrices = json.getAsJsonObject();
-                int index = matrices.entrySet().size();
-                List<Matrix<Primitive64Matrix>> out = new ArrayList<>();
-                for (int i = 0; i < index; i++) {
-                    JsonArray arr = matrices.get(i + "").getAsJsonArray();
+				return cf;
+			});
 
-                    int rows = arr.size();
-                    int cols = arr.get(0).getAsJsonArray().size();
+		gsonb.registerTypeAdapter(matrix,
+			(JsonDeserializer<Matrix<Primitive64Matrix>>) (json, typeOfT, context) -> {
+				JsonArray matrix1 = json.getAsJsonArray();
+				int rows = matrix1.size();
+				int cols = matrix1.get(0).getAsJsonArray().size();
 
-                    double[][] values = new double[rows][cols];
-                    for (int k = 0; k < rows; k++) {
-                        JsonArray row = arr.get(k).getAsJsonArray();
-                        for (int j = 0; j < cols; j++) {
-                            values[k][j] = row.get(j).getAsDouble();
-                        }
-                    }
-                    out.add(new OjAlgoMatrix(values));
-                }
+				double[][] values = new double[rows][cols];
+				for (int k = 0; k < rows; k++) {
+					JsonArray row = matrix1.get(k).getAsJsonArray();
+					for (int j = 0; j < cols; j++) {
+						values[k][j] = row.get(j).getAsDouble();
+					}
+				}
 
-                return out;
-            }
-        });
+				return new OjAlgoMatrix(values);
+			});
 
-        gsonb.registerTypeAdapter(network, new OjAlgoNetworkDeserializer());
-        this.gson = gsonb.create();
-    }
+		gsonb.registerTypeAdapter(layer,
+			(JsonDeserializer<NetworkLayer<Primitive64Matrix>>) (src, typeOfSrc, context) -> {
 
-    public NeuralNetwork<Primitive64Matrix> deserialise(File jsonFile) {
+				var data = src.getAsJsonObject().get("layer_data").getAsJsonObject();
+				ActivationFunction<Primitive64Matrix> function = context
+					.deserialize(data.get("function"), activationFunction);
 
-        NeuralNetwork<Primitive64Matrix> out = null;
-        try (JsonReader reader = new JsonReader(new FileReader(jsonFile))) {
-            out = gson.fromJson(reader, network);
-        } catch (IOException | JsonSyntaxException e) {
-            e.printStackTrace();
-        }
+				int neurons = context.deserialize(data.get("neurons"), int.class);
 
-        return out;
-    }
+				NetworkLayer<Primitive64Matrix> out = new NetworkLayer<Primitive64Matrix>(function,
+					neurons);
+				Matrix<Primitive64Matrix> weight, bias;
 
-    public NeuralNetwork<Primitive64Matrix> deserialise(String json) {
-        json = json.trim();
-        return gson.fromJson(json, network);
-    }
+				weight = context.deserialize(data.get("weight"), matrix);
+				bias = context.deserialize(data.get("bias"), matrix);
 
-    private double tryToFind(JsonObject obj, String el) {
-        double val = 0;
-        try {
-            val = obj.get(el).getAsDouble();
-        } catch (NullPointerException | ClassCastException | IllegalStateException e) {
-            val = 0;
-        }
-        return val;
-    }
+				out.setBias(bias);
+				out.setWeight(weight);
+				return out;
+			});
+
+		gsonb.registerTypeAdapter(layers,
+			(JsonDeserializer<List<NetworkLayer<Primitive64Matrix>>>) (src, typeOfSrc, context) -> {
+				JsonArray arrayOfLayers = src.getAsJsonArray();
+				List<NetworkLayer<Primitive64Matrix>> layerList = new ArrayList<>();
+				layerList.add(context.deserialize(arrayOfLayers.get(0).getAsJsonObject(), layer));
+				var temp = context.<NetworkLayer<Primitive64Matrix>>deserialize(
+					arrayOfLayers.get(0).getAsJsonObject(), layer);
+				for (int i = 1; i < arrayOfLayers.size(); i++) {
+					var tempLayer = context
+						.<NetworkLayer<Primitive64Matrix>>deserialize(
+							arrayOfLayers.get(i).getAsJsonObject(), layer);
+
+					tempLayer.setPrecedingLayer(temp);
+					layerList.add(tempLayer);
+					temp = tempLayer;
+				}
+
+				return layerList;
+			});
+
+		gsonb.registerTypeAdapter(network, new LayeredOjAlgoNetworkDeserializer());
+
+		this.gson = gsonb.create();
+	}
+
+	public LayeredNeuralNetwork<Primitive64Matrix> deserialise(File jsonFile) {
+
+		LayeredNeuralNetwork<Primitive64Matrix> out = null;
+		try (JsonReader reader = new JsonReader(new FileReader(jsonFile))) {
+			out = gson.fromJson(reader, network);
+		} catch (IOException | JsonSyntaxException e) {
+			e.printStackTrace();
+		}
+
+		return out;
+	}
+
+	public NeuralNetwork<Primitive64Matrix> deserialise(String json) {
+		json = json.trim();
+		return gson.fromJson(json, network);
+	}
+
+	private double tryToFind(JsonObject obj, String el) {
+		double val = 0;
+		try {
+			val = obj.get(el).getAsDouble();
+		} catch (NullPointerException | ClassCastException | IllegalStateException e) {
+			val = 0;
+		}
+		return val;
+	}
 
 }

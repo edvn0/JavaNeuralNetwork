@@ -135,8 +135,8 @@ public class OjAlgoLayeredSerializer {
 				for (var l : src) {
 					JsonObject lA = new JsonObject();
 
-					lA.add("layer", context.serialize(l, layer));
-					lA.add("index", new JsonPrimitive(i++));
+					lA.add("layer_data", context.serialize(l, layer));
+					lA.add("layer_index", new JsonPrimitive(i++));
 
 					arrayOfLayers.add(lA);
 				}
@@ -147,13 +147,12 @@ public class OjAlgoLayeredSerializer {
 		gsonb.registerTypeAdapter(network,
 			(JsonSerializer<LayeredNeuralNetwork<Primitive64Matrix>>) (src, typeOfSrc, context) -> {
 				JsonObject network = new JsonObject();
-				network.add("layers",
-					context.serialize(src.getLayers(), layers));
-
 				network.add("costFunction", context.serialize(src.getCostFunction(), costFunction));
 				network.add("evaluationFunction",
 					context.serialize(src.getEvaluationFunction(), evalFunction));
 				network.add("optimizer", context.serialize(src.getOptimizer(), optimiser));
+				network.add("layers",
+					context.serialize(src.getLayers(), layers));
 
 				return network;
 			});

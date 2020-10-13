@@ -68,6 +68,11 @@ public class LayeredNetworkBuilder<M> {
 		return new LayeredNeuralNetwork<>(this);
 	}
 
+	public LayeredNeuralNetwork<M> deserialize() {
+		this.total = this.layers.size();
+		return new LayeredNeuralNetwork<>(this, true);
+	}
+
 	public int[] calculateStructure() {
 		int[] structure = new int[this.total];
 		for (int i = 0; i < this.total; i++) {

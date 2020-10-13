@@ -281,3 +281,5 @@ local.properties
 .idea
 /src/main/resources/
 !/src/main/resources/META-INF
+
+/src/test/resources

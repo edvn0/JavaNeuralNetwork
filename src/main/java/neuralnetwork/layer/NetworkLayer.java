@@ -11,7 +11,7 @@ public class NetworkLayer<M> {
 	private final int neurons;
 
 	// Represents the data after activating this layer
-	private transient final ThreadLocal<ZVector<M>> activated;
+	private transient final ThreadLocal<Matrix<M>> activated;
 	private Matrix<M> weight;
 	private Matrix<M> bias;
 
@@ -35,13 +35,12 @@ public class NetworkLayer<M> {
 		this.previousLayer = in.previousLayer;
 	}
 
-	public ZVector<M> calculate(ZVector<M> in) {
+	public Matrix<M> calculate(Matrix<M> in) {
 		if (!hasPrecedingLayer()) {
-			var out = new ZVector<M>(in);
-			this.activated.set(out);
+			this.activated.set(in);
 		} else {
-			var out = new ZVector<>(
-				activationFunction.function(this.weight.multiply(in.getMatrix()).add(bias)));
+			var out =
+				activationFunction.function(this.weight.multiply(in).add(bias));
 			this.activated.set(out);
 		}
 
@@ -88,7 +87,7 @@ public class NetworkLayer<M> {
 	}
 
 	public Matrix<M> activation() {
-		return this.activated.get().getMatrix();
+		return this.activated.get();
 	}
 
 	public boolean hasPrecedingLayer() {

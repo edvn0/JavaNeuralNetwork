@@ -40,7 +40,7 @@ public class SandboxMnistLayered extends AbstractDemo<Primitive64Matrix> {
 
 	@Override
 	protected Pair<Integer, Integer> epochBatch() {
-		return Pair.of(2, 64);
+		return Pair.of(30, 64);
 	}
 
 	@Override
@@ -94,14 +94,15 @@ public class SandboxMnistLayered extends AbstractDemo<Primitive64Matrix> {
 		OjAlgoLayeredSerializer layeredSerializer = new OjAlgoLayeredSerializer();
 		LayeredNeuralNetwork<Primitive64Matrix> actual = (LayeredNeuralNetwork<Primitive64Matrix>) in;
 		layeredSerializer
-			.serialise(new File(this.outputDirectory() + "/OjAlgo_XOR_Network.json"), actual);
+			.serialise(new File(this.outputDirectory() + "/OjAlgo_Layered_XOR_Network.json"),
+				actual);
 	}
 
 	private NetworkInput<Primitive64Matrix> toMnist(String toMnist) {
 		int imageSize = 28 * 28;
 		int labelSize = 10;
 		String labelString = toMnist.substring(0, 2).split(",")[0];
-		String[] rest = toMnist.substring(2, toMnist.length()).split(",");
+		String[] rest = toMnist.substring(2).split(",");
 
 		int label = Integer.parseInt(labelString);
 		double[] labels = new double[labelSize];

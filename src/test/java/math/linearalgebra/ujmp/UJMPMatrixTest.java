@@ -1,10 +1,10 @@
 package math.linearalgebra.ujmp;
 
+import static org.junit.Assert.assertEquals;
+
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
 
 public class UJMPMatrixTest {
 
