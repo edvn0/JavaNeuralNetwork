@@ -1,10 +1,9 @@
 package math.evaluation;
 
-import neuralnetwork.inputs.NetworkInput;
-import utilities.serialise.NetworkSerialisable;
-
 import java.util.Collections;
 import java.util.List;
+import neuralnetwork.inputs.NetworkInput;
+import utilities.serialise.NetworkSerialisable;
 
 /**
  * Evaluate a set of test data against some strategy, like thresholds or

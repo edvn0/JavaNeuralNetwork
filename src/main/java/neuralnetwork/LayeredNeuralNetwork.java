@@ -80,7 +80,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 				Collectors.toList());
 		int batches = training.size() / batchSize;
 		for (int i = 0; i < batches; i++) {
-			double trainingEvaluation = getBatch(i, batchSize, zVectorTraining).stream()
+			double trainingEvaluation = getBatch(i, batchSize, zVectorTraining).parallelStream()
 				.map(e ->
 					Pair.of(this.evaluate(e.left(), e.right()), e.right())
 				).mapToDouble(e -> this.evaluationFunction

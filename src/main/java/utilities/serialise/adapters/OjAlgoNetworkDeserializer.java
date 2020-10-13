@@ -1,23 +1,20 @@
 package utilities.serialise.adapters;
 
-import java.lang.reflect.Type;
-import java.util.List;
-
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
-
-import org.ojalgo.matrix.Primitive64Matrix;
-
+import java.lang.reflect.Type;
+import java.util.List;
 import math.activations.ActivationFunction;
 import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
 import neuralnetwork.NeuralNetwork;
+import org.ojalgo.matrix.Primitive64Matrix;
 import utilities.serialise.OjAlgoNetwork;
 
 public class OjAlgoNetworkDeserializer implements JsonDeserializer<NeuralNetwork<Primitive64Matrix>> {

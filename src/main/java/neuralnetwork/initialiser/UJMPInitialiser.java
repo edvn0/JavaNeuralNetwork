@@ -1,10 +1,9 @@
 package neuralnetwork.initialiser;
 
-import math.linearalgebra.Matrix;
-import math.linearalgebra.ujmp.UJMPMatrix;
-
 import java.util.ArrayList;
 import java.util.List;
+import math.linearalgebra.Matrix;
+import math.linearalgebra.ujmp.UJMPMatrix;
 
 public class UJMPInitialiser extends ParameterInitialiser<org.ujmp.core.Matrix> {
 

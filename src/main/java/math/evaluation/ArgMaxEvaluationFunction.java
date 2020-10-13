@@ -1,10 +1,9 @@
 package math.evaluation;
 
-import math.linearalgebra.Matrix;
-import neuralnetwork.inputs.NetworkInput;
-
 import java.util.LinkedHashMap;
 import java.util.List;
+import math.linearalgebra.Matrix;
+import neuralnetwork.inputs.NetworkInput;
 
 /**
  * Evaluation function which returns a correct value iff the argmax of the

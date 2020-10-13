@@ -1,10 +1,9 @@
 package math.optimizers;
 
+import java.util.List;
 import math.linearalgebra.Matrix;
 import neuralnetwork.layer.NetworkLayer;
 import utilities.serialise.NetworkSerialisable;
-
-import java.util.List;
 
 /**
  * The optimizer for the gradient descent, represents some strategy for the

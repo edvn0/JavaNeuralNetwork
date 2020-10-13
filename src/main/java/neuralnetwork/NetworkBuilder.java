@@ -1,5 +1,9 @@
 package neuralnetwork;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import math.activations.ActivationFunction;
 import math.activations.DoNothingFunction;
 import math.costfunctions.CostFunction;
@@ -7,11 +11,6 @@ import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
 import neuralnetwork.initialiser.ParameterInitialiser;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class NetworkBuilder<M> {
 

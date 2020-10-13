@@ -1,6 +1,6 @@
 package utilities;
 
-import neuralnetwork.inputs.NetworkInput;
+import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -14,8 +14,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
-
-import static java.util.stream.Collectors.toList;
+import neuralnetwork.inputs.NetworkInput;
 
 public class NetworkUtilities {
 

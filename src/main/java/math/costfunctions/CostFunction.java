@@ -1,9 +1,8 @@
 package math.costfunctions;
 
+import java.util.List;
 import math.linearalgebra.Matrix;
 import neuralnetwork.inputs.NetworkInput;
-
-import java.util.List;
 
 /**
  * The cost of the neural network has to be able to encode information about how

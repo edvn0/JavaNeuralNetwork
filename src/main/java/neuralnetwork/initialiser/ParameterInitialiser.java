@@ -1,8 +1,7 @@
 package neuralnetwork.initialiser;
 
-import math.linearalgebra.Matrix;
-
 import java.util.List;
+import math.linearalgebra.Matrix;
 
 public abstract class ParameterInitialiser<M> {
 

@@ -1,9 +1,8 @@
 package math.costfunctions;
 
+import java.util.List;
 import math.linearalgebra.Matrix;
 import neuralnetwork.inputs.NetworkInput;
-
-import java.util.List;
 
 public class BinaryCrossEntropyCostFunction<M> implements CostFunction<M> {
 

@@ -14,10 +14,8 @@ import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
 import neuralnetwork.initialiser.ParameterInitialiser;
 import neuralnetwork.inputs.NetworkInput;
-import neuralnetwork.layer.ZVector;
 import org.jetbrains.annotations.NotNull;
 import utilities.NetworkUtilities;
-import utilities.types.Pair;
 
 /**
  * A class which can be both a single layer perceptron, and at the same time: an artifical deep
