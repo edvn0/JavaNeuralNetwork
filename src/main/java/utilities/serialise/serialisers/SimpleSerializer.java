@@ -49,6 +49,7 @@ public class SimpleSerializer {
         var firstLayer = layers.remove(0);
 
         firstL.addProperty("neurons", firstLayer.getNeurons());
+        layersArray.add(firstL);
 
         for (var l : layers) {
             JsonObject layer = new JsonObject();
