@@ -9,7 +9,7 @@ import math.optimizers.Optimizer;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
-import neuralnetwork.initialiser.UJMPInitialiser;
+import neuralnetwork.initialiser.UJMPInitializer;
 
 public class UJMPNetwork {
 
@@ -40,7 +40,7 @@ public class UJMPNetwork {
 		builder.setWeights(weights);
 		builder.setBiases(biases);
 
-		UJMPInitialiser initialiser = new UJMPInitialiser(MethodConstants.XAVIER,
+		UJMPInitializer initialiser = new UJMPInitializer(MethodConstants.XAVIER,
 			MethodConstants.SCALAR);
 		initialiser.init(paramSizes);
 

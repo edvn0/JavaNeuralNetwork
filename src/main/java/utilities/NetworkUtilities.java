@@ -56,20 +56,6 @@ public class NetworkUtilities {
 		return path.limit(size).skip(offset).map(line -> line.split(",")).map(f).collect(toList());
 	}
 
-	public static <M> List<NetworkInput<M>> readGzip(final String fileName) {
-		List<NetworkInput<M>> output = new ArrayList<>();
-		try (BufferedReader is = new BufferedReader(
-			new InputStreamReader(new GZIPInputStream(new FileInputStream(fileName))))) {
-			String line;
-			while ((line = is.readLine()) != null) {
-				System.out.println(line);
-			}
-		} catch (IOException e) {
-
-		}
-		return output;
-	}
-
 	/**
 	 * Splits the data into batches of training data.
 	 *

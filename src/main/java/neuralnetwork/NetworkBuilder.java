@@ -10,7 +10,7 @@ import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
-import neuralnetwork.initialiser.ParameterInitialiser;
+import neuralnetwork.initialiser.ParameterInitializer;
 
 public class NetworkBuilder<M> {
 
@@ -27,7 +27,7 @@ public class NetworkBuilder<M> {
     protected Map<Integer, ActivationFunction<M>> functionMap;
     protected List<Matrix<M>> weights;
     protected List<Matrix<M>> biases;
-    protected ParameterInitialiser<M> initialiser;
+    protected ParameterInitializer<M> initialiser;
 
     public NetworkBuilder(int[] structure) {
         this.structure = structure;
@@ -74,7 +74,7 @@ public class NetworkBuilder<M> {
         return this;
     }
 
-    public NetworkBuilder<M> setInitialiser(final ParameterInitialiser<M> pi) {
+    public NetworkBuilder<M> setInitialiser(final ParameterInitializer<M> pi) {
         this.initialiser = pi;
         return this;
     }

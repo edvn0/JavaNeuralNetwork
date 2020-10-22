@@ -34,8 +34,7 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 	@Override
 	public String toString() {
 		return new StringJoiner(", ", OjAlgoMatrix.class.getSimpleName() + "[", "]")
-			.add("rawCopy=" + Arrays.deepToString(this.rawCopy()))
-			.toString();
+				.add("rawCopy=" + Arrays.deepToString(this.rawCopy())).toString();
 	}
 
 	@Override
@@ -92,7 +91,6 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 		double[] array = this.delegate.toRawCopy1D();
 		return MathUtilities.argMax(array);
 	}
-
 
 	@Override
 	public OjAlgoMatrix transpose() {
@@ -161,7 +159,7 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 			throw new IllegalArgumentException("Trying to take the norm of matrix... sus.");
 		}
 
-		return this.mapElements(e -> e * e).map(Matrix::sum);
+		return this.mapElements(e -> e * e).map(e -> Math.sqrt(e.sum()));
 	}
 
 	@Override

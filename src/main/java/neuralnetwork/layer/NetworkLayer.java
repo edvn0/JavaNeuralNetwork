@@ -20,12 +20,22 @@ public class NetworkLayer<M> {
 	private transient int deltasAdded;
 	private transient Matrix<M> deltaWeight;
 	private transient Matrix<M> deltaBias;
+	private double l2;
 
 	public NetworkLayer(ActivationFunction<M> activationFunction, int neurons) {
 		this.activationFunction = activationFunction;
 		this.activated = new ThreadLocal<>();
 		this.neurons = neurons;
 		this.deltasAdded = 0;
+		this.l2 = 0d;
+	}
+
+	public NetworkLayer(ActivationFunction<M> activationFunction, int neurons, double l2) {
+		this.activationFunction = activationFunction;
+		this.activated = new ThreadLocal<>();
+		this.neurons = neurons;
+		this.deltasAdded = 0;
+		this.l2 = l2;
 	}
 
 	public NetworkLayer(NetworkLayer<M> in) {
@@ -39,8 +49,7 @@ public class NetworkLayer<M> {
 		if (!hasPrecedingLayer()) {
 			this.activated.set(in);
 		} else {
-			var out =
-				activationFunction.function(this.weight.multiply(in).add(bias));
+			var out = activationFunction.function(this.weight.multiply(in).add(bias));
 			this.activated.set(out);
 		}
 
@@ -55,6 +64,13 @@ public class NetworkLayer<M> {
 
 	public synchronized void fit(int index, Optimizer<M> optimizer) {
 		if (this.deltasAdded > 0) {
+
+			if (l2 > 0) {
+				// regularization
+				this.deltaWeight = this.deltaWeight.mapElements(e -> e - this.l2 * e);
+				this.deltaBias = this.deltaBias.mapElements(e -> e - this.l2 * e);
+			}
+
 			var averageDeltaW = this.deltaWeight.mapElements(e -> e / this.deltasAdded);
 			var averageDeltaB = this.deltaBias.mapElements(e -> e / this.deltasAdded);
 			this.bias = optimizer.changeBias(index, this.bias, averageDeltaB);
@@ -106,22 +122,18 @@ public class NetworkLayer<M> {
 		this.previousLayer = prev;
 	}
 
-
 	@Override
 	public String toString() {
 
 		if (this.weight == null) {
 			return new StringJoiner(", ", NetworkLayer.class.getSimpleName() + "[", "]")
-				.add("activationFunction=" + activationFunction.getName()).add("neurons=" + neurons)
-				.toString();
+					.add("activationFunction=" + activationFunction.getName()).add("neurons=" + neurons).toString();
 		}
 
 		return new StringJoiner(", ", NetworkLayer.class.getSimpleName() + "[", "]")
-			.add("activationFunction=" + activationFunction.getName())
-			.add("weight=[" + weight.rows()).add(weight.cols() + "]")
-			.add("bias=[" + bias.rows()).add(bias.cols() + "]")
-			.add("neurons=" + neurons)
-			.toString();
+				.add("activationFunction=" + activationFunction.getName()).add("weight=[" + weight.rows())
+				.add(weight.cols() + "]").add("bias=[" + bias.rows()).add(bias.cols() + "]").add("neurons=" + neurons)
+				.toString();
 	}
 
 	public void setDeltaWeight(final Matrix<M> layerDeltaWeight) {

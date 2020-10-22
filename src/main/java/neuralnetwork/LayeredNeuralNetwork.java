@@ -9,9 +9,10 @@ import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
-import neuralnetwork.initialiser.ParameterInitialiser;
+import neuralnetwork.initialiser.ParameterInitializer;
 import neuralnetwork.inputs.NetworkInput;
 import neuralnetwork.layer.NetworkLayer;
+import utilities.types.Pair;
 
 @Slf4j
 public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
@@ -24,7 +25,9 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 	// The optimizer to be used
 	private final Optimizer<M> optimizer;
 
-	private final ParameterInitialiser<M> initializer;
+	private final ParameterInitializer<M> initializer;
+
+	private boolean clipping;
 
 	public LayeredNeuralNetwork(LayeredNetworkBuilder<M> b) {
 		this.costFunction = b.costFunction;
@@ -35,6 +38,8 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 
 		this.initializer = b.initializer;
 		initializer.init(b.calculateStructure());
+
+		this.clipping = b.gradientClipping;
 
 		this.networkLayers = new ArrayList<>();
 
@@ -90,47 +95,79 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		}
 	}
 
-	private static <U> List<U> getBatch(final int i, final int batchSize,
-		final List<U> data) {
+	private static <U> List<U> getBatch(final int i, final int batchSize, final List<U> data) {
 		int fromIx = i * batchSize;
 		int toIx = Math.min(data.size(), (i + 1) * batchSize);
 		return Collections.unmodifiableList(data.subList(fromIx, toIx));
 	}
 
-	public void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation,
-		final int epochs,
-		final int batchSize) {
+	public void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation, final int epochs,
+			final int batchSize) {
 
 		int batches = training.size() / batchSize;
 
 		log.info("Prior to training:");
 		log.info("Initial loss: \t {}", this.testLoss(validation));
-		log.info("Initial evaluation percentage: \t {}%.\n",
-			this.testEvaluation(validation, 37) * 100);
+		log.info("Initial evaluation percentage: \t {}%.\n", this.testEvaluation(validation, 37) * 100);
 
 		for (int epoch = 0; epoch < epochs; epoch++) {
 			log.info("Epoch: \t {}", epoch + 1);
 			for (int i = 0; i <= batches; i++) {
 				Collections.shuffle(training);
-				getBatch(i, batchSize, training).parallelStream()
-					.forEach(e -> {
-						this.evaluate(e.getData(), e.getLabel());
-					});
+				getBatch(i, batchSize, training).parallelStream().forEach(e -> {
+					this.evaluate(e.getData(), e.getLabel());
+				});
 				this.fit();
 			}
 
 			if ((epoch + 1) % 5 == 0) {
 				log.info("Loss: \t\t\t {}", this.testLoss(validation));
-				log.info("Evaluation percentage: \t {}%.\n",
-					this.testEvaluation(validation, 37) * 100);
+				log.info("Evaluation percentage: \t {}%.\n", this.testEvaluation(validation, 37) * 100);
+			}
+		}
+	}
+
+	public void train(List<NetworkInput<M>> training, final int epochs) {
+		for (int i = 0; i < epochs; i++) {
+			training.forEach(e -> this.evaluate(e.getData(), e.getLabel()));
+			this.fit();
+		}
+	}
+
+	public void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation, final int epochs,
+			final int batchSize, boolean silent) {
+
+		int batches = training.size() / batchSize;
+
+		if (!silent) {
+			log.info("Prior to training:");
+			log.info("Initial loss: \t {}", this.testLoss(validation));
+			log.info("Initial evaluation percentage: \t {}%.\n", this.testEvaluation(validation, 37) * 100);
+		}
+		for (int epoch = 0; epoch < epochs; epoch++) {
+			if (!silent) {
+				log.info("Epoch: \t {}", epoch + 1);
+			}
+			for (int i = 0; i <= batches; i++) {
+				Collections.shuffle(training);
+				getBatch(i, batchSize, training).parallelStream().forEach(e -> {
+					this.evaluate(e.getData(), e.getLabel());
+				});
+				this.fit();
+			}
+
+			if (!silent) {
+				if ((epoch + 1) % 5 == 0) {
+					log.info("Loss: \t\t\t {}", this.testLoss(validation));
+					log.info("Evaluation percentage: \t {}%.\n", this.testEvaluation(validation, 37) * 100);
+				}
 			}
 		}
 	}
 
 	@Override
-	public void trainWithMetrics(final List<NetworkInput<M>> training,
-		final List<NetworkInput<M>> validation,
-		final int epochs, final int batchSize, final String outputPath) {
+	public void trainWithMetrics(final List<NetworkInput<M>> training, final List<NetworkInput<M>> validation,
+			final int epochs, final int batchSize, final String outputPath) {
 
 	}
 
@@ -156,12 +193,26 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		}
 	}
 
+	@Override
+	public void copyParameters(final List<Matrix<M>> weights, final List<Matrix<M>> biases) {
+
+		for (int i = 0; i < weights.size(); i++) {
+			int layerIndex = i + 1;
+			this.networkLayers.get(layerIndex).setWeight(weights.get(i));
+			this.networkLayers.get(layerIndex).setBias(biases.get(i));
+		}
+
+	}
+
+	@Override
+	public List<Pair<Matrix<M>, Matrix<M>>> getParameters() {
+		return this.networkLayers.stream().filter(e -> e.getWeight() != null)
+				.map(e -> Pair.of(e.getWeight(), e.getBias())).collect(Collectors.toList());
+	}
+
 	private List<NetworkInput<M>> feedforward(List<NetworkInput<M>> data) {
-		return data.stream()
-			.map(e -> new NetworkInput<M>(
-				this.checkEvaluate(e.getData(), null),
-				e.getLabel()))
-			.collect(Collectors.toList());
+		return data.stream().map(e -> new NetworkInput<M>(this.checkEvaluate(e.getData(), null), e.getLabel()))
+				.collect(Collectors.toList());
 	}
 
 	private Matrix<M> checkEvaluate(final Matrix<M> data, final Matrix<M> label) {
@@ -185,7 +236,6 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		return toEvaluate;
 	}
 
-
 	public Matrix<M> predict(Matrix<M> input) {
 		return this.checkEvaluate(input, null);
 	}
@@ -198,8 +248,14 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		var layer = getLastLayer();
 		var lastActivation = layer.activation();
 
-		var costDerivative = this.costFunction
-			.applyCostFunctionGradient(lastActivation, label);
+		var costDerivative = this.costFunction.applyCostFunctionGradient(lastActivation, label);
+
+		if (this.clipping) {
+			double norm = costDerivative.norm();
+			if (norm > 1) {
+				costDerivative = costDerivative.multiply(1 / norm);
+			}
+		}
 
 		do {
 			// Also deltaBias.
@@ -249,7 +305,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		return this.networkLayers;
 	}
 
-	public ParameterInitialiser<M> getInitializer() {
+	public ParameterInitializer<M> getInitializer() {
 		return this.initializer;
 	}
 

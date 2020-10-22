@@ -20,8 +20,8 @@ public interface Matrix<M> {
 	int cols();
 
 	/**
-	 * Matrix<M> multiplication, should throw if cols and rows do not match. Contract is This X in,
-	 * i.e. this_rows*this_cols X in_cols*in_rows
+	 * Matrix<M> multiplication, should throw if cols and rows do not match.
+	 * Contract is This X in, i.e. this_rows*this_cols X in_cols*in_rows
 	 *
 	 * @param otherMatrix right operand
 	 *
@@ -205,7 +205,7 @@ public interface Matrix<M> {
 	/**
 	 * Norm of a vector.
 	 *
-	 * @return sum of squared components.
+	 * @return square root of sum of squared components.
 	 *
 	 * @throws MatrixException if cols() != 1.
 	 */

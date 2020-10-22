@@ -7,7 +7,7 @@ import math.optimizers.Optimizer;
 import neuralnetwork.LayeredNetworkBuilder;
 import neuralnetwork.LayeredNeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
-import neuralnetwork.initialiser.OjAlgoInitialiser;
+import neuralnetwork.initialiser.OjAlgoInitializer;
 import neuralnetwork.layer.NetworkLayer;
 import org.ojalgo.matrix.Primitive64Matrix;
 
@@ -28,7 +28,7 @@ public class LayeredOjAlgoNetwork {
 			builder = builder.layer(l);
 		}
 
-		OjAlgoInitialiser initializer = new OjAlgoInitialiser(MethodConstants.XAVIER,
+		OjAlgoInitializer initializer = new OjAlgoInitializer(MethodConstants.XAVIER,
 			MethodConstants.SCALAR);
 		initializer.init(builder.calculateStructure());
 

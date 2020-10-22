@@ -6,9 +6,9 @@ import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import org.ojalgo.matrix.Primitive64Matrix;
 
-public class OjAlgoInitialiser extends ParameterInitialiser<Primitive64Matrix> {
+public class OjAlgoInitializer extends ParameterInitializer<Primitive64Matrix> {
 
-    public OjAlgoInitialiser(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
+    public OjAlgoInitializer(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
         super(weightMethod, biasMethod);
     }
 
@@ -60,6 +60,11 @@ public class OjAlgoInitialiser extends ParameterInitialiser<Primitive64Matrix> {
     @Override
     public Matrix<Primitive64Matrix> getFirstBias() {
         return new OjAlgoMatrix(this.bM.initialisationValues(0, this.sizes[0], 1));
+    }
+
+    @Override
+    public String name() {
+        return "OjAlgoInitializer";
     }
 
 }

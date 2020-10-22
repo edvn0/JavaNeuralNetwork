@@ -5,6 +5,9 @@ import static utilities.MathUtilities.simpleMap;
 import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.function.Function;
+
+import org.ujmp.core.calculation.Calculation.Ret;
+
 import math.linearalgebra.Matrix;
 import utilities.MathUtilities;
 import utilities.exceptions.MatrixException;
@@ -187,7 +190,7 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
 			throw new MatrixException("Not a vector.");
 		}
 
-		return new UJMPMatrix(this.delegate.times(this.delegate)).map(e -> e.sum());
+		return this.delegate.times(this.delegate).sqrt(Ret.NEW).getValueSum();
 	}
 
 	@Override

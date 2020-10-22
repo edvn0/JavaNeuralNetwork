@@ -18,7 +18,7 @@ import neuralnetwork.DeepLearnable;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
-import neuralnetwork.initialiser.UJMPInitialiser;
+import neuralnetwork.initialiser.UJMPInitializer;
 import neuralnetwork.inputs.NetworkInput;
 import utilities.serialise.serialisers.UJMPSerializer;
 import utilities.types.Pair;
@@ -80,7 +80,7 @@ public class SandboxMnist extends AbstractDemo<org.ujmp.core.Matrix> {
 				.setCostFunction(new CrossEntropyCostFunction<>())
 				.setEvaluationFunction(new ArgMaxEvaluationFunction<>())
 				.setOptimizer(new ADAM<>(0.01, 0.9, 0.999)), // new ADAM<>(0.01, 0.9, 0.999)),
-			new UJMPInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
+			new UJMPInitializer(MethodConstants.XAVIER, MethodConstants.SCALAR));
 	}
 
 	@Override

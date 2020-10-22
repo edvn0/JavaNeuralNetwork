@@ -17,7 +17,7 @@ import neuralnetwork.DeepLearnable;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
-import neuralnetwork.initialiser.OjAlgoInitialiser;
+import neuralnetwork.initialiser.OjAlgoInitializer;
 import neuralnetwork.inputs.NetworkInput;
 import org.ojalgo.matrix.Primitive64Matrix;
 import utilities.serialise.serialisers.OjAlgoSerializer;
@@ -77,7 +77,7 @@ public class SandboxXOR extends AbstractDemo<Primitive64Matrix> {
                 .setCostFunction(new CrossEntropyCostFunction<>())
                 .setEvaluationFunction(new ArgMaxEvaluationFunction<>())
                 .setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
-            new OjAlgoInitialiser(MethodConstants.XAVIER, MethodConstants.SCALAR));
+            new OjAlgoInitializer(MethodConstants.XAVIER, MethodConstants.SCALAR));
     }
 
     @Override

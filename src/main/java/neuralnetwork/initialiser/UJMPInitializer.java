@@ -5,9 +5,9 @@ import java.util.List;
 import math.linearalgebra.Matrix;
 import math.linearalgebra.ujmp.UJMPMatrix;
 
-public class UJMPInitialiser extends ParameterInitialiser<org.ujmp.core.Matrix> {
+public class UJMPInitializer extends ParameterInitializer<org.ujmp.core.Matrix> {
 
-    public UJMPInitialiser(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
+    public UJMPInitializer(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
         super(weightMethod, biasMethod);
         this.wM = weightMethod;
         this.bM = biasMethod;
@@ -56,6 +56,11 @@ public class UJMPInitialiser extends ParameterInitialiser<org.ujmp.core.Matrix> 
     @Override
     public Matrix<org.ujmp.core.Matrix> getFirstBias() {
         return new UJMPMatrix(this.bM.initialisationValues(0, this.sizes[0], 1));
+    }
+
+    @Override
+    public String name() {
+        return "UJMPInitializer";
     }
 
 }

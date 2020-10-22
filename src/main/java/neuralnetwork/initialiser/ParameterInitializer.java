@@ -2,14 +2,15 @@ package neuralnetwork.initialiser;
 
 import java.util.List;
 import math.linearalgebra.Matrix;
+import utilities.types.Pair;
 
-public abstract class ParameterInitialiser<M> {
+public abstract class ParameterInitializer<M> {
 
     protected int[] sizes;
     protected InitialisationMethod wM;
     protected InitialisationMethod bM;
 
-    public ParameterInitialiser(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
+    public ParameterInitializer(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
         this.wM = weightMethod;
         this.bM = biasMethod;
     }
@@ -22,6 +23,8 @@ public abstract class ParameterInitialiser<M> {
 
     public abstract List<Matrix<M>> getBiasParameters();
 
+    protected abstract List<Matrix<M>> getDeltaParameters(boolean isBias);
+
     public List<Matrix<M>> getDeltaWeightParameters() {
         return getDeltaParameters(false);
     }
@@ -30,8 +33,12 @@ public abstract class ParameterInitialiser<M> {
         return getDeltaParameters(true);
     }
 
-    protected abstract List<Matrix<M>> getDeltaParameters(boolean isBias);
-
     public abstract Matrix<M> getFirstBias();
+
+    public abstract String name();
+
+    public Pair<InitialisationMethod, InitialisationMethod> getMethods() {
+        return Pair.of(wM, bM);
+    }
 
 }

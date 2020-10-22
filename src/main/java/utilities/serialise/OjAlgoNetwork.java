@@ -9,7 +9,7 @@ import math.optimizers.Optimizer;
 import neuralnetwork.NetworkBuilder;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
-import neuralnetwork.initialiser.OjAlgoInitialiser;
+import neuralnetwork.initialiser.OjAlgoInitializer;
 import org.ojalgo.matrix.Primitive64Matrix;
 
 public class OjAlgoNetwork {
@@ -39,7 +39,7 @@ public class OjAlgoNetwork {
 		builder.setWeights(weights);
 		builder.setBiases(biases);
 
-		OjAlgoInitialiser initialiser = new OjAlgoInitialiser(MethodConstants.XAVIER,
+		OjAlgoInitializer initialiser = new OjAlgoInitializer(MethodConstants.XAVIER,
 			MethodConstants.SCALAR);
 		initialiser.init(paramSizes);
 
