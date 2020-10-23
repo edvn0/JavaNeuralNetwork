@@ -9,7 +9,7 @@
       "name": "Debug (Launch) - Sandbox",
       "request": "launch",
       "mainClass": "demos.Sandbox",
-      "args": "MNIST_OJ_ALGO_LAYERED",
+      "args": "SIMPLE",
       "projectName": "NeuralNetwork"
     }
   ]

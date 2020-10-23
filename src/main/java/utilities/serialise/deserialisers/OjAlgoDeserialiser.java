@@ -25,7 +25,7 @@ import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import math.optimizers.Optimizer;
 import neuralnetwork.NeuralNetwork;
 import org.ojalgo.matrix.Primitive64Matrix;
-import utilities.serialise.ConverterUtil;
+import utilities.serialise.NetworkDataCache;
 import utilities.serialise.adapters.OjAlgoNetworkDeserializer;
 
 public class OjAlgoDeserialiser {
@@ -56,7 +56,7 @@ public class OjAlgoDeserialiser {
                         JsonArray arr = json.getAsJsonArray();
                         List<ActivationFunction<Primitive64Matrix>> functions = new ArrayList<>();
                         for (var a : arr) {
-                            functions.add(ConverterUtil.ojFunctions.get(a.getAsString()));
+                            functions.add(NetworkDataCache.ojFunctions.get(a.getAsString()));
                         }
 
                         return functions;
@@ -70,7 +70,7 @@ public class OjAlgoDeserialiser {
                     JsonDeserializationContext context) throws JsonParseException {
                 JsonObject obj = json.getAsJsonObject();
 
-                Optimizer<Primitive64Matrix> op = ConverterUtil.ojOptimisers.get(obj.get("name").getAsString());
+                Optimizer<Primitive64Matrix> op = NetworkDataCache.ojOptimisers.get(obj.get("name").getAsString());
 
                 double lR = tryToFind(obj, "v1"); // always learning rate
                 double v2 = tryToFind(obj, "v2"); // beta1 or momentum
@@ -89,7 +89,7 @@ public class OjAlgoDeserialiser {
                     JsonDeserializationContext context) throws JsonParseException {
                 JsonObject obj = json.getAsJsonObject();
 
-                CostFunction<Primitive64Matrix> cf = ConverterUtil.ojCostFunctions.get(obj.get("name").getAsString());
+                CostFunction<Primitive64Matrix> cf = NetworkDataCache.ojCostFunctions.get(obj.get("name").getAsString());
 
                 return cf;
             }
@@ -100,7 +100,7 @@ public class OjAlgoDeserialiser {
                     JsonDeserializationContext context) throws JsonParseException {
                 JsonObject obj = json.getAsJsonObject();
 
-                EvaluationFunction<Primitive64Matrix> cf = ConverterUtil.ojEvaluators
+                EvaluationFunction<Primitive64Matrix> cf = NetworkDataCache.ojEvaluators
                         .get(obj.get("name").getAsString());
 
                 double val = tryToFind(obj, "v1");

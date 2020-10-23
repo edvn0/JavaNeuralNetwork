@@ -12,14 +12,23 @@ public class CrossEntropyCostFunction<M> implements CostFunction<M> {
 	public double calculateCostFunction(final List<NetworkInput<M>> tData) {
 		double size = tData.size();
 
+		if (size == 1) {
+			return calcuateSingle(tData.get(0));
+		}
+
 		double loss = 0d;
 
 		for (var data : tData) {
-			var inner = data.getLabel().hadamard(data.getData().add(1e-9).mapElements(Math::log));
-			loss += inner.sum();
+			loss += calcuateSingle(data);
 		}
 
 		return -loss / size;
+	}
+
+	@Override
+	public double calcuateSingle(NetworkInput<M> data) {
+		var inner = data.getLabel().hadamard(data.getData().add(1e-9).mapElements(Math::log));
+		return inner.sum();
 	}
 
 	@Override
@@ -31,4 +40,5 @@ public class CrossEntropyCostFunction<M> implements CostFunction<M> {
 	public String name() {
 		return NAME;
 	}
+
 }

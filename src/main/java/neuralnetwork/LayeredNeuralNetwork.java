@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+
 import lombok.extern.slf4j.Slf4j;
 import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
@@ -28,6 +30,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 	private final ParameterInitializer<M> initializer;
 
 	private boolean clipping;
+	private int inputNeurons;
 
 	public LayeredNeuralNetwork(LayeredNetworkBuilder<M> b) {
 		this.costFunction = b.costFunction;
@@ -44,6 +47,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		this.networkLayers = new ArrayList<>();
 
 		var first = b.layers.get(0);
+		this.inputNeurons = first.getNeurons();
 		NetworkLayer<M> firstLayer = new NetworkLayer<>(first.getFunction(), first.getNeurons());
 		this.networkLayers.add(firstLayer);
 
@@ -73,7 +77,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		}
 	}
 
-	public LayeredNeuralNetwork(LayeredNetworkBuilder<M> b, boolean deser) {
+	public LayeredNeuralNetwork(int inputNeurons, LayeredNetworkBuilder<M> b, boolean deser) {
 		this.costFunction = b.costFunction;
 		this.evaluationFunction = b.evaluationFunction;
 
@@ -84,6 +88,8 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		initializer.init(b.calculateStructure());
 
 		this.networkLayers = new ArrayList<>();
+
+		this.inputNeurons = inputNeurons;
 
 		var first = b.layers.get(0);
 		NetworkLayer<M> firstLayer = new NetworkLayer<>(first.getFunction(), first.getNeurons());
@@ -188,9 +194,27 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 
 	@Override
 	public void display() {
-		for (var l : networkLayers) {
-			System.out.println(l);
+		final StringBuilder b = new StringBuilder();
+		b.append("\n").append("======================================================================").append("\n")
+				.append("Network information and structure.").append("\n")
+				.append(String.format("Input nodes: [%d]; Output nodes: [%d]%n%n", this.inputNeurons,
+						this.networkLayers.get(this.networkLayers.size() - 1).getNeurons()));
+
+		for (int i = 0; i < this.networkLayers.size() - 1; i++) {
+			var l = this.networkLayers.get(i);
+			var l2 = this.networkLayers.get(i + 1);
+			final int[] dims = new int[] { l.getNeurons(), l2.getNeurons() };
+			b.append(String.format("\tLayer %d : [%d X %d]%n", (i + 1), dims[0], dims[1]))
+					.append(String.format("\tActivation function from this layer: %s", l2.getFunction().getName()))
+					.append("\n");
 		}
+
+		b.append("\n").append("The error function: ").append(this.costFunction.name()).append("\n")
+				.append("The evaluation function: ").append(this.evaluationFunction.name()).append("\n")
+				.append("The optimizer: ").append(this.optimizer.name()).append("\n")
+				.append("======================================================================");
+
+		log.info(b.toString());
 	}
 
 	@Override
@@ -290,7 +314,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 	}
 
 	public int getInputSize() {
-		return this.networkLayers.get(0).getNeurons();
+		return this.inputNeurons;
 	}
 
 	public CostFunction<M> getCostFunction() {
@@ -311,5 +335,9 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 
 	public EvaluationFunction<M> getEvaluationFunction() {
 		return this.evaluationFunction;
+	}
+
+	public boolean isClipping() {
+		return clipping;
 	}
 }

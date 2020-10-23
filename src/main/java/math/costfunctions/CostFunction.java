@@ -1,6 +1,5 @@
 package math.costfunctions;
 
-import java.util.Collections;
 import java.util.List;
 import math.linearalgebra.Matrix;
 import neuralnetwork.inputs.NetworkInput;
@@ -21,9 +20,7 @@ public interface CostFunction<M> {
      */
     double calculateCostFunction(List<NetworkInput<M>> tData);
 
-    default double calcuateSingle(NetworkInput<M> data) {
-        return this.calculateCostFunction(Collections.singletonList(data));
-    }
+    double calcuateSingle(NetworkInput<M> data);
 
     /**
      * Calculate the gradient of the cost function with respect to the last layer

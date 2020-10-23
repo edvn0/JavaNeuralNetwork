@@ -76,7 +76,7 @@ public class LayeredNetworkBuilder<M> {
 
 	public LayeredNeuralNetwork<M> deserialize() {
 		this.total = this.layers.size();
-		return new LayeredNeuralNetwork<>(this, true);
+		return new LayeredNeuralNetwork<>(this.layers.get(0).getNeurons(), this, true);
 	}
 
 	public int[] calculateStructure() {

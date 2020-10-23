@@ -15,16 +15,14 @@ public class SmoothL1CostFunction<M> implements CostFunction<M> {
 
     @Override
     public double calculateCostFunction(List<NetworkInput<M>> tData) {
+
+        if (tData.size() == 1) {
+            return calcuateSingle(tData.get(0));
+        }
+
         double huber = 0d;
         for (var d : tData) {
-            Matrix<M> diff = d.getLabel().subtract(d.getData());
-            huber += diff.mapElements(e -> {
-                if (Math.abs(e) < l1) {
-                    return e * e / 2;
-                } else {
-                    return l1 * Math.abs(e) - (l1 * l1) / 2;
-                }
-            }).sum();
+            huber += calcuateSingle(d);
         }
         return huber / tData.size();
     }
@@ -39,6 +37,18 @@ public class SmoothL1CostFunction<M> implements CostFunction<M> {
                 return Math.signum(e);
             }
         });
+    }
+
+    @Override
+    public double calcuateSingle(NetworkInput<M> data) {
+        Matrix<M> diff = data.getLabel().subtract(data.getData());
+        return diff.mapElements(e -> {
+            if (Math.abs(e) < l1) {
+                return e * e / 2;
+            } else {
+                return l1 * Math.abs(e) - (l1 * l1) / 2;
+            }
+        }).sum();
     }
 
     @Override

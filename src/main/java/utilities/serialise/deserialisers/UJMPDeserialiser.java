@@ -24,7 +24,7 @@ import math.linearalgebra.Matrix;
 import math.linearalgebra.ujmp.UJMPMatrix;
 import math.optimizers.Optimizer;
 import neuralnetwork.NeuralNetwork;
-import utilities.serialise.ConverterUtil;
+import utilities.serialise.NetworkDataCache;
 import utilities.serialise.adapters.UJMPNetworkDeserializer;
 
 public class UJMPDeserialiser {
@@ -55,7 +55,7 @@ public class UJMPDeserialiser {
                         JsonArray arr = json.getAsJsonArray();
                         List<ActivationFunction<org.ujmp.core.Matrix>> functions = new ArrayList<>();
                         for (var a : arr) {
-                            functions.add(ConverterUtil.ujmpFunctions.get(a.getAsString()));
+                            functions.add(NetworkDataCache.ujmpFunctions.get(a.getAsString()));
                         }
 
                         return functions;
@@ -69,7 +69,7 @@ public class UJMPDeserialiser {
                     JsonDeserializationContext context) throws JsonParseException {
                 JsonObject obj = json.getAsJsonObject();
 
-                Optimizer<org.ujmp.core.Matrix> op = ConverterUtil.ujmpOptimisers.get(obj.get("name").getAsString());
+                Optimizer<org.ujmp.core.Matrix> op = NetworkDataCache.ujmpOptimisers.get(obj.get("name").getAsString());
 
                 double lR = tryToFind(obj, "v1"); // always learning rate
                 double v2 = tryToFind(obj, "v2"); // beta1 or momentum
@@ -88,7 +88,7 @@ public class UJMPDeserialiser {
                     JsonDeserializationContext context) throws JsonParseException {
                 JsonObject obj = json.getAsJsonObject();
 
-                CostFunction<org.ujmp.core.Matrix> cf = ConverterUtil.ujmpCostFunctions
+                CostFunction<org.ujmp.core.Matrix> cf = NetworkDataCache.ujmpCostFunctions
                         .get(obj.get("name").getAsString());
 
                 return cf;
@@ -100,7 +100,7 @@ public class UJMPDeserialiser {
                     JsonDeserializationContext context) throws JsonParseException {
                 JsonObject obj = json.getAsJsonObject();
 
-                EvaluationFunction<org.ujmp.core.Matrix> cf = ConverterUtil.ujmpEvaluators
+                EvaluationFunction<org.ujmp.core.Matrix> cf = NetworkDataCache.ujmpEvaluators
                         .get(obj.get("name").getAsString());
 
                 double val = tryToFind(obj, "v1");

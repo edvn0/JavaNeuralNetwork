@@ -24,7 +24,7 @@ import neuralnetwork.LayeredNeuralNetwork;
 import neuralnetwork.NeuralNetwork;
 import neuralnetwork.layer.NetworkLayer;
 import org.ojalgo.matrix.Primitive64Matrix;
-import utilities.serialise.ConverterUtil;
+import utilities.serialise.NetworkDataCache;
 import utilities.serialise.adapters.LayeredOjAlgoNetworkDeserializer;
 
 public class LayeredOjAlgoDeserialiser {
@@ -55,14 +55,14 @@ public class LayeredOjAlgoDeserialiser {
 		gsonb.registerTypeAdapter(activationFunction,
 			(JsonDeserializer<ActivationFunction<Primitive64Matrix>>) (json, typeOfT, context) -> {
 
-				return ConverterUtil.ojFunctions.get(json.getAsString());
+				return NetworkDataCache.ojFunctions.get(json.getAsString());
 			});
 
 		gsonb.registerTypeAdapter(optimiser,
 			(JsonDeserializer<Optimizer<Primitive64Matrix>>) (json, typeOfT, context) -> {
 				JsonObject obj = json.getAsJsonObject();
 
-				Optimizer<Primitive64Matrix> op = ConverterUtil.ojOptimisers
+				Optimizer<Primitive64Matrix> op = NetworkDataCache.ojOptimisers
 					.get(obj.get("name").getAsString());
 
 				double lR = tryToFind(obj, "v1"); // always learning rate
@@ -80,7 +80,7 @@ public class LayeredOjAlgoDeserialiser {
 			(JsonDeserializer<CostFunction<Primitive64Matrix>>) (json, typeOfT, context) -> {
 				JsonObject obj = json.getAsJsonObject();
 
-				CostFunction<Primitive64Matrix> cf = ConverterUtil.ojCostFunctions
+				CostFunction<Primitive64Matrix> cf = NetworkDataCache.ojCostFunctions
 					.get(obj.get("name").getAsString());
 
 				return cf;
@@ -90,7 +90,7 @@ public class LayeredOjAlgoDeserialiser {
 			(JsonDeserializer<EvaluationFunction<Primitive64Matrix>>) (json, typeOfT, context) -> {
 				JsonObject obj = json.getAsJsonObject();
 
-				EvaluationFunction<Primitive64Matrix> cf = ConverterUtil.ojEvaluators
+				EvaluationFunction<Primitive64Matrix> cf = NetworkDataCache.ojEvaluators
 					.get(obj.get("name").getAsString());
 
 				double val = tryToFind(obj, "v1");

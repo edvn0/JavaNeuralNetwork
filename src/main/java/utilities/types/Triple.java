@@ -28,4 +28,9 @@ public class Triple<L, M, R> {
         return new Triple<>(left, middle, right);
     }
 
+    @Override
+    public String toString() {
+        return left.toString() + " " + middle.toString() + " " + right.toString();
+    }
+
 }

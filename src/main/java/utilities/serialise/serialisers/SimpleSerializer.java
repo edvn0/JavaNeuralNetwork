@@ -82,6 +82,7 @@ public class SimpleSerializer {
 
             layer.add("weight", weights);
             layer.add("bias", biases);
+            layer.addProperty("l2", l.getL2());
             layersArray.add(layer);
         }
 
@@ -128,6 +129,13 @@ public class SimpleSerializer {
         costfunction.addProperty("name", cost.name());
         networkSerialisation.add("costfunction", costfunction);
         // end cost function
+
+        JsonArray array = new JsonArray();
+        array.add(src.getInputSize());
+        src.getLayers().stream().mapToInt(e -> e.getNeurons()).forEach(e -> array.add(e));
+
+        networkSerialisation.add("networkLayout", array);
+        networkSerialisation.add("clipping", new JsonPrimitive(src.isClipping()));
 
         return networkSerialisation;
     };

@@ -24,7 +24,6 @@ public class CrossEntropyCostFunctionTest {
 	@Test
 	public void calculateCostFunction() {
 		CrossEntropyCostFunction<Primitive64Matrix> test = new CrossEntropyCostFunction<>();
-		SoftmaxFunction<Primitive64Matrix> sm = new SoftmaxFunction<>();
 		var data = List
 			.of(new NetworkInput<Primitive64Matrix>(
 					new OjAlgoMatrix(new double[][]{{0.25}, {0.25}, {0.25}, {0.25}}),

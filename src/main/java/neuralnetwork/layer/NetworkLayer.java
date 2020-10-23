@@ -45,6 +45,15 @@ public class NetworkLayer<M> {
 		this.previousLayer = in.previousLayer;
 	}
 
+	public NetworkLayer(int neurons, double l2, ActivationFunction<M> activation, Matrix<M> weight, Matrix<M> bias) {
+		this.weight = weight;
+		this.bias = bias;
+		this.neurons = neurons;
+		this.l2 = l2;
+		this.activationFunction = activation;
+		this.activated = new ThreadLocal<>();
+	}
+
 	public Matrix<M> calculate(Matrix<M> in) {
 		if (!hasPrecedingLayer()) {
 			this.activated.set(in);
@@ -142,5 +151,9 @@ public class NetworkLayer<M> {
 
 	public void setDeltaBias(final Matrix<M> layerDeltaWeight) {
 		this.deltaBias = layerDeltaWeight;
+	}
+
+	public double getL2() {
+		return this.l2;
 	}
 }

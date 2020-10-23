@@ -1,7 +1,11 @@
 package neuralnetwork.initialiser;
 
 import java.util.List;
+
+import org.ojalgo.matrix.Primitive64Matrix;
+
 import math.linearalgebra.Matrix;
+import math.linearalgebra.simple.SMatrix;
 import utilities.types.Pair;
 
 public abstract class ParameterInitializer<M> {
@@ -39,6 +43,19 @@ public abstract class ParameterInitializer<M> {
 
     public Pair<InitialisationMethod, InitialisationMethod> getMethods() {
         return Pair.of(wM, bM);
+    }
+
+    public static ParameterInitializer<?> get(InitialisationMethod wM, InitialisationMethod bM, String name,
+            Class<?> typeOf) {
+        if (typeOf.equals(SMatrix.class)) {
+            return new SimpleInitializer(wM, bM);
+        } else if (typeOf.equals(Primitive64Matrix.class)) {
+            return new OjAlgoInitializer(wM, bM);
+        } else if (typeOf.equals(org.ujmp.core.Matrix.class)) {
+            return new UJMPInitializer(wM, bM);
+        } else {
+            throw new IllegalArgumentException("Unsupported initializer for this type.");
+        }
     }
 
 }

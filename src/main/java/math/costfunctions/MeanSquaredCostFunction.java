@@ -10,14 +10,24 @@ public class MeanSquaredCostFunction<M> implements CostFunction<M> {
 
     @Override
     public double calculateCostFunction(final List<NetworkInput<M>> tData) {
+
+        if (tData.size() == 1) {
+            return calcuateSingle(tData.get(0));
+        }
+
         double mse = 0;
         for (var d : tData) {
-            var diff = d.getData().subtract(d.getLabel());
-            var squared = diff.hadamard(diff);
-            mse += squared.sum();
+            mse += calcuateSingle(d);
         }
 
         return mse / tData.size();
+    }
+
+    @Override
+    public double calcuateSingle(NetworkInput<M> data) {
+        var ni = data;
+        var diff = ni.getData().subtract(ni.getLabel());
+        return diff.hadamard(diff).sum();
     }
 
     @Override
