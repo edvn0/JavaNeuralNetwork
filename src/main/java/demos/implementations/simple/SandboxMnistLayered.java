@@ -30,7 +30,7 @@ public class SandboxMnistLayered extends AbstractDemo<SMatrix> {
 
 	@Override
 	protected String outputDirectory() {
-		return "/Users/edwincarlsson/Documents/Programmering/Java/NeuralNetwork/src/main/resources/mnist";
+		return "E:\\Downloads\\serial_network";
 	}
 
 	@Override
@@ -45,9 +45,9 @@ public class SandboxMnistLayered extends AbstractDemo<SMatrix> {
 
 	@Override
 	protected Triple<List<NetworkInput<SMatrix>>, List<NetworkInput<SMatrix>>, List<NetworkInput<SMatrix>>> getData() {
-		String test = "/mnist_test.csv";
-		String train = "/mnist_train.csv";
-		String path = "/Volumes/Toshiba 1,5TB/mnist";
+		String test = "\\mnist_test.csv";
+		String train = "\\mnist_train.csv";
+		String path = "E:\\Downloads\\archive";
 
 		try (var trainInData = Files.lines(Paths.get(path + train));
 				var testInData = Files.lines(Paths.get(path + test))) {
@@ -75,7 +75,7 @@ public class SandboxMnistLayered extends AbstractDemo<SMatrix> {
 		var b = new LayeredNetworkBuilder<SMatrix>(28 * 28).layer(new NetworkLayer<>(f, 784, 0.1))
 				.layer(new NetworkLayer<>(f, 30, 0.1)).layer(new NetworkLayer<>(f, 70, 0.1))
 				.layer(new NetworkLayer<>(softMax, 10)).clipping(true).costFunction(new SmoothL1CostFunction<>())
-				.evaluationFunction(new ArgMaxEvaluationFunction<>()).optimizer(new ADAM<>(0.00001, 0.9, 0.999))
+				.evaluationFunction(new ArgMaxEvaluationFunction<>()).optimizer(new ADAM<>(0.01, 0.9, 0.999))
 				.clipping(true).initializer(new SimpleInitializer(MethodConstants.XAVIER, MethodConstants.SCALAR));
 		return b.create();
 	}
@@ -84,7 +84,7 @@ public class SandboxMnistLayered extends AbstractDemo<SMatrix> {
 	protected void serialise(DeepLearnable<SMatrix> in) {
 		SimpleSerializer layeredSerializer = new SimpleSerializer();
 		LayeredNeuralNetwork<SMatrix> actual = (LayeredNeuralNetwork<SMatrix>) in;
-		layeredSerializer.serialize(new File(this.outputDirectory() + "/Simple_Layered_MNIST_Network.json"), actual);
+		layeredSerializer.serialize(new File(this.outputDirectory() + "\\Simple_Layered_MNIST_Network.json"), actual);
 	}
 
 	private NetworkInput<SMatrix> toMnist(String toMnist) {
