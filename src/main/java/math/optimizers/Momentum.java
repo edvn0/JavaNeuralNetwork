@@ -77,16 +77,26 @@ public class Momentum<M> implements Optimizer<M> {
 
 	}
 
+	private Matrix<M> getMomentumDeltaSingle(int i, final Matrix<M> in, final Matrix<M> deltaIns,
+			final List<Matrix<M>> lastDeltas) {
+
+		if (lastDeltas.get(i) == null) {
+			lastDeltas.set(i, deltaIns.multiply(this.lR));
+		} else {
+			lastDeltas.set(i, lastDeltas.get(i)).multiply(momentumRate).add(deltaIns.multiply(this.lR));
+		}
+		return in.subtract(lastDeltas.get(i));
+	}
+
 	@Override
 	public Matrix<M> changeBias(int layerIndex, Matrix<M> bias, Matrix<M> deltaBias) {
-		// TODO Auto-generated method stub
-		return bias;
+		return getMomentumDeltaSingle(layerIndex, bias, deltaBias, lastDeltaBiases);
 	}
 
 	@Override
 	public Matrix<M> changeWeight(int layerIndex, Matrix<M> weight, Matrix<M> deltaWeight) {
-		// TODO Auto-generated method stub
-		return weight;
+		return getMomentumDeltaSingle(layerIndex, weight, deltaWeight, lastDeltaWeights);
+
 	}
 
 }

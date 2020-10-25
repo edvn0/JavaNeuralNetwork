@@ -8,7 +8,7 @@ import math.linearalgebra.Matrix;
 public class ADAM<M> implements Optimizer<M> {
 
 	private static final String NAME = "Adaptive Moment Estimation";
-	private static final double EPSILON = 1e-8;
+	private static final double EPSILON = 1e-6;
 	private double lR;
 	private double beta1;
 	private double beta2;
@@ -34,20 +34,17 @@ public class ADAM<M> implements Optimizer<M> {
 	}
 
 	@Override
-	public List<Matrix<M>> changeWeights(final List<Matrix<M>> weights,
-		final List<Matrix<M>> deltas) {
+	public List<Matrix<M>> changeWeights(final List<Matrix<M>> weights, final List<Matrix<M>> deltas) {
 		return getAdamDeltas(weights, deltas, this.weightM, this.weightN);
 	}
 
 	@Override
-	public List<Matrix<M>> changeBiases(final List<Matrix<M>> biases,
-		final List<Matrix<M>> deltas) {
+	public List<Matrix<M>> changeBiases(final List<Matrix<M>> biases, final List<Matrix<M>> deltas) {
 		return getAdamDeltas(biases, deltas, this.biasM, this.biasN);
 	}
 
-	private List<Matrix<M>> getAdamDeltas(final List<Matrix<M>> inParams,
-		final List<Matrix<M>> paramDeltas,
-		final List<Matrix<M>> M, final List<Matrix<M>> N) {
+	private List<Matrix<M>> getAdamDeltas(final List<Matrix<M>> inParams, final List<Matrix<M>> paramDeltas,
+			final List<Matrix<M>> M, final List<Matrix<M>> N) {
 		List<Matrix<M>> newOut = new ArrayList<>(inParams.size());
 
 		for (int i = 0; i < inParams.size(); i++) {
@@ -61,10 +58,9 @@ public class ADAM<M> implements Optimizer<M> {
 			if (M.get(i) != null && N.get(i) != null) {
 				// m = beta_1 * m + (1 - beta_1) * g
 				// v = beta_2 * v + (1 - beta_2) * np.power(g, 2)
-				Matrix<M> m = M.get(i).multiply(beta1)
-					.add(paramDeltas.get(i).multiply((1 - beta1)));
+				Matrix<M> m = M.get(i).multiply(beta1).add(paramDeltas.get(i).multiply((1 - beta1)));
 				Matrix<M> v = N.get(i).multiply(beta2)
-					.add(paramDeltas.get(i).hadamard(paramDeltas.get(i)).multiply((1 - beta2)));
+						.add(paramDeltas.get(i).hadamard(paramDeltas.get(i)).multiply((1 - beta2)));
 				M.set(i, m);
 				N.set(i, v);
 			} else {
@@ -82,9 +78,8 @@ public class ADAM<M> implements Optimizer<M> {
 		return newOut;
 	}
 
-	private Matrix<M> adamSingleDeltas(int i, Matrix<M> parameters, Matrix<M> deltaForLayer,
-		List<Matrix<M>> M,
-		List<Matrix<M>> N) {
+	private Matrix<M> adamSingleDeltas(int i, Matrix<M> parameters, Matrix<M> deltaForLayer, List<Matrix<M>> M,
+			List<Matrix<M>> N) {
 
 		int exponent = i + 1;
 		Matrix<M> mHat;
@@ -93,8 +88,7 @@ public class ADAM<M> implements Optimizer<M> {
 			// m = beta_1 * m + (1 - beta_1) * g
 			// v = beta_2 * v + (1 - beta_2) * np.power(g, 2)
 			Matrix<M> m = M.get(i).multiply(beta1).add(deltaForLayer.multiply((1 - beta1)));
-			Matrix<M> v = N.get(i).multiply(beta2)
-				.add(deltaForLayer.hadamard(deltaForLayer).multiply((1 - beta2)));
+			Matrix<M> v = N.get(i).multiply(beta2).add(deltaForLayer.hadamard(deltaForLayer).multiply((1 - beta2)));
 			M.set(i, m);
 			N.set(i, v);
 		} else {
@@ -127,18 +121,15 @@ public class ADAM<M> implements Optimizer<M> {
 
 	@Override
 	public Matrix<M> changeBias(int layerIndex, Matrix<M> bias, Matrix<M> deltaBias) {
-		return
-			adamSingleDeltas(layerIndex, bias, deltaBias, this.biasM, this.biasN);
+		return adamSingleDeltas(layerIndex, bias, deltaBias, this.biasM, this.biasN);
 
 	}
 
 	@Override
 	public Matrix<M> changeWeight(int layerIndex, Matrix<M> weight, Matrix<M> deltaWeight) {
-		return adamSingleDeltas(layerIndex, weight, deltaWeight, this.weightM,
-			this.weightN);
+		return adamSingleDeltas(layerIndex, weight, deltaWeight, this.weightM, this.weightN);
 
 	}
-
 
 	@Override
 	public String name() {

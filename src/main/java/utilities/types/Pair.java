@@ -34,7 +34,11 @@ public class Pair<L, R> {
         if (!(o instanceof Pair)) {
             return false;
         }
-        Pair<L, R> pair = (Pair<L, R>) o;
+
+        if (!(o instanceof Pair))
+            return false;
+
+        Pair<?, ?> pair = (Pair<?, ?>) o;
         return Objects.equals(left, pair.left) && Objects.equals(right, pair.right);
     }
 

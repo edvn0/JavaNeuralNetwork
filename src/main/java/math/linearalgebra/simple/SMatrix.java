@@ -142,7 +142,7 @@ public class SMatrix {
         for (int i = 0; i < C.M; i++)
             for (int j = 0; j < C.N; j++)
                 for (int k = 0; k < A.N; k++)
-                    C.data[i][j] += (A.data[i][k] * val);
+                    C.data[i][j] = (A.data[i][k] * val);
         return C;
     }
 
