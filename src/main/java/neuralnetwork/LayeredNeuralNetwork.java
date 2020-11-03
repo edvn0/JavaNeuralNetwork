@@ -278,6 +278,14 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 			if (norm > 1) {
 				costDerivative = costDerivative.multiply(1 / norm);
 			}
+
+			costDerivative.mapElementsMutable(e -> {
+				if (e > 1)
+					return 1d;
+				else if (e < -1)
+					return -1d;
+				return e;
+			});
 		}
 
 		do {

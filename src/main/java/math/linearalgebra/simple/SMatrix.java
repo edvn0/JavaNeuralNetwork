@@ -234,7 +234,13 @@ public class SMatrix {
     }
 
     public double[][] rawCopy() {
-        return data;
+        if (data == null)
+            return null;
+        double[][] result = new double[data.length][];
+        for (int r = 0; r < data.length; r++) {
+            result[r] = data[r].clone();
+        }
+        return result;
     }
 
     @Override
