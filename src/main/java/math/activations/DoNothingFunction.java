@@ -19,7 +19,7 @@ public class DoNothingFunction<M> extends ActivationFunction<M> {
 
     @Override
     public Matrix<M> derivative(Matrix<M> m) {
-        return m;
+        return m.mapElements(e -> 1d);
     }
 
     @Override
