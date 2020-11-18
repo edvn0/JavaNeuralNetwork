@@ -17,14 +17,14 @@ import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
-import neuralnetwork.LayeredNeuralNetwork;
+import neuralnetwork.layer.LayeredNeuralNetwork;
 import neuralnetwork.layer.NetworkLayer;
 import org.ojalgo.matrix.Primitive64Matrix;
 
 public class OjAlgoLayeredSerializer {
 
 	private final Gson gson;
-	private Type network = new TypeToken<LayeredNeuralNetwork<Primitive64Matrix>>() {
+	private final Type network = new TypeToken<LayeredNeuralNetwork<Primitive64Matrix>>() {
 	}.getType();
 
 	//	private final ActivationFunction<M> activationFunction;
@@ -166,7 +166,7 @@ public class OjAlgoLayeredSerializer {
 		try (FileWriter fw = new FileWriter(f, false)) {
 			fw.write(json);
 		} catch (IOException e) {
-
+			e.printStackTrace();
 		}
 	}
 

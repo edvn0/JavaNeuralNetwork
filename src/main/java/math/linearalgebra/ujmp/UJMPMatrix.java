@@ -5,10 +5,8 @@ import static utilities.MathUtilities.simpleMap;
 import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.function.Function;
-
-import org.ujmp.core.calculation.Calculation.Ret;
-
 import math.linearalgebra.Matrix;
+import org.ujmp.core.calculation.Calculation.Ret;
 import utilities.MathUtilities;
 import utilities.exceptions.MatrixException;
 

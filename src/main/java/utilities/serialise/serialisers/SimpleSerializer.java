@@ -1,11 +1,5 @@
 package utilities.serialise.serialisers;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.Objects;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -13,9 +7,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
-
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.Objects;
 import math.linearalgebra.simple.SMatrix;
-import neuralnetwork.LayeredNeuralNetwork;
+import neuralnetwork.layer.LayeredNeuralNetwork;
 
 public class SimpleSerializer {
 

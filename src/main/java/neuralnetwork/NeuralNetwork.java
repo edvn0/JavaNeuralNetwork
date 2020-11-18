@@ -19,9 +19,9 @@ import utilities.NetworkUtilities;
 import utilities.types.Pair;
 
 /**
- * A class which can be both a single layer perceptron, and at the same time: an
- * artifical deep fully connected neural network. This implementation uses
- * matrices to solve the problem of learning and predicting on data.
+ * A class which can be both a single layer perceptron, and at the same time: an artifical deep
+ * fully connected neural network. This implementation uses matrices to solve the problem of
+ * learning and predicting on data.
  */
 @Slf4j
 public class NeuralNetwork<M> implements DeepLearnable<M> {
@@ -47,7 +47,8 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 	private transient List<Matrix<M>> deltaWeights;
 	private transient List<Matrix<M>> deltaBias;
 
-	public NeuralNetwork(final NetworkBuilder<M> b, final ParameterInitializer<M> parameterSupplier) {
+	public NeuralNetwork(final NetworkBuilder<M> b,
+		final ParameterInitializer<M> parameterSupplier) {
 
 		this.sizes = b.structure;
 		this.functions = b.getActivationFunctions();
@@ -135,12 +136,12 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 		evaluateTrainingExample(Collections.singletonList(input));
 		learnFromDeltas();
 		log.info("\nLoss: {}, Correct: {}", this.testLoss(Collections.singletonList(input)),
-				this.testEvaluation(Collections.singletonList(input), 5));
+			this.testEvaluation(Collections.singletonList(input), 5));
 	}
 
 	/**
-	 * Back-propagates a data set and normalizes the deltas against the size of the
-	 * batch to be used in an optimizer.
+	 * Back-propagates a data set and normalizes the deltas against the size of the batch to be used
+	 * in an optimizer.
 	 */
 	protected void evaluateTrainingExample(final List<NetworkInput<M>> trainingExamples) {
 		final int size = trainingExamples.size();
@@ -185,7 +186,8 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 			final Matrix<M> aCurr = activations.get(k + 1); // this layer
 			final Matrix<M> aNext = activations.get(k); // Previous layer
 
-			final Matrix<M> differentiate = this.functions.get(k + 1).derivativeOnInput(aCurr, deltaError);
+			final Matrix<M> differentiate = this.functions.get(k + 1)
+				.derivativeOnInput(aCurr, deltaError);
 
 			this.deltaBias.set(k, differentiate);
 			this.deltaWeights.set(k, differentiate.multiply(aNext.transpose()));
@@ -269,30 +271,35 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 	}
 
 	@Override
-	public void train(List<NetworkInput<M>> training, int epochs) {
+	public void train(List<NetworkInput<M>> training, int epochs, int batchSize) {
+		final List<List<NetworkInput<M>>> split = NetworkUtilities
+			.batchSplitData(training, batchSize);
 		for (int i = 0; i < epochs; i++) {
-			this.evaluateTrainingExample(training);
-			this.learnFromDeltas();
+			for (var s : split) {
+				this.evaluateTrainingExample(s);
+				this.learnFromDeltas();
+			}
 		}
 	}
 
 	/**
-	 * Trains this network on training data, and validates on validation data. Uses
-	 * a {@link Optimizer} to optimize the gradient descent.
+	 * Trains this network on training data, and validates on validation data. Uses a {@link
+	 * Optimizer} to optimize the gradient descent.
 	 *
 	 * @param training   a Collections object with {@link NetworkInput<M>} objects,
-	 *                   NetworkInput<M>.getData() is the data,
-	 *                   NetworkInput<M>.getLabel() is the label.
+	 *                   NetworkInput<M>.getData() is the data, NetworkInput<M>.getLabel() is the
+	 *                   label.
 	 * @param validation a Collections object with {@link NetworkInput<M>} objects,
-	 *                   NetworkInput<M>.getData() is the data,
-	 *                   NetworkInput<M>.getLabel() is the label.
+	 *                   NetworkInput<M>.getData() is the data, NetworkInput<M>.getLabel() is the
+	 *                   label.
 	 * @param epochs     how many iterations are we doing the descent for
-	 * @param batchSize  how big is the batch size, typically 32. See
-	 *                   https://stats.stackexchange.com/q/326663
+	 * @param batchSize  how big is the batch size, typically 32. See https://stats.stackexchange.com/q/326663
 	 */
-	public void train(@NotNull final List<NetworkInput<M>> training, @NotNull final List<NetworkInput<M>> validation,
-			final int epochs, final int batchSize) {
-		final List<List<NetworkInput<M>>> split = NetworkUtilities.batchSplitData(training, batchSize);
+	public void train(@NotNull final List<NetworkInput<M>> training,
+		@NotNull final List<NetworkInput<M>> validation,
+		final int epochs, final int batchSize) {
+		final List<List<NetworkInput<M>>> split = NetworkUtilities
+			.batchSplitData(training, batchSize);
 		for (int i = 0; i < epochs; i++) {
 			for (final var l : split) {
 				this.evaluateTrainingExample(l);
@@ -305,22 +312,23 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 	 * Trains this network on training data, and validates on validation data.
 	 *
 	 * @param training   a Collections object with {@link NetworkInput<M>} objects,
-	 *                   NetworkInput<M>.getData() is the data,
-	 *                   NetworkInput<M>.getLabel() is the label.
+	 *                   NetworkInput<M>.getData() is the data, NetworkInput<M>.getLabel() is the
+	 *                   label.
 	 * @param validation a Collections object with {@link NetworkInput<M>} objects,
-	 *                   NetworkInput<M>.getData() is the data,
-	 *                   NetworkInput<M>.getLabel() is the label.
-	 * @param batchSize  how big is the batch size, typically 32. See
-	 *                   https://stats.stackexchange.com/q/326663
+	 *                   NetworkInput<M>.getData() is the data, NetworkInput<M>.getLabel() is the
+	 *                   label.
+	 * @param batchSize  how big is the batch size, typically 32. See https://stats.stackexchange.com/q/326663
 	 * @param path       To what path should the plots be printed?
 	 */
 	public void trainWithMetrics(@NotNull final List<NetworkInput<M>> training,
-			@NotNull final List<NetworkInput<M>> validation, final int epochs, final int batchSize, final String path) {
+		@NotNull final List<NetworkInput<M>> validation, final int epochs, final int batchSize,
+		final String path) {
 
 		long t1, t2;
 		// Members which supply functionality to the plots.
 		final NetworkMetrics metrics = new NetworkMetrics(training.get(0).getData().name());
-		final List<List<NetworkInput<M>>> split = NetworkUtilities.batchSplitData(training, batchSize);
+		final List<List<NetworkInput<M>>> split = NetworkUtilities
+			.batchSplitData(training, batchSize);
 
 		// Feed forward the validation data prior to the batch descent
 		// to establish a ground truth value
@@ -328,7 +336,8 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 		// Evaluate prediction with the interface EvaluationFunction.
 		double correct = this.evaluate(ffD);
 		double loss = this.loss(ffD);
-		log.info("\n Ground truth before training: \n Loss: \t {}\n Correct: \t {}", loss, correct * 100);
+		log.info("\n Ground truth before training: \n Loss: \t {}\n Correct: \t {}", loss,
+			correct * 100);
 
 		metrics.initialPlotData(correct, loss);
 
@@ -356,8 +365,9 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 			metrics.addPlotData(i, correct, loss, (t2 - t1));
 
 			if ((i) % (epochs / 8) == 0) {
-				log.info("\n {} / {} epochs are finished.\n Loss: \t {}\n Correct: \t {}", (i), epochs, loss,
-						correct * 100);
+				log.info("\n {} / {} epochs are finished.\n Loss: \t {}\n Correct: \t {}", (i),
+					epochs, loss,
+					correct * 100);
 			}
 		}
 
@@ -371,26 +381,30 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 	}
 
 	private int[] weightDimensions(final int i) {
-		return new int[] { (this.weights.get(i).rows()), (this.weights.get(i).cols()) };
+		return new int[]{(this.weights.get(i).rows()), (this.weights.get(i).cols())};
 	}
 
 	public void display() {
 		final StringBuilder b = new StringBuilder();
-		b.append("\n").append("======================================================================").append("\n")
-				.append("Network information and structure.").append("\n").append(String
-						.format("Input nodes: [%d]; Output nodes: [%d]%n%n", this.sizes[0], sizes[sizes.length - 1]));
+		b.append("\n")
+			.append("======================================================================")
+			.append("\n")
+			.append("Network information and structure.").append("\n").append(String
+			.format("Input nodes: [%d]; Output nodes: [%d]%n%n", this.sizes[0],
+				sizes[sizes.length - 1]));
 
 		for (int i = 0; i < weights.size(); i++) {
 			final int[] dims = weightDimensions(i);
 			b.append(String.format("\t\tLayer %d : [%d X %d]%n", (i + 1), dims[0], dims[1])).append(
-					String.format("\t\tActivation function from this layer: %s", functions.get(i + 1).getName()))
-					.append("\n");
+				String.format("\t\tActivation function from this layer: %s",
+					functions.get(i + 1).getName()))
+				.append("\n");
 		}
 
 		b.append("\n").append("The error function: ").append(this.costFunction.name()).append("\n")
-				.append("The evaluation function: ").append(this.evaluationFunction.name()).append("\n")
-				.append("The optimizer: ").append(this.optimizer.name()).append("\n")
-				.append("======================================================================");
+			.append("The evaluation function: ").append(this.evaluationFunction.name()).append("\n")
+			.append("The optimizer: ").append(this.optimizer.name()).append("\n")
+			.append("======================================================================");
 
 		log.info(b.toString());
 	}

@@ -3,13 +3,13 @@ package math.evaluation;
 import java.util.Collections;
 import java.util.List;
 import neuralnetwork.inputs.NetworkInput;
-import utilities.serialise.NetworkSerialisable;
+import utilities.serialise.NetworkSerializable;
 
 /**
  * Evaluate a set of test data against some strategy, like thresholds or
  * ArgMaxing.
  */
-public interface EvaluationFunction<M> extends NetworkSerialisable<String, Double> {
+public interface EvaluationFunction<M> extends NetworkSerializable<String, Double> {
 
     public void init(double... in);
 

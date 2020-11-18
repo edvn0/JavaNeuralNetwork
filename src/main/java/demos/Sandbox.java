@@ -1,8 +1,7 @@
 package demos;
 
-import org.ojalgo.matrix.Primitive64Matrix;
-
 import math.linearalgebra.simple.SMatrix;
+import org.ojalgo.matrix.Primitive64Matrix;
 
 public class Sandbox {
 

@@ -1,7 +1,6 @@
 package math.linearalgebra.simple;
 
 import java.util.function.Function;
-
 import math.linearalgebra.Matrix;
 import utilities.MathUtilities;
 import utilities.exceptions.MatrixException;

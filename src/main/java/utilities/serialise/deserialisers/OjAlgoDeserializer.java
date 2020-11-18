@@ -28,13 +28,13 @@ import org.ojalgo.matrix.Primitive64Matrix;
 import utilities.serialise.NetworkDataCache;
 import utilities.serialise.adapters.OjAlgoNetworkDeserializer;
 
-public class OjAlgoDeserialiser {
+public class OjAlgoDeserializer {
 
     private Gson gson;
     private Type network = new TypeToken<NeuralNetwork<Primitive64Matrix>>() {
     }.getType();
 
-    public OjAlgoDeserialiser() {
+    public OjAlgoDeserializer() {
         GsonBuilder gsonb = new GsonBuilder();
 
         Type activationFunctions = new TypeToken<List<ActivationFunction<Primitive64Matrix>>>() {

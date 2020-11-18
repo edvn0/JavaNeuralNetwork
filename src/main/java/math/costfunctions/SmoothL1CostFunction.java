@@ -1,7 +1,6 @@
 package math.costfunctions;
 
 import java.util.List;
-
 import math.linearalgebra.Matrix;
 import neuralnetwork.inputs.NetworkInput;
 

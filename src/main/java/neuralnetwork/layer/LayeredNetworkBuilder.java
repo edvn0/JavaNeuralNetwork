@@ -1,4 +1,4 @@
-package neuralnetwork;
+package neuralnetwork.layer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +9,6 @@ import math.evaluation.EvaluationFunction;
 import math.optimizers.ADAM;
 import math.optimizers.Optimizer;
 import neuralnetwork.initialiser.ParameterInitializer;
-import neuralnetwork.layer.NetworkLayer;
 
 public class LayeredNetworkBuilder<M> {
 
@@ -76,7 +75,7 @@ public class LayeredNetworkBuilder<M> {
 
 	public LayeredNeuralNetwork<M> deserialize() {
 		this.total = this.layers.size();
-		return new LayeredNeuralNetwork<>(this.layers.get(0).getNeurons(), this, true);
+		return LayeredNeuralNetwork.deserialize(this.layers.get(0).getNeurons(), this);
 	}
 
 	public int[] calculateStructure() {

@@ -7,12 +7,20 @@ import utilities.types.Pair;
 
 public interface DeepLearnable<M> {
 
-	void train(List<NetworkInput<M>> training, int epochs);
+	/**
+	 * Training without metrics, printing, and no batches.
+	 *
+	 * @param training training data
+	 * @param epochs   for how many epochs
+	 */
+	void train(List<NetworkInput<M>> training, int epochs, int batches);
 
-	void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation, int epochs, int batchSize);
+	void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation, int epochs,
+		int batchSize);
 
-	void trainWithMetrics(List<NetworkInput<M>> training, List<NetworkInput<M>> validation, int epochs, int batchSize,
-			String outputPath);
+	void trainWithMetrics(List<NetworkInput<M>> training, List<NetworkInput<M>> validation,
+		int epochs, int batchSize,
+		String outputPath);
 
 	double testEvaluation(List<NetworkInput<M>> unfedTestingData, int samples);
 

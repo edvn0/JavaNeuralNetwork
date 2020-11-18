@@ -1,11 +1,9 @@
 package neuralnetwork.initialiser;
 
 import java.util.List;
-
-import org.ojalgo.matrix.Primitive64Matrix;
-
 import math.linearalgebra.Matrix;
 import math.linearalgebra.simple.SMatrix;
+import org.ojalgo.matrix.Primitive64Matrix;
 import utilities.types.Pair;
 
 public abstract class ParameterInitializer<M> {

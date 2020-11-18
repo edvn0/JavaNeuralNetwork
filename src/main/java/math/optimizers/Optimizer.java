@@ -2,12 +2,12 @@ package math.optimizers;
 
 import java.util.List;
 import math.linearalgebra.Matrix;
-import utilities.serialise.NetworkSerialisable;
+import utilities.serialise.NetworkSerializable;
 
 /**
  * The optimizer for the gradient descent, represents some strategy for the neural network.
  */
-public interface Optimizer<M> extends NetworkSerialisable<String, Double> {
+public interface Optimizer<M> extends NetworkSerializable<String, Double> {
 
 	public void init(double... in);
 

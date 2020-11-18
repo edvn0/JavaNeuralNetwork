@@ -20,20 +20,20 @@ import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
 import math.optimizers.Optimizer;
-import neuralnetwork.LayeredNeuralNetwork;
 import neuralnetwork.NeuralNetwork;
+import neuralnetwork.layer.LayeredNeuralNetwork;
 import neuralnetwork.layer.NetworkLayer;
 import org.ojalgo.matrix.Primitive64Matrix;
 import utilities.serialise.NetworkDataCache;
 import utilities.serialise.adapters.LayeredOjAlgoNetworkDeserializer;
 
-public class LayeredOjAlgoDeserialiser {
+public class LayeredOjAlgoDeserializer {
 
-	private Gson gson;
-	private Type network = new TypeToken<LayeredNeuralNetwork<Primitive64Matrix>>() {
+	private final Gson gson;
+	private final Type network = new TypeToken<LayeredNeuralNetwork<Primitive64Matrix>>() {
 	}.getType();
 
-	public LayeredOjAlgoDeserialiser() {
+	public LayeredOjAlgoDeserializer() {
 		GsonBuilder gsonb = new GsonBuilder();
 
 		Type activationFunction = new TypeToken<ActivationFunction<Primitive64Matrix>>() {

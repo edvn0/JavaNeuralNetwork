@@ -11,7 +11,7 @@ import java.util.List;
 import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.optimizers.Optimizer;
-import neuralnetwork.LayeredNeuralNetwork;
+import neuralnetwork.layer.LayeredNeuralNetwork;
 import neuralnetwork.layer.NetworkLayer;
 import org.ojalgo.matrix.Primitive64Matrix;
 import utilities.serialise.LayeredOjAlgoNetwork;

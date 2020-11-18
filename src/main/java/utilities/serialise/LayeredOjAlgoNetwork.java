@@ -4,10 +4,10 @@ import java.util.List;
 import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.optimizers.Optimizer;
-import neuralnetwork.LayeredNetworkBuilder;
-import neuralnetwork.LayeredNeuralNetwork;
 import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.OjAlgoInitializer;
+import neuralnetwork.layer.LayeredNetworkBuilder;
+import neuralnetwork.layer.LayeredNeuralNetwork;
 import neuralnetwork.layer.NetworkLayer;
 import org.ojalgo.matrix.Primitive64Matrix;
 

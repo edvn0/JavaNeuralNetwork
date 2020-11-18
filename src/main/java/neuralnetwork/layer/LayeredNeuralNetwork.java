@@ -1,22 +1,24 @@
-package neuralnetwork;
+package neuralnetwork.layer;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import lombok.extern.slf4j.Slf4j;
 import math.costfunctions.CostFunction;
 import math.evaluation.EvaluationFunction;
 import math.linearalgebra.Matrix;
 import math.optimizers.Optimizer;
+import neuralnetwork.DeepLearnable;
 import neuralnetwork.initialiser.ParameterInitializer;
 import neuralnetwork.inputs.NetworkInput;
-import neuralnetwork.layer.NetworkLayer;
+import utilities.NetworkUtilities;
 import utilities.types.Pair;
 
 @Slf4j
 public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
+
+	public static final boolean DEBUG = false;
 
 	private final List<NetworkLayer<M>> networkLayers;
 	// The error function to minimize.
@@ -29,7 +31,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 	private final ParameterInitializer<M> initializer;
 
 	private boolean clipping;
-	private int inputNeurons;
+	private final int inputNeurons;
 
 	public LayeredNeuralNetwork(LayeredNetworkBuilder<M> b) {
 		this.costFunction = b.costFunction;
@@ -68,6 +70,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 			layer.setBias(layerBias);
 			layer.setDeltaWeight(layerDeltaWeight);
 			layer.setDeltaBias(layerDeltaBias);
+			layer.setRegularization(layer.getL2());
 
 			layer.setPrecedingLayer(prev);
 			this.networkLayers.add(layer);
@@ -76,7 +79,7 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		}
 	}
 
-	public LayeredNeuralNetwork(int inputNeurons, LayeredNetworkBuilder<M> b, boolean deser) {
+	private LayeredNeuralNetwork(int inputNeurons, LayeredNetworkBuilder<M> b) {
 		this.costFunction = b.costFunction;
 		this.evaluationFunction = b.evaluationFunction;
 
@@ -100,20 +103,27 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		}
 	}
 
+	public static <U> LayeredNeuralNetwork<U> deserialize(int inputNeurons,
+		LayeredNetworkBuilder<U> b) {
+		return new LayeredNeuralNetwork<>(inputNeurons, b);
+	}
+
 	private static <U> List<U> getBatch(final int i, final int batchSize, final List<U> data) {
 		int fromIx = i * batchSize;
 		int toIx = Math.min(data.size(), (i + 1) * batchSize);
 		return Collections.unmodifiableList(data.subList(fromIx, toIx));
 	}
 
-	public void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation, final int epochs,
-			final int batchSize) {
+	public void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation,
+		final int epochs,
+		final int batchSize) {
 
 		int batches = training.size() / batchSize;
 
 		log.info("Prior to training:");
 		log.info("Initial loss: \t {}", this.testLoss(validation));
-		log.info("Initial evaluation percentage: \t {}%.\n", this.testEvaluation(validation, 37) * 100);
+		log.info("Initial evaluation percentage: \t {}%.\n",
+			this.testEvaluation(validation, 37) * 100);
 
 		for (int epoch = 0; epoch < epochs; epoch++) {
 			log.info("Epoch: \t {}", epoch + 1);
@@ -127,27 +137,35 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 
 			if ((epoch + 1) % 5 == 0) {
 				log.info("Loss: \t\t\t {}", this.testLoss(validation));
-				log.info("Evaluation percentage: \t {}%.\n", this.testEvaluation(validation, 37) * 100);
+				log.info("Evaluation percentage: \t {}%.\n",
+					this.testEvaluation(validation, 37) * 100);
 			}
 		}
 	}
 
-	public void train(List<NetworkInput<M>> training, final int epochs) {
+	@Override
+	public void train(List<NetworkInput<M>> training, final int epochs, int batchSize) {
+		final List<List<NetworkInput<M>>> split = NetworkUtilities
+			.batchSplitData(training, batchSize);
 		for (int i = 0; i < epochs; i++) {
-			training.forEach(e -> this.evaluate(e.getData(), e.getLabel()));
-			this.fit();
+			for (var s : split) {
+				s.forEach(e -> this.evaluate(e.getData(), e.getLabel()));
+				this.fit();
+			}
 		}
 	}
 
-	public void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation, final int epochs,
-			final int batchSize, boolean silent) {
+	public void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation,
+		final int epochs,
+		final int batchSize, boolean silent) {
 
 		int batches = training.size() / batchSize;
 
 		if (!silent) {
 			log.info("Prior to training:");
 			log.info("Initial loss: \t {}", this.testLoss(validation));
-			log.info("Initial evaluation percentage: \t {}%.\n", this.testEvaluation(validation, 37) * 100);
+			log.info("Initial evaluation percentage: \t {}%.\n",
+				this.testEvaluation(validation, 37) * 100);
 		}
 		for (int epoch = 0; epoch < epochs; epoch++) {
 			if (!silent) {
@@ -164,15 +182,17 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 			if (!silent) {
 				if ((epoch + 1) % 5 == 0) {
 					log.info("Loss: \t\t\t {}", this.testLoss(validation));
-					log.info("Evaluation percentage: \t {}%.\n", this.testEvaluation(validation, 37) * 100);
+					log.info("Evaluation percentage: \t {}%.\n",
+						this.testEvaluation(validation, 37) * 100);
 				}
 			}
 		}
 	}
 
 	@Override
-	public void trainWithMetrics(final List<NetworkInput<M>> training, final List<NetworkInput<M>> validation,
-			final int epochs, final int batchSize, final String outputPath) {
+	public void trainWithMetrics(final List<NetworkInput<M>> training,
+		final List<NetworkInput<M>> validation,
+		final int epochs, final int batchSize, final String outputPath) {
 
 	}
 
@@ -194,24 +214,27 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 	@Override
 	public void display() {
 		final StringBuilder b = new StringBuilder();
-		b.append("\n").append("======================================================================").append("\n")
-				.append("Network information and structure.").append("\n")
-				.append(String.format("Input nodes: [%d]; Output nodes: [%d]%n%n", this.inputNeurons,
-						this.networkLayers.get(this.networkLayers.size() - 1).getNeurons()));
+		b.append("\n")
+			.append("======================================================================")
+			.append("\n")
+			.append("Network information and structure.").append("\n")
+			.append(String.format("Input nodes: [%d]; Output nodes: [%d]%n%n", this.inputNeurons,
+				this.networkLayers.get(this.networkLayers.size() - 1).getNeurons()));
 
 		for (int i = 0; i < this.networkLayers.size() - 1; i++) {
 			var l = this.networkLayers.get(i);
 			var l2 = this.networkLayers.get(i + 1);
-			final int[] dims = new int[] { l.getNeurons(), l2.getNeurons() };
+			final int[] dims = new int[]{l.getNeurons(), l2.getNeurons()};
 			b.append(String.format("\tLayer %d : [%d X %d]%n", (i + 1), dims[0], dims[1]))
-					.append(String.format("\tActivation function from this layer: %s", l2.getFunction().getName()))
-					.append("\n");
+				.append(String.format("\tActivation function from this layer: %s",
+					l2.getFunction().getName()))
+				.append("\n");
 		}
 
 		b.append("\n").append("The error function: ").append(this.costFunction.name()).append("\n")
-				.append("The evaluation function: ").append(this.evaluationFunction.name()).append("\n")
-				.append("The optimizer: ").append(this.optimizer.name()).append("\n")
-				.append("======================================================================");
+			.append("The evaluation function: ").append(this.evaluationFunction.name()).append("\n")
+			.append("The optimizer: ").append(this.optimizer.name()).append("\n")
+			.append("======================================================================");
 
 		log.info(b.toString());
 	}
@@ -230,12 +253,13 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 	@Override
 	public List<Pair<Matrix<M>, Matrix<M>>> getParameters() {
 		return this.networkLayers.stream().filter(e -> e.getWeight() != null)
-				.map(e -> Pair.of(e.getWeight(), e.getBias())).collect(Collectors.toList());
+			.map(e -> Pair.of(e.getWeight(), e.getBias())).collect(Collectors.toList());
 	}
 
 	private List<NetworkInput<M>> feedforward(List<NetworkInput<M>> data) {
-		return data.stream().map(e -> new NetworkInput<M>(this.checkEvaluate(e.getData(), null), e.getLabel()))
-				.collect(Collectors.toList());
+		return data.stream()
+			.map(e -> new NetworkInput<M>(this.checkEvaluate(e.getData(), null), e.getLabel()))
+			.collect(Collectors.toList());
 	}
 
 	private Matrix<M> checkEvaluate(final Matrix<M> data, final Matrix<M> label) {
@@ -273,19 +297,8 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 
 		var costDerivative = this.costFunction.applyCostFunctionGradient(lastActivation, label);
 
-		if (this.clipping) {
-			double norm = costDerivative.norm();
-			if (norm > 1) {
-				costDerivative = costDerivative.multiply(1 / norm);
-			}
-
-			costDerivative.mapElementsMutable(e -> {
-				if (e > 1)
-					return 1d;
-				else if (e < -1)
-					return -1d;
-				return e;
-			});
+		if (DEBUG) {
+			log.info(costDerivative.toString());
 		}
 
 		do {

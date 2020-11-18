@@ -27,13 +27,13 @@ import neuralnetwork.NeuralNetwork;
 import utilities.serialise.NetworkDataCache;
 import utilities.serialise.adapters.UJMPNetworkDeserializer;
 
-public class UJMPDeserialiser {
+public class UJMPDeserializer {
 
     private Gson gson;
     private Type network = new TypeToken<NeuralNetwork<org.ujmp.core.Matrix>>() {
     }.getType();
 
-    public UJMPDeserialiser() {
+    public UJMPDeserializer() {
         GsonBuilder gsonb = new GsonBuilder();
 
         Type activationFunctions = new TypeToken<List<ActivationFunction<org.ujmp.core.Matrix>>>() {

@@ -45,7 +45,8 @@ public class NetworkLayer<M> {
 		this.previousLayer = in.previousLayer;
 	}
 
-	public NetworkLayer(int neurons, double l2, ActivationFunction<M> activation, Matrix<M> weight, Matrix<M> bias) {
+	public NetworkLayer(int neurons, double l2, ActivationFunction<M> activation, Matrix<M> weight,
+		Matrix<M> bias) {
 		this.weight = weight;
 		this.bias = bias;
 		this.neurons = neurons;
@@ -136,13 +137,16 @@ public class NetworkLayer<M> {
 
 		if (this.weight == null) {
 			return new StringJoiner(", ", NetworkLayer.class.getSimpleName() + "[", "]")
-					.add("activationFunction=" + activationFunction.getName()).add("neurons=" + neurons).toString();
+				.add("activationFunction=" + activationFunction.getName()).add("neurons=" + neurons)
+				.toString();
 		}
 
 		return new StringJoiner(", ", NetworkLayer.class.getSimpleName() + "[", "]")
-				.add("activationFunction=" + activationFunction.getName()).add("weight=[" + weight.rows())
-				.add(weight.cols() + "]").add("bias=[" + bias.rows()).add(bias.cols() + "]").add("neurons=" + neurons)
-				.toString();
+			.add("activationFunction=" + activationFunction.getName())
+			.add("weight=[" + weight.rows())
+			.add(weight.cols() + "]").add("bias=[" + bias.rows()).add(bias.cols() + "]")
+			.add("neurons=" + neurons)
+			.toString();
 	}
 
 	public void setDeltaWeight(final Matrix<M> layerDeltaWeight) {
@@ -155,5 +159,9 @@ public class NetworkLayer<M> {
 
 	public double getL2() {
 		return this.l2;
+	}
+
+	public void setRegularization(final double l2) {
+		this.l2 = l2;
 	}
 }
