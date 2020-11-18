@@ -1,7 +1,9 @@
 package math.linearalgebra.simple;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
+import java.util.Arrays;
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,5 +91,77 @@ public class SimpleMatrixTest {
 		m.mapElementsMutable(Math::sqrt);
 
 		assertEquals(new SimpleMatrix(new double[][]{{3, 1000, 2}, {1, 4, 7}, {5, 9, 10}}), m);
+	}
+
+	@Test
+	public void hadamard() {
+	}
+
+	@Test
+	public void sum() {
+	}
+
+	@Test
+	public void max() {
+	}
+
+	@Test
+	public void argMax() {
+	}
+
+	@Test
+	public void delegate() {
+	}
+
+	@Test
+	public void setDelegate() {
+	}
+
+	@Test
+	public void transpose() {
+	}
+
+	@Test
+	public void maxVector() {
+	}
+
+	@Test
+	public void zeroes() {
+	}
+
+	@Test
+	public void ones() {
+	}
+
+	@Test
+	public void identity() {
+	}
+
+	@Test
+	public void norm() {
+	}
+
+	@Test
+	public void name() {
+	}
+
+	@Test
+	public void rawCopy() {
+	}
+
+	@Test
+	public void copy() {
+		SimpleMatrix m = new SimpleMatrix(new double[][]{{1},{2},{3}});
+		SimpleMatrix copy = (SimpleMatrix) m.copy();
+		assertEquals(copy, m);
+		assertNotEquals(m.hashCode(), copy.hashCode());
+	}
+
+	@Test
+	public void testToString() {
+	}
+
+	@Test
+	public void testEquals() {
 	}
 }

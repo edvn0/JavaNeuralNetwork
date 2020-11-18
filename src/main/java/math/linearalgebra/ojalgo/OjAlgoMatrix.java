@@ -34,7 +34,7 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 	@Override
 	public String toString() {
 		return new StringJoiner(", ", OjAlgoMatrix.class.getSimpleName() + "[", "]")
-				.add("rawCopy=" + Arrays.deepToString(this.rawCopy())).toString();
+			.add("rawCopy=" + Arrays.deepToString(this.rawCopy())).toString();
 	}
 
 	@Override
@@ -223,6 +223,11 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 	@Override
 	public double[][] rawCopy() {
 		return this.delegate.toRawCopy2D();
+	}
+
+	@Override
+	public Matrix<Primitive64Matrix> copy() {
+		return new OjAlgoMatrix(this.delegate.copy().build());
 	}
 
 	@Override

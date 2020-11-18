@@ -201,6 +201,12 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
 		return this.delegate.toDoubleArray();
 	}
 
+
+	@Override
+	public Matrix<org.ujmp.core.Matrix> copy() {
+		return new UJMPMatrix(this.delegate.clone());
+	}
+
 	@Override
 	public void setDelegate(org.ujmp.core.Matrix delegate) {
 		this.delegate = delegate;

@@ -24,7 +24,6 @@ public class LayeredOjAlgoNetwork {
 		builder = builder.optimizer(optimiser);
 
 		for (var l : layers) {
-			System.out.println(l);
 			builder = builder.layer(l);
 		}
 

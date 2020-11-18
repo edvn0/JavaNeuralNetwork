@@ -20,8 +20,8 @@ public interface Matrix<M> {
 	int cols();
 
 	/**
-	 * Matrix<M> multiplication, should throw if cols and rows do not match.
-	 * Contract is This X in, i.e. this_rows*this_cols X in_cols*in_rows
+	 * Matrix<M> multiplication, should throw if cols and rows do not match. Contract is This X in,
+	 * i.e. this_rows*this_cols X in_cols*in_rows
 	 *
 	 * @param otherMatrix right operand
 	 *
@@ -233,4 +233,6 @@ public interface Matrix<M> {
 
 		return this.multiply(this);
 	}
+
+	Matrix<M> copy();
 }
