@@ -94,7 +94,7 @@ public class MomentumTest {
 				lsgd += nnAdam.testLoss(d);
 			}
 			System.out.println("Adam: " + lsgd / 35);
-		}).run();
+		}).start();
 
 		new Thread(() -> {
 			double lsgd = 0;
@@ -103,7 +103,7 @@ public class MomentumTest {
 				lsgd += nnMomentum.testLoss(d);
 			}
 			System.out.println("Momentum: " + lsgd / 35);
-		}).run();
+		}).start();
 
 		new Thread(() -> {
 			double lsgd = 0;
@@ -112,7 +112,7 @@ public class MomentumTest {
 				lsgd += nnSGD.testLoss(d);
 			}
 			System.out.println("SGD: " + lsgd / 35);
-		}).run();
+		}).start();
 
 		lossMomentum = nnMomentum.testLoss(d);
 		lossAdam = nnAdam.testLoss(d);
