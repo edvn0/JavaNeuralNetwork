@@ -4,31 +4,31 @@ import math.linearalgebra.Matrix;
 
 public class TanhFunction<M> extends ActivationFunction<M> {
 
-    private double tanh(double a) {
-        return Math.tanh(a);
-    }
+	@Override
+	public Matrix<M> function(Matrix<M> m) {
+		return m.mapElements(this::tanh);
+	}
 
-    private double tanhDerivative(double a) {
-        return 1 - (a * a);
-    }
+	private double tanh(double a) {
+		return Math.tanh(a);
+	}
 
-    @Override
-    public String getName() {
-        return "Tanh";
-    }
+	@Override
+	public Matrix<M> derivative(Matrix<M> m) {
+		return m.mapElements(this::tanhDerivative);
+	}
 
-    @Override
-    public Matrix<M> function(Matrix<M> m) {
-        return m.mapElements(this::tanh);
-    }
+	private double tanhDerivative(double a) {
+		return 1 - (a * a);
+	}
 
-    @Override
-    public Matrix<M> derivative(Matrix<M> m) {
-        return m.mapElements(this::tanhDerivative);
-    }
+	@Override
+	public void setValues(double in) {
 
-    @Override
-    public void setValues(double in) {
+	}
 
-    }
+	@Override
+	public String getName() {
+		return "Tanh";
+	}
 }

@@ -36,7 +36,7 @@ public class NetworkUtilities {
 	public static <M> List<NetworkInput<M>> importFromInputPath(String path, int offset,
 		Function<String[], NetworkInput<M>> f) throws IOException {
 		try (var data = Files.lines(Path.of(path))) {
-			return data.skip(1).map(line -> line.split(",")).map(f).collect(toList());
+			return data.skip(offset).map(line -> line.split(",")).map(f).collect(toList());
 		}
 	}
 

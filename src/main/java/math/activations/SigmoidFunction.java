@@ -5,30 +5,30 @@ import math.linearalgebra.Matrix;
 public class SigmoidFunction<M> extends ActivationFunction<M> {
 
 
-    @Override
-    public String getName() {
-        return "Sigmoid";
-    }
+	@Override
+	public Matrix<M> function(Matrix<M> m) {
+		return m.mapElements(this::sigmoid);
+	}
 
-    private double sigmoid(double input) {
-        return 1 / (1 + Math.exp(-input));
-    }
+	private double sigmoid(double input) {
+		return 1 / (1 + Math.exp(-input));
+	}
 
-    private double sigmoidDerivative(double input) {
-        return input * (1 - input);
-    }
+	@Override
+	public Matrix<M> derivative(Matrix<M> m) {
+		return m.mapElements(this::sigmoidDerivative);
+	}
 
-    @Override
-    public Matrix<M> function(Matrix<M> m) {
-        return m.mapElements(this::sigmoid);
-    }
+	private double sigmoidDerivative(double input) {
+		return input * (1 - input);
+	}
 
-    @Override
-    public Matrix<M> derivative(Matrix<M> m) {
-        return m.mapElements(this::sigmoidDerivative);
-    }
+	@Override
+	public void setValues(double in) {
+	}
 
-    @Override
-    public void setValues(double in) {
-    }
+	@Override
+	public String getName() {
+		return "Sigmoid";
+	}
 }

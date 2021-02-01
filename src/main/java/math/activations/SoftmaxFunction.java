@@ -4,6 +4,11 @@ import math.linearalgebra.Matrix;
 
 public class SoftmaxFunction<M> extends ActivationFunction<M> {
 
+	@Override
+	public Matrix<M> function(Matrix<M> m) {
+		return this.softMax(m);
+	}
+
 	/**
 	 * Takes as input a vector of size NX1 and returns a SoftMax Vector of that input.
 	 *
@@ -23,6 +28,16 @@ public class SoftmaxFunction<M> extends ActivationFunction<M> {
 	}
 
 	@Override
+	public Matrix<M> derivative(Matrix<M> m) {
+		return null;
+	}
+
+	@Override
+	public void setValues(double in) {
+
+	}
+
+	@Override
 	public Matrix<M> derivativeOnInput(final Matrix<M> input, final Matrix<M> out) {
 		double xOut = input.hadamard(out).sum();
 		Matrix<M> derive = out.subtract(xOut);
@@ -32,20 +47,5 @@ public class SoftmaxFunction<M> extends ActivationFunction<M> {
 	@Override
 	public String getName() {
 		return "Softmax";
-	}
-
-	@Override
-	public Matrix<M> function(Matrix<M> m) {
-		return this.softMax(m);
-	}
-
-	@Override
-	public Matrix<M> derivative(Matrix<M> m) {
-		return null;
-	}
-
-	@Override
-	public void setValues(double in) {
-
 	}
 }

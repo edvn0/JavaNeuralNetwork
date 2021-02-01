@@ -38,18 +38,32 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
 	}
 
 	@Override
-	public int rows() {
-		return (int) this.delegate.getRowCount();
+	public int hashCode() {
+		return delegate.hashCode();
 	}
 
 	@Override
-	public int cols() {
-		return (int) this.delegate.getColumnCount();
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		UJMPMatrix matrix = (UJMPMatrix) o;
+		return delegate.equals(matrix.delegate);
 	}
 
 	@Override
-	public UJMPMatrix multiply(Matrix<org.ujmp.core.Matrix> otherMatrix) {
-		return new UJMPMatrix(this.delegate.mtimes(otherMatrix.delegate()));
+	public String toString() {
+		return new StringJoiner(", ", UJMPMatrix.class.getSimpleName() + "[", "]")
+			.add("rawCopy=" + Arrays.deepToString(this.rawCopy()))
+			.toString();
+	}
+
+	@Override
+	public UJMPMatrix hadamard(Matrix<org.ujmp.core.Matrix> otherMatrix) {
+		return new UJMPMatrix(this.delegate.times(otherMatrix.delegate()));
 	}
 
 	@Override
@@ -94,10 +108,13 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
 	}
 
 	@Override
-	public String toString() {
-		return new StringJoiner(", ", UJMPMatrix.class.getSimpleName() + "[", "]")
-			.add("rawCopy=" + Arrays.deepToString(this.rawCopy()))
-			.toString();
+	public org.ujmp.core.Matrix delegate() {
+		return this.delegate;
+	}
+
+	@Override
+	public void setDelegate(org.ujmp.core.Matrix delegate) {
+		this.delegate = delegate;
 	}
 
 	@Override
@@ -111,13 +128,19 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
 	}
 
 	@Override
-	public UJMPMatrix transpose() {
-		return new UJMPMatrix(this.delegate.transpose());
+	public int argMax() {
+		double[][] array = this.delegate.toDoubleArray();
+		double[] args = new double[array.length];
+		for (int i = 0; i < array.length; i++) {
+			args[i] = array[i][0];
+		}
+		return MathUtilities.argMax(args);
+
 	}
 
 	@Override
-	public org.ujmp.core.Matrix delegate() {
-		return this.delegate;
+	public UJMPMatrix transpose() {
+		return new UJMPMatrix(this.delegate.transpose());
 	}
 
 	@Override
@@ -153,35 +176,6 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
 	}
 
 	@Override
-	public int argMax() {
-		double[] array = this.delegate.toDoubleArray()[0];
-		return MathUtilities.argMax(array);
-
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (o == null || getClass() != o.getClass()) {
-			return false;
-		}
-		UJMPMatrix matrix = (UJMPMatrix) o;
-		return delegate.equals(matrix.delegate);
-	}
-
-	@Override
-	public int hashCode() {
-		return delegate.hashCode();
-	}
-
-	@Override
-	public UJMPMatrix hadamard(Matrix<org.ujmp.core.Matrix> otherMatrix) {
-		return new UJMPMatrix(this.delegate.times(otherMatrix.delegate()));
-	}
-
-	@Override
 	public double norm() {
 
 		if (cols() != 1) {
@@ -201,14 +195,23 @@ public class UJMPMatrix implements Matrix<org.ujmp.core.Matrix> {
 		return this.delegate.toDoubleArray();
 	}
 
+	@Override
+	public int rows() {
+		return (int) this.delegate.getRowCount();
+	}
+
+	@Override
+	public int cols() {
+		return (int) this.delegate.getColumnCount();
+	}
+
+	@Override
+	public UJMPMatrix multiply(Matrix<org.ujmp.core.Matrix> otherMatrix) {
+		return new UJMPMatrix(this.delegate.mtimes(otherMatrix.delegate()));
+	}
 
 	@Override
 	public Matrix<org.ujmp.core.Matrix> copy() {
 		return new UJMPMatrix(this.delegate.clone());
-	}
-
-	@Override
-	public void setDelegate(org.ujmp.core.Matrix delegate) {
-		this.delegate = delegate;
 	}
 }

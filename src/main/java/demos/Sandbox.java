@@ -12,13 +12,14 @@ public class Sandbox {
 		AbstractDemo<org.ujmp.core.Matrix> mnistUJMP = new demos.implementations.ujmp.SandboxMnist();
 		AbstractDemo<org.ujmp.core.Matrix> xorUJMP = new demos.implementations.ujmp.SandboxXOR();
 
-		AbstractDemo<SMatrix> mnistSimple = new demos.implementations.simple.SandboxMnistLayered();
+		AbstractDemo<SMatrix> mnistSimpleLayered = new demos.implementations.simple.SandboxMnistLayered();
+		AbstractDemo<SMatrix> mnistSimplePure = new demos.implementations.simple.SandboxMnistPure();
 
 		AbstractDemo<?> demo = null;
 
 		if (args == null || args.length == 0) {
 			throw new IllegalArgumentException(
-					"Supply choice of demo! args: MNIST_OJ_ALGO, XOR_OJ_ALGO, MNIST_UJMP, XOR_UJMP.");
+				"Supply choice of demo! args: MNIST_OJ_ALGO, XOR_OJ_ALGO, MNIST_UJMP, XOR_UJMP.");
 		} else {
 			String choice = args[0];
 
@@ -38,12 +39,15 @@ public class Sandbox {
 				case "MNIST_OJ_ALGO_LAYERED":
 					demo = mnistOjAlgoLayered;
 					break;
-				case "SIMPLE":
-					demo = mnistSimple;
+				case "SIMPLE_LAYER":
+					demo = mnistSimpleLayered;
+					break;
+				case "SIMPLE_PURE":
+					demo = mnistSimplePure;
 					break;
 				default:
 					throw new IllegalArgumentException(
-							"Supply choice of demo! args: MNIST_OJ_ALGO, XOR_OJ_ALGO, MNIST_UJMP, XOR_UJMP.");
+						"Supply choice of demo! args: MNIST_OJ_ALGO, XOR_OJ_ALGO, MNIST_UJMP, XOR_UJMP.");
 			}
 		}
 

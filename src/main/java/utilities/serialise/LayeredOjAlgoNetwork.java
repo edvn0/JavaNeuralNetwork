@@ -18,7 +18,7 @@ public class LayeredOjAlgoNetwork {
 		CostFunction<Primitive64Matrix> costFunc,
 		Optimizer<Primitive64Matrix> optimiser, EvaluationFunction<Primitive64Matrix> evaluator) {
 
-		LayeredNetworkBuilder<Primitive64Matrix> builder = new LayeredNetworkBuilder<>(inputSize);
+		LayeredNetworkBuilder<Primitive64Matrix> builder = new LayeredNetworkBuilder<>();
 		builder = builder.costFunction(costFunc);
 		builder = builder.evaluationFunction(evaluator);
 		builder = builder.optimizer(optimiser);

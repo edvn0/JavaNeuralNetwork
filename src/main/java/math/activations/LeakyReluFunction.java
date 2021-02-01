@@ -16,16 +16,6 @@ public class LeakyReluFunction<M> extends ReluFunction<M> {
 	}
 
 	@Override
-	public void setValues(double in) {
-		this.alpha = in;
-	}
-
-	@Override
-	public String getName() {
-		return "LeakyReLU";
-	}
-
-	@Override
 	public Matrix<M> function(Matrix<M> in) {
 		return in.mapElements((e) -> e > 0 ? e : alpha * e);
 	}
@@ -33,6 +23,16 @@ public class LeakyReluFunction<M> extends ReluFunction<M> {
 	@Override
 	public Matrix<M> derivative(Matrix<M> in) {
 		return in.mapElements((e) -> e > 0 ? 1 : alpha);
+	}
+
+	@Override
+	public void setValues(double in) {
+		this.alpha = in;
+	}
+
+	@Override
+	public String getName() {
+		return "LeakyReLU";
 	}
 
 }

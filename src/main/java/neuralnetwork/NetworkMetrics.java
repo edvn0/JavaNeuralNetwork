@@ -51,7 +51,7 @@ public class NetworkMetrics {
      * @param loss    loss on validation
      * @param time    time taken for validation
      */
-    protected void addPlotData(int i, double correct, double loss, long time) {
+    public void addPlotData(int i, double correct, double loss, long time) {
         epochs.add(i);
         correctValues.add(correct);
         lossValues.add(loss);
@@ -65,7 +65,7 @@ public class NetworkMetrics {
      * @param correct accuracy on validation
      * @param loss    loss on validation
      */
-    protected void initialPlotData(final double correct, final double loss) {
+	public void initialPlotData(final double correct, final double loss) {
         epochs.add(0);
         correctValues.add(correct);
         lossValues.add(loss);

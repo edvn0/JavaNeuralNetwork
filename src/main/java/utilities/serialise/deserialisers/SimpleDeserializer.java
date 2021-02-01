@@ -32,14 +32,6 @@ public class SimpleDeserializer {
 
 	private static final Type networkType = new TypeToken<LayeredNeuralNetwork<SMatrix>>() {
 	}.getType();
-	private final Gson gson;
-
-	public SimpleDeserializer() {
-		GsonBuilder b = new GsonBuilder();
-		b.registerTypeAdapter(networkType, deserializer);
-		this.gson = b.create();
-	}
-
 	private static final JsonDeserializer<LayeredNeuralNetwork<SMatrix>> deserializer = (src, type, context) -> {
 		// "layers" ("neurons") or ("neurons", "activation", "weight", "bias")
 		// "optimizer" ("name") or ("name", "params")
@@ -51,8 +43,7 @@ public class SimpleDeserializer {
 		var network = src.getAsJsonObject();
 		var layers = network.get("layers").getAsJsonArray();
 		var firstLayer = layers.remove(0);
-		LayeredNetworkBuilder<SMatrix> nBuilder = new LayeredNetworkBuilder<SMatrix>(
-			firstLayer.getAsJsonObject().get("neurons").getAsInt());
+		LayeredNetworkBuilder<SMatrix> nBuilder = new LayeredNetworkBuilder<SMatrix>();
 		NetworkLayer<SMatrix> first = new NetworkLayer<>(new DoNothingFunction<SMatrix>(),
 			firstLayer.getAsJsonObject().get("neurons").getAsInt());
 
@@ -164,6 +155,13 @@ public class SimpleDeserializer {
 
 		return nBuilder.deserialize();
 	};
+	private final Gson gson;
+
+	public SimpleDeserializer() {
+		GsonBuilder b = new GsonBuilder();
+		b.registerTypeAdapter(networkType, deserializer);
+		this.gson = b.create();
+	}
 
 	public LayeredNeuralNetwork<SMatrix> deserialize(File jsonFile) {
 

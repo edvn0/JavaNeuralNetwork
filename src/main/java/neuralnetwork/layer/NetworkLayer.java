@@ -20,15 +20,7 @@ public class NetworkLayer<M> {
 	private transient int deltasAdded;
 	private transient Matrix<M> deltaWeight;
 	private transient Matrix<M> deltaBias;
-	private double l2;
-
-	public NetworkLayer(ActivationFunction<M> activationFunction, int neurons) {
-		this.activationFunction = activationFunction;
-		this.activated = new ThreadLocal<>();
-		this.neurons = neurons;
-		this.deltasAdded = 0;
-		this.l2 = 0d;
-	}
+	private double l2 = 0d;
 
 	public NetworkLayer(ActivationFunction<M> activationFunction, int neurons, double l2) {
 		this.activationFunction = activationFunction;
@@ -43,6 +35,13 @@ public class NetworkLayer<M> {
 		this.weight = in.weight;
 		this.bias = in.bias;
 		this.previousLayer = in.previousLayer;
+	}
+
+	public NetworkLayer(ActivationFunction<M> activationFunction, int neurons) {
+		this.activationFunction = activationFunction;
+		this.activated = new ThreadLocal<>();
+		this.neurons = neurons;
+		this.deltasAdded = 0;
 	}
 
 	public NetworkLayer(int neurons, double l2, ActivationFunction<M> activation, Matrix<M> weight,
@@ -64,6 +63,10 @@ public class NetworkLayer<M> {
 		}
 
 		return this.activated.get();
+	}
+
+	public boolean hasPrecedingLayer() {
+		return this.previousLayer != null;
 	}
 
 	public synchronized void addDeltas(Matrix<M> deltaWeights, Matrix<M> deltaBias) {
@@ -89,7 +92,6 @@ public class NetworkLayer<M> {
 			this.deltaBias = this.deltaBias.mapElements(e -> 0d);
 		}
 		this.deltasAdded = 0;
-
 	}
 
 	public int getNeurons() {
@@ -114,10 +116,6 @@ public class NetworkLayer<M> {
 
 	public Matrix<M> activation() {
 		return this.activated.get();
-	}
-
-	public boolean hasPrecedingLayer() {
-		return this.previousLayer != null;
 	}
 
 	public ActivationFunction<M> getFunction() {

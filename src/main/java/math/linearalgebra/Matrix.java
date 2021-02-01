@@ -6,30 +6,6 @@ import utilities.exceptions.MatrixException;
 public interface Matrix<M> {
 
 	/**
-	 * Cols or this Matrix<M>
-	 *
-	 * @return columns
-	 */
-	int rows();
-
-	/**
-	 * Rows of this Matrix<M>
-	 *
-	 * @return rows
-	 */
-	int cols();
-
-	/**
-	 * Matrix<M> multiplication, should throw if cols and rows do not match. Contract is This X in,
-	 * i.e. this_rows*this_cols X in_cols*in_rows
-	 *
-	 * @param otherMatrix right operand
-	 *
-	 * @return new Matrix<M> multiplied
-	 */
-	Matrix<M> multiply(Matrix<M> otherMatrix);
-
-	/**
 	 * Element wise multiplication of two matrices.
 	 *
 	 * @param otherMatrix right operand
@@ -101,6 +77,10 @@ public interface Matrix<M> {
 	 */
 	double map(Function<Matrix<M>, Double> mapping);
 
+	default void mapElementsMutable(Function<Double, Double> mapping) {
+		setDelegate(this.mapElements(mapping).delegate());
+	}
+
 	/**
 	 * Map each element with this function
 	 *
@@ -110,9 +90,12 @@ public interface Matrix<M> {
 	 */
 	Matrix<M> mapElements(Function<Double, Double> mapping);
 
-	default void mapElementsMutable(Function<Double, Double> mapping) {
-		setDelegate(this.mapElements(mapping).delegate());
-	}
+	/**
+	 * The delegate part of the delegate pattern.
+	 */
+	M delegate();
+
+	void setDelegate(M delegate);
 
 	/**
 	 * Sum this Matrix<M> over all entries.
@@ -134,13 +117,6 @@ public interface Matrix<M> {
 	 * @return index of max
 	 */
 	int argMax();
-
-	/**
-	 * The delegate part of the delegate pattern.
-	 */
-	M delegate();
-
-	void setDelegate(M delegate);
 
 	/**
 	 * Transpose this Matrix<M>.
@@ -198,10 +174,6 @@ public interface Matrix<M> {
 	 */
 	String toString();
 
-	enum MatrixType {
-		VECTOR, SQUARE, ZEROES, ONES, IDENTITY
-	}
-
 	/**
 	 * Norm of a vector.
 	 *
@@ -234,5 +206,33 @@ public interface Matrix<M> {
 		return this.multiply(this);
 	}
 
+	/**
+	 * Cols or this Matrix<M>
+	 *
+	 * @return columns
+	 */
+	int rows();
+
+	/**
+	 * Rows of this Matrix<M>
+	 *
+	 * @return rows
+	 */
+	int cols();
+
+	/**
+	 * Matrix<M> multiplication, should throw if cols and rows do not match. Contract is This X in,
+	 * i.e. this_rows*this_cols X in_cols*in_rows
+	 *
+	 * @param otherMatrix right operand
+	 *
+	 * @return new Matrix<M> multiplied
+	 */
+	Matrix<M> multiply(Matrix<M> otherMatrix);
+
 	Matrix<M> copy();
+
+	enum MatrixType {
+		VECTOR, SQUARE, ZEROES, ONES, IDENTITY
+	}
 }

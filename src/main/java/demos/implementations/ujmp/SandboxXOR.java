@@ -30,6 +30,13 @@ public class SandboxXOR extends AbstractDemo<org.ujmp.core.Matrix> {
 	private static final double[][] xorLabel = new double[][]{{1, 0}, {0, 1}, {0, 1}, {1, 0}};
 
 	@Override
+	protected void serialise(DeepLearnable<Matrix> in) {
+		UJMPSerializer serializer = new UJMPSerializer();
+		var out = (NeuralNetwork<org.ujmp.core.Matrix>) in;
+		serializer.serialise(new File(this.outputDirectory() + "/UJMP_Mnist_Network.json"), out);
+	}
+
+	@Override
 	protected String outputDirectory() {
 		return "/Users/edwincarlsson/Documents/Programmering/Java/NeuralNetwork/src/main/resources/xor";
 	}
@@ -77,13 +84,6 @@ public class SandboxXOR extends AbstractDemo<org.ujmp.core.Matrix> {
 				.setEvaluationFunction(new ArgMaxEvaluationFunction<>())
 				.setOptimizer(new ADAM<>(0.01, 0.9, 0.999)),
 			new UJMPInitializer(MethodConstants.XAVIER, MethodConstants.SCALAR));
-	}
-
-	@Override
-	protected void serialise(DeepLearnable<Matrix> in) {
-		UJMPSerializer serializer = new UJMPSerializer();
-		var out = (NeuralNetwork<org.ujmp.core.Matrix>) in;
-		serializer.serialise(new File(this.outputDirectory() + "/UJMP_Mnist_Network.json"), out);
 	}
 
 }

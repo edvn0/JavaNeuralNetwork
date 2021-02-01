@@ -139,6 +139,18 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 			this.testEvaluation(Collections.singletonList(input), 5));
 	}
 
+	@Override
+	public void train(List<NetworkInput<M>> training, int epochs, int batchSize) {
+		final List<List<NetworkInput<M>>> split = NetworkUtilities
+			.batchSplitData(training, batchSize);
+		for (int i = 0; i < epochs; i++) {
+			for (var s : split) {
+				this.evaluateTrainingExample(s);
+				this.learnFromDeltas();
+			}
+		}
+	}
+
 	/**
 	 * Back-propagates a data set and normalizes the deltas against the size of the batch to be used
 	 * in an optimizer.
@@ -161,20 +173,9 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 		}
 	}
 
-	/**
-	 * Updates weights and biases and resets the batch adjusted deltas.
-	 */
-	private synchronized void learnFromDeltas() {
-		this.weights = this.optimizer.changeWeights(this.weights, this.dW);
-		this.biases = this.optimizer.changeBiases(this.biases, this.dB);
-
-		this.dB = this.initialiser.getDeltaBiasParameters();
-		this.dW = this.initialiser.getDeltaWeightParameters();
-	}
-
 	private BackPropContainer backPropagate(final NetworkInput<M> in) {
-		this.deltaWeights = this.initialiser.getDeltaWeightParameters();
-		this.deltaBias = this.initialiser.getDeltaBiasParameters();
+		var deltaWeights = this.initialiser.getDeltaWeightParameters();
+		var deltaBias = this.initialiser.getDeltaBiasParameters();
 
 		final List<Matrix<M>> activations = this.feedForward(in.getData());
 
@@ -189,13 +190,13 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 			final Matrix<M> differentiate = this.functions.get(k + 1)
 				.derivativeOnInput(aCurr, deltaError);
 
-			this.deltaBias.set(k, differentiate);
-			this.deltaWeights.set(k, differentiate.multiply(aNext.transpose()));
+			deltaBias.set(k, differentiate);
+			deltaWeights.set(k, differentiate.multiply(aNext.transpose()));
 
 			deltaError = this.weights.get(k).transpose().multiply(differentiate);
 		}
 
-		return new BackPropContainer(this.deltaWeights, this.deltaBias);
+		return new BackPropContainer(deltaWeights, deltaBias);
 	}
 
 	/**
@@ -218,68 +219,14 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 	}
 
 	/**
-	 * Feed the input through the network for classification.
-	 *
-	 * @param in VECTOR to predict
-	 *
-	 * @return classified values.
+	 * Updates weights and biases and resets the batch adjusted deltas.
 	 */
-	public Matrix<M> predict(final Matrix<M> in) {
-		Matrix<M> input = in;
+	private synchronized void learnFromDeltas() {
+		this.weights = this.optimizer.changeWeights(this.weights, this.dW);
+		this.biases = this.optimizer.changeBiases(this.biases, this.dB);
 
-		for (int i = 0; i < this.totalLayers; i++) {
-			final Matrix<M> wI = this.weights.get(i).multiply(input);
-			final Matrix<M> a = wI.add(this.biases.get(i));
-			input = functions.get(i + 1).function(a);
-		}
-
-		return input;
-	}
-
-	private List<NetworkInput<M>> feedForwardData(final List<NetworkInput<M>> test) {
-		final List<NetworkInput<M>> copy = new ArrayList<>();
-
-		for (final NetworkInput<M> networkInput : test) {
-
-			final Matrix<M> out = this.predict(networkInput.getData());
-			final NetworkInput<M> newOut = new NetworkInput<M>(out, networkInput.getLabel());
-			copy.add(newOut);
-		}
-
-		return copy;
-	}
-
-	public double testEvaluation(final List<NetworkInput<M>> test, final int size) {
-		double avg = 0;
-		final List<NetworkInput<M>> d = this.feedForwardData(test);
-		for (int i = 0; i < size; i++) {
-			avg += evaluate(d);
-		}
-		return avg / size;
-	}
-
-	public double testLoss(List<NetworkInput<M>> right) {
-		return loss(feedForwardData(right));
-	}
-
-	double loss(List<NetworkInput<M>> data) {
-		return this.costFunction.calculateCostFunction(data);
-	}
-
-	private double evaluate(final List<NetworkInput<M>> data) {
-		return this.evaluationFunction.evaluatePrediction(data);
-	}
-
-	@Override
-	public void train(List<NetworkInput<M>> training, int epochs, int batchSize) {
-		final List<List<NetworkInput<M>>> split = NetworkUtilities
-			.batchSplitData(training, batchSize);
-		for (int i = 0; i < epochs; i++) {
-			for (var s : split) {
-				this.evaluateTrainingExample(s);
-				this.learnFromDeltas();
-			}
-		}
+		this.dB = this.initialiser.getDeltaBiasParameters();
+		this.dW = this.initialiser.getDeltaWeightParameters();
 	}
 
 	/**
@@ -345,7 +292,7 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 
 			// Calculates a batch of training data and update the deltas.
 			t1 = System.nanoTime();
-			split.forEach(e -> {
+			split.parallelStream().forEach(e -> {
 				this.evaluateTrainingExample(e);
 				this.learnFromDeltas();
 			});
@@ -380,8 +327,30 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 		log.info("Charts outputted.");
 	}
 
-	private int[] weightDimensions(final int i) {
-		return new int[]{(this.weights.get(i).rows()), (this.weights.get(i).cols())};
+	private List<NetworkInput<M>> feedForwardData(final List<NetworkInput<M>> test) {
+		final List<NetworkInput<M>> copy = new ArrayList<>();
+
+		for (final NetworkInput<M> networkInput : test) {
+
+			final Matrix<M> out = this.predict(networkInput.getData());
+			final NetworkInput<M> newOut = new NetworkInput<M>(out, networkInput.getLabel());
+			copy.add(newOut);
+		}
+
+		return copy;
+	}
+
+	public double testEvaluation(final List<NetworkInput<M>> test, final int size) {
+		double avg = 0;
+		final List<NetworkInput<M>> d = this.feedForwardData(test);
+		for (int i = 0; i < size; i++) {
+			avg += evaluate(d);
+		}
+		return avg / size;
+	}
+
+	public double testLoss(List<NetworkInput<M>> right) {
+		return loss(feedForwardData(right));
 	}
 
 	public void display() {
@@ -409,6 +378,10 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 		log.info(b.toString());
 	}
 
+	private int[] weightDimensions(final int i) {
+		return new int[]{(this.weights.get(i).rows()), (this.weights.get(i).cols())};
+	}
+
 	@Override
 	public void copyParameters(final List<Matrix<M>> weights, final List<Matrix<M>> biases) {
 		this.weights = new ArrayList<>(weights);
@@ -422,6 +395,33 @@ public class NeuralNetwork<M> implements DeepLearnable<M> {
 			out.add(Pair.of(this.weights.get(i), this.biases.get(i)));
 		}
 		return out;
+	}
+
+	/**
+	 * Feed the input through the network for classification.
+	 *
+	 * @param in VECTOR to predict
+	 *
+	 * @return classified values.
+	 */
+	public Matrix<M> predict(final Matrix<M> in) {
+		Matrix<M> input = in;
+
+		for (int i = 0; i < this.totalLayers; i++) {
+			final Matrix<M> wI = this.weights.get(i).multiply(input);
+			final Matrix<M> a = wI.add(this.biases.get(i));
+			input = functions.get(i + 1).function(a);
+		}
+
+		return input;
+	}
+
+	double loss(List<NetworkInput<M>> data) {
+		return this.costFunction.calculateCostFunction(data);
+	}
+
+	private double evaluate(final List<NetworkInput<M>> data) {
+		return this.evaluationFunction.evaluatePrediction(data);
 	}
 
 	@Data

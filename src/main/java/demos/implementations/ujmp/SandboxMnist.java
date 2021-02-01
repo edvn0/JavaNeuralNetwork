@@ -27,6 +27,13 @@ import utilities.types.Triple;
 public class SandboxMnist extends AbstractDemo<org.ujmp.core.Matrix> {
 
 	@Override
+	protected void serialise(DeepLearnable<org.ujmp.core.Matrix> in) {
+		UJMPSerializer serializer = new UJMPSerializer();
+		var out = (NeuralNetwork<org.ujmp.core.Matrix>) in;
+		serializer.serialise(new File(this.outputDirectory() + "/UJMP_Mnist_Network.json"), out);
+	}
+
+	@Override
 	protected String outputDirectory() {
 		return "/Users/edwincarlsson/Documents/Programmering/Java/NeuralNetwork/src/main/resources/mnist";
 	}
@@ -45,7 +52,7 @@ public class SandboxMnist extends AbstractDemo<org.ujmp.core.Matrix> {
 	protected Triple<List<NetworkInput<org.ujmp.core.Matrix>>, List<NetworkInput<org.ujmp.core.Matrix>>, List<NetworkInput<org.ujmp.core.Matrix>>> getData() {
 		String test = "/mnist_test.csv";
 		String train = "/mnist_train.csv";
-		String path = "/Volumes/Toshiba 1,5TB/mnist";
+		String path = "/Volumes/Toshiba/mnist";
 
 		try (var trainInData = Files.lines(Paths.get(path + train));
 			var testInData = Files.lines(Paths.get(path + test))) {
@@ -74,27 +81,20 @@ public class SandboxMnist extends AbstractDemo<org.ujmp.core.Matrix> {
 	protected NeuralNetwork<org.ujmp.core.Matrix> createNetwork() {
 		var f = new LeakyReluFunction<org.ujmp.core.Matrix>(0.01);
 		return new NeuralNetwork<>(
-			new NetworkBuilder<org.ujmp.core.Matrix>(4).setFirstLayer(784).setLayer(10, f)
-				.setLayer(10, f)
+			new NetworkBuilder<org.ujmp.core.Matrix>(4).setFirstLayer(784).setLayer(90, f)
+				.setLayer(70, f)
 				.setLastLayer(10, new SoftmaxFunction<>())
 				.setCostFunction(new CrossEntropyCostFunction<>())
 				.setEvaluationFunction(new ArgMaxEvaluationFunction<>())
 				.setOptimizer(new ADAM<>(0.01, 0.9, 0.999)), // new ADAM<>(0.01, 0.9, 0.999)),
-			new UJMPInitializer(MethodConstants.XAVIER, MethodConstants.SCALAR));
-	}
-
-	@Override
-	protected void serialise(DeepLearnable<org.ujmp.core.Matrix> in) {
-		UJMPSerializer serializer = new UJMPSerializer();
-		var out = (NeuralNetwork<org.ujmp.core.Matrix>) in;
-		serializer.serialise(new File(this.outputDirectory() + "/UJMP_Mnist_Network.json"), out);
+			new UJMPInitializer(MethodConstants.XAVIER, MethodConstants.XAVIER));
 	}
 
 	private NetworkInput<org.ujmp.core.Matrix> toMnist(String toMnist) {
 		int imageSize = 28 * 28;
 		int labelSize = 10;
 		String labelString = toMnist.substring(0, 2).split(",")[0];
-		String[] rest = toMnist.substring(2, toMnist.length()).split(",");
+		String[] rest = toMnist.substring(2).split(",");
 
 		int label = Integer.parseInt(labelString);
 		double[] labels = new double[labelSize];

@@ -13,20 +13,20 @@ public class CrossEntropyCostFunction<M> implements CostFunction<M> {
 		double size = tData.size();
 
 		if (size == 1) {
-			return calcuateSingle(tData.get(0));
+			return calculateSingle(tData.get(0));
 		}
 
 		double loss = 0d;
 
 		for (var data : tData) {
-			loss += calcuateSingle(data);
+			loss += calculateSingle(data);
 		}
 
 		return -loss / size;
 	}
 
 	@Override
-	public double calcuateSingle(NetworkInput<M> data) {
+	public double calculateSingle(NetworkInput<M> data) {
 		var inner = data.getLabel().hadamard(data.getData().add(1e-9).mapElements(Math::log));
 		return inner.sum();
 	}

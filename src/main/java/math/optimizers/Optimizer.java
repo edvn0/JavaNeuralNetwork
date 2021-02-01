@@ -9,7 +9,7 @@ import utilities.serialise.NetworkSerializable;
  */
 public interface Optimizer<M> extends NetworkSerializable<String, Double> {
 
-	public void init(double... in);
+	void init(double... in);
 
 	/**
 	 * Changes the networks weights (immutably, returns a new set of weights) with respect to the

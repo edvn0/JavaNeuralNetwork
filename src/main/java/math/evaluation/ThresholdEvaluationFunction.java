@@ -7,51 +7,51 @@ import neuralnetwork.inputs.NetworkInput;
 
 public class ThresholdEvaluationFunction<M> implements EvaluationFunction<M> {
 
-    private static final String NAME = "Threshold Evaluation";
-    private double threshold;
+	private static final String NAME = "Threshold Evaluation";
+	private double threshold;
 
-    public ThresholdEvaluationFunction(double a) {
-        this.threshold = a;
-    }
+	public ThresholdEvaluationFunction(double a) {
+		this.threshold = a;
+	}
 
-    public ThresholdEvaluationFunction() {
-    }
+	public ThresholdEvaluationFunction() {
+	}
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public double evaluatePrediction(List<NetworkInput<M>> toEvaluate) {
-        int correct = 0;
-        for (NetworkInput<M> matrices : toEvaluate) {
-            Matrix<M> fed = matrices.getData();
-            Matrix<M> corr = matrices.getLabel();
+	@Override
+	public LinkedHashMap<String, Double> params() {
+		LinkedHashMap<String, Double> oMap = new LinkedHashMap<>();
+		oMap.put("v1", threshold);
+		return oMap;
+	}
 
-            double fedEl = fed.sum();
-            double corrEl = corr.sum();
+	@Override
+	public void init(double... in) {
+		this.threshold = in[0];
 
-            if (Math.abs(fedEl - corrEl) < this.threshold) {
-                correct++;
-            }
-        }
-        return (double) correct / toEvaluate.size();
-    }
+	}
 
-    @Override
-    public String name() {
-        return NAME;
-    }
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public double evaluatePrediction(List<NetworkInput<M>> toEvaluate) {
+		int correct = 0;
+		for (NetworkInput<M> matrices : toEvaluate) {
+			Matrix<M> fed = matrices.getData();
+			Matrix<M> corr = matrices.getLabel();
 
-    @Override
-    public LinkedHashMap<String, Double> params() {
-        LinkedHashMap<String, Double> oMap = new LinkedHashMap<>();
-        oMap.put("v1", threshold);
-        return oMap;
-    }
+			double fedEl = fed.sum();
+			double corrEl = corr.sum();
 
-    @Override
-    public void init(double... in) {
-        this.threshold = in[0];
+			if (Math.abs(fedEl - corrEl) < this.threshold) {
+				correct++;
+			}
+		}
+		return (double) correct / toEvaluate.size();
+	}
 
-    }
+	@Override
+	public String name() {
+		return NAME;
+	}
 }

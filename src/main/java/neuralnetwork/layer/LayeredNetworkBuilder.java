@@ -14,7 +14,6 @@ public class LayeredNetworkBuilder<M> {
 
 	public List<NetworkLayer<M>> layers = new ArrayList<>();
 	public int total;
-	public int networkInputSize;
 	public boolean gradientClipping;
 
 	public ParameterInitializer<M> initializer;
@@ -22,8 +21,7 @@ public class LayeredNetworkBuilder<M> {
 	public EvaluationFunction<M> evaluationFunction = new ArgMaxEvaluationFunction<>();
 	public Optimizer<M> optimizer = new ADAM<>(0.01, 0.9, 0.999);
 
-	public LayeredNetworkBuilder(int networkInputSize) {
-		this.networkInputSize = networkInputSize;
+	public LayeredNetworkBuilder() {
 	}
 
 	public LayeredNetworkBuilder(LayeredNeuralNetwork<M> other) {

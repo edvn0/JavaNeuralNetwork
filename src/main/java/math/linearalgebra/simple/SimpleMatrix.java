@@ -26,21 +26,6 @@ public class SimpleMatrix implements Matrix<SMatrix> {
 	}
 
 	@Override
-	public int rows() {
-		return delegate.rows();
-	}
-
-	@Override
-	public int cols() {
-		return delegate.cols();
-	}
-
-	@Override
-	public SimpleMatrix multiply(Matrix<SMatrix> otherMatrix) {
-		return new SimpleMatrix(this.delegate.times(otherMatrix.delegate()));
-	}
-
-	@Override
 	public SimpleMatrix hadamard(Matrix<SMatrix> otherMatrix) {
 		return new SimpleMatrix(this.delegate.hadamard(otherMatrix.delegate()));
 	}
@@ -86,6 +71,16 @@ public class SimpleMatrix implements Matrix<SMatrix> {
 	}
 
 	@Override
+	public SMatrix delegate() {
+		return delegate;
+	}
+
+	@Override
+	public void setDelegate(SMatrix delegate) {
+		this.delegate = delegate;
+	}
+
+	@Override
 	public double sum() {
 		return this.delegate.sum();
 	}
@@ -98,16 +93,6 @@ public class SimpleMatrix implements Matrix<SMatrix> {
 	@Override
 	public int argMax() {
 		return this.delegate.argMax();
-	}
-
-	@Override
-	public SMatrix delegate() {
-		return delegate;
-	}
-
-	@Override
-	public void setDelegate(SMatrix delegate) {
-		this.delegate = delegate;
 	}
 
 	@Override
@@ -170,13 +155,23 @@ public class SimpleMatrix implements Matrix<SMatrix> {
 	}
 
 	@Override
-	public Matrix<SMatrix> copy() {
-		return new SimpleMatrix(this.delegate.rawCopy());
+	public int rows() {
+		return delegate.rows();
 	}
 
 	@Override
-	public String toString() {
-		return "SimpleMatrix=[" + this.delegate.toString() + "]";
+	public int cols() {
+		return delegate.cols();
+	}
+
+	@Override
+	public SimpleMatrix multiply(Matrix<SMatrix> otherMatrix) {
+		return new SimpleMatrix(this.delegate.times(otherMatrix.delegate()));
+	}
+
+	@Override
+	public Matrix<SMatrix> copy() {
+		return new SimpleMatrix(this.delegate.rawCopy());
 	}
 
 	@Override
@@ -189,6 +184,11 @@ public class SimpleMatrix implements Matrix<SMatrix> {
 		}
 		SimpleMatrix matrix = (SimpleMatrix) o;
 		return delegate.equals(matrix.delegate);
+	}
+
+	@Override
+	public String toString() {
+		return "SimpleMatrix=[" + this.delegate.toString() + "]";
 	}
 
 }

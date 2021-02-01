@@ -31,10 +31,6 @@ public class Pair<L, R> {
     public boolean equals(Object o) {
         if (o == this)
             return true;
-        if (!(o instanceof Pair)) {
-            return false;
-        }
-
         if (!(o instanceof Pair))
             return false;
 

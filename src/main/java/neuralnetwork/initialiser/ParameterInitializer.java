@@ -8,52 +8,54 @@ import utilities.types.Pair;
 
 public abstract class ParameterInitializer<M> {
 
-    protected int[] sizes;
-    protected InitialisationMethod wM;
-    protected InitialisationMethod bM;
+	protected int[] sizes;
+	protected InitialisationMethod wM;
+	protected InitialisationMethod bM;
 
-    public ParameterInitializer(InitialisationMethod weightMethod, InitialisationMethod biasMethod) {
-        this.wM = weightMethod;
-        this.bM = biasMethod;
-    }
+	public ParameterInitializer(InitialisationMethod weightMethod,
+		InitialisationMethod biasMethod) {
+		this.wM = weightMethod;
+		this.bM = biasMethod;
+	}
 
-    public void init(int[] sizes) {
-        this.sizes = sizes.clone();
-    }
+	public static ParameterInitializer<?> get(InitialisationMethod wM, InitialisationMethod bM,
+		String name,
+		Class<?> typeOf) {
+		if (typeOf.equals(SMatrix.class)) {
+			return new SimpleInitializer(wM, bM);
+		} else if (typeOf.equals(Primitive64Matrix.class)) {
+			return new OjAlgoInitializer(wM, bM);
+		} else if (typeOf.equals(org.ujmp.core.Matrix.class)) {
+			return new UJMPInitializer(wM, bM);
+		} else {
+			throw new IllegalArgumentException("Unsupported initializer for this type.");
+		}
+	}
 
-    public abstract List<Matrix<M>> getWeightParameters();
+	public void init(int[] sizes) {
+		this.sizes = sizes;
+	}
 
-    public abstract List<Matrix<M>> getBiasParameters();
+	public abstract List<Matrix<M>> getWeightParameters();
 
-    protected abstract List<Matrix<M>> getDeltaParameters(boolean isBias);
+	public abstract List<Matrix<M>> getBiasParameters();
 
-    public List<Matrix<M>> getDeltaWeightParameters() {
-        return getDeltaParameters(false);
-    }
+	public List<Matrix<M>> getDeltaWeightParameters() {
+		return getDeltaParameters(false);
+	}
 
-    public List<Matrix<M>> getDeltaBiasParameters() {
-        return getDeltaParameters(true);
-    }
+	protected abstract List<Matrix<M>> getDeltaParameters(boolean isBias);
 
-    public abstract Matrix<M> getFirstBias();
+	public List<Matrix<M>> getDeltaBiasParameters() {
+		return getDeltaParameters(true);
+	}
 
-    public abstract String name();
+	public abstract Matrix<M> getFirstBias();
 
-    public Pair<InitialisationMethod, InitialisationMethod> getMethods() {
-        return Pair.of(wM, bM);
-    }
+	public abstract String name();
 
-    public static ParameterInitializer<?> get(InitialisationMethod wM, InitialisationMethod bM, String name,
-            Class<?> typeOf) {
-        if (typeOf.equals(SMatrix.class)) {
-            return new SimpleInitializer(wM, bM);
-        } else if (typeOf.equals(Primitive64Matrix.class)) {
-            return new OjAlgoInitializer(wM, bM);
-        } else if (typeOf.equals(org.ujmp.core.Matrix.class)) {
-            return new UJMPInitializer(wM, bM);
-        } else {
-            throw new IllegalArgumentException("Unsupported initializer for this type.");
-        }
-    }
+	public Pair<InitialisationMethod, InitialisationMethod> getMethods() {
+		return Pair.of(wM, bM);
+	}
 
 }

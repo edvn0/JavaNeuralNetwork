@@ -13,6 +13,15 @@ public class ArgMaxEvaluationFunction<M> implements EvaluationFunction<M> {
 
 	private static final String NAME = "Argmax Evaluation";
 
+	@Override
+	public LinkedHashMap<String, Double> params() {
+		return null;
+	}
+
+	@Override
+	public void init(double... in) {
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -35,14 +44,5 @@ public class ArgMaxEvaluationFunction<M> implements EvaluationFunction<M> {
 	@Override
 	public String name() {
 		return NAME;
-	}
-
-	@Override
-	public LinkedHashMap<String, Double> params() {
-		return null;
-	}
-
-	@Override
-	public void init(double... in) {
 	}
 }

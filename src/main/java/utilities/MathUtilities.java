@@ -16,7 +16,7 @@ public class MathUtilities {
 	}
 
 	public static int argMax(final double[] array) {
-		int argMax = -1;
+		int argMax = 0;
 		double best = array[0];
 		for (int i = 1; i < array.length - 1; i++) {
 			if (array[i] > best) {

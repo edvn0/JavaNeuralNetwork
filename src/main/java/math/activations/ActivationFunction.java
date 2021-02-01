@@ -5,15 +5,15 @@ import math.linearalgebra.Matrix;
 
 public abstract class ActivationFunction<M> implements DifferentiableFunction<M> {
 
-    public ActivationFunction() {
+	public ActivationFunction() {
 
-    }
+	}
 
-    public abstract void setValues(double in);
+	public abstract void setValues(double in);
 
-    public Matrix<M> derivativeOnInput(Matrix<M> input, Matrix<M> out) {
-        return out.hadamard(derivative(input));
-    }
+	public Matrix<M> derivativeOnInput(Matrix<M> input, Matrix<M> out) {
+		return out.hadamard(derivative(input));
+	}
 
-    public abstract String getName();
+	public abstract String getName();
 }
