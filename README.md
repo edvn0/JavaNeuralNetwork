@@ -1,27 +1,34 @@
-<h1>Neural Network in Java
-</h1>
+# Neural Network in Java
 
 <p>This is a neural network implementation in Java. How do you use it?
 Example:
 </p>
-<h2>Example: 4 layer, MNIST evaluator</h2>
+
+## Example: 4 layer, MNIST evaluator
 
 ```java
-NeuralNetwork network = new NeuralNetwork(
-	new neuralnetwork.NetworkBuilder(4)
-		.setFirstLayer(784)
-		.setLayer(100, new ReluFunction())
-		.setLayer(100, new ReluFunction())
-		.setLastLayer(10, new SoftmaxFunction())
-		.setCostFunction(new CrossEntropyCostFunction())
-		.setEvaluationFunction(new ArgMaxEvaluationFunction())
-		.setOptimizer(new ADAM(0.001, 0.9, 0.999))
-);
+ActivationFunction<SMatrix> f = new LeakyReluFunction<>(0.01);
+ActivationFunction<SMatrix> softMax = new SoftmaxFunction<>();
+LayeredNetworkBuilder<SMatrix> b = 
+		new LayeredNetworkBuilder<SMatrix>(28 * 28) // Input size
+		.layer(new NetworkLayer<>(f, 784, 0.1)) // First layer
+		.layer(new NetworkLayer<>(f, 30, 0.1)) // Hidden 1
+		.layer(new NetworkLayer<>(f, 70, 0.1)) // Hidden 2
+		.layer(new NetworkLayer<>(softMax, 10)) // logits output
+		.costFunction(new SmoothL1CostFunction<>()) // loss (here called cost)
+		.evaluationFunction(new ArgMaxEvaluationFunction<>()) // pred class = real class
+		.optimizer(new ADAM<>(0.01, 0.9, 0.999)) // ADAM optimizer
+		.clipping(true) // norm clipping
+		.initializer(
+			new SimpleInitializer(MethodConstants.XAVIER,MethodConstants.SCALAR));
+
+return b.create();
 ```
 
 And then training the network with <code>train</code> like so:
 
 ```java
+// Implement these yourself
 List<NetworkInput> training = getDataFromDataSource("/foo/bar/myTrainingData");
 List<NetworkInput> validation = getDataFromDataSource("/foo/bar/myValidationData");
 int epochs = 100;
@@ -30,12 +37,4 @@ int batchSize = 32;
 // Starts batch descent with the optimizer set in the constructor.
 network.train(training, validation, epochs, batchSize);
 ```
-
-<h2>The API</h2> 
-After seeing how the example looks, you should also notice a couple of things which are easy to use:
-<ul>
-	<li>To classify or "predict" on new data, a simple call to the network's "predict(DenseMatrix input)" can be used.</li>
-	<li>To output data into two separate graphs, one for the Loss and one for the Validation correctness, simply use "outputChart(String path)" method.</li>
-	<li>To serialise and deserialise the network, use "writeObject" and "readObject"</li>
-</ul>
 	

@@ -15,6 +15,10 @@ public class NetworkInput<M> {
 		this.label = label;
 	}
 
+	public NetworkInput<M> copy() {
+		return new NetworkInput<>(this.data.copy(), this.label.copy());
+	}
+
 	public Matrix<M> getData() {
 		return data;
 	}
