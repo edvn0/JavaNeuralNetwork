@@ -24,12 +24,12 @@ public class CrossEntropyCostFunctionTest {
 	public void calculateCostFunction() {
 		CrossEntropyCostFunction<Primitive64Matrix> test = new CrossEntropyCostFunction<>();
 		var data = List.of(
-				new NetworkInput<Primitive64Matrix>(
-						new OjAlgoMatrix(new double[][] { { 0.25 }, { 0.25 }, { 0.25 }, { 0.25 } }),
-						new OjAlgoMatrix(new double[][] { { 1 }, { 0 }, { 0 }, { 0 } })),
-				new NetworkInput<Primitive64Matrix>(
-						new OjAlgoMatrix(new double[][] { { 0.01 }, { 0.01 }, { 0.01 }, { 0.97 } }),
-						new OjAlgoMatrix(new double[][] { { 0 }, { 0 }, { 0 }, { 1 } })));
+			new NetworkInput<Primitive64Matrix>(
+				new OjAlgoMatrix(new double[][]{{0.25}, {0.25}, {0.25}, {0.25}}),
+				new OjAlgoMatrix(new double[][]{{1}, {0}, {0}, {0}})),
+			new NetworkInput<Primitive64Matrix>(
+				new OjAlgoMatrix(new double[][]{{0.01}, {0.01}, {0.01}, {0.97}}),
+				new OjAlgoMatrix(new double[][]{{0}, {0}, {0}, {1}})));
 
 		double loss = test.calculateCostFunction(data);
 		assertEquals(0.7083767843022996, loss, 1e-5);

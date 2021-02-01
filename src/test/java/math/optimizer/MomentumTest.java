@@ -14,10 +14,10 @@ import math.linearalgebra.simple.SimpleMatrix;
 import math.optimizers.ADAM;
 import math.optimizers.Momentum;
 import math.optimizers.StochasticGradientDescent;
-import neuralnetwork.layer.LayeredNetworkBuilder;
 import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.SimpleInitializer;
 import neuralnetwork.inputs.NetworkInput;
+import neuralnetwork.layer.LayeredNetworkBuilder;
 import neuralnetwork.layer.NetworkLayer;
 import org.apache.log4j.BasicConfigurator;
 import org.junit.Ignore;
@@ -31,28 +31,6 @@ public class MomentumTest {
 		BasicConfigurator.configure();
 	}
 
-	private List<NetworkInput<SMatrix>> getData() {
-
-		double[][] xData = {{0, 1}, {1, 0}, {1, 1}, {0, 0}};
-		double[][] yData = {{1, 0}, {1, 0}, {0, 1}, {0, 1}};
-
-		Random r = new SecureRandom();
-
-		List<NetworkInput<SMatrix>> data = new ArrayList<>();
-		for (int i = 0; i < 1000; i++) {
-
-			int rI = r.nextInt(4);
-
-			SimpleMatrix d = new SimpleMatrix(xData[rI]);
-			SimpleMatrix l = new SimpleMatrix(yData[rI]);
-
-			NetworkInput<SMatrix> ni = new NetworkInput<>(d, l);
-			data.add(ni);
-		}
-
-		return data;
-	}
-
 	@Test
 	public void testMomentum() {
 
@@ -62,7 +40,7 @@ public class MomentumTest {
 		var init = new SimpleInitializer(MethodConstants.XAVIER, MethodConstants.SCALAR);
 		var act = new LeakyReluFunction<SMatrix>(0.01);
 
-		var builder = new LayeredNetworkBuilder<SMatrix>(2).optimizer(optimizer).costFunction(cost)
+		var builder = new LayeredNetworkBuilder<SMatrix>().optimizer(optimizer).costFunction(cost)
 			.evaluationFunction(evaluator).initializer(init).layer(new NetworkLayer<>(act, 2))
 			.layer(new NetworkLayer<>(act, 10, 0.01))
 			.layer(new NetworkLayer<>(new SoftmaxFunction<>(), 2));
@@ -121,6 +99,28 @@ public class MomentumTest {
 		log.info("After training.");
 		log.info("\nMomentum Loss: {}, \n Adam Loss: {}, \n SGD Loss: {}", lossMomentum, lossAdam,
 			lossSGD);
+	}
+
+	private List<NetworkInput<SMatrix>> getData() {
+
+		double[][] xData = {{0, 1}, {1, 0}, {1, 1}, {0, 0}};
+		double[][] yData = {{1, 0}, {1, 0}, {0, 1}, {0, 1}};
+
+		Random r = new SecureRandom();
+
+		List<NetworkInput<SMatrix>> data = new ArrayList<>();
+		for (int i = 0; i < 1000; i++) {
+
+			int rI = r.nextInt(4);
+
+			SimpleMatrix d = new SimpleMatrix(xData[rI]);
+			SimpleMatrix l = new SimpleMatrix(yData[rI]);
+
+			NetworkInput<SMatrix> ni = new NetworkInput<>(d, l);
+			data.add(ni);
+		}
+
+		return data;
 	}
 
 }

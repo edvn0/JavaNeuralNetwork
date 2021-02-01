@@ -1,21 +1,19 @@
 package math.linearalgebra.speed;
 
-import org.junit.Test;
-
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
-import math.linearalgebra.simple.SMatrix;
 import math.linearalgebra.simple.SimpleMatrix;
 import math.linearalgebra.ujmp.UJMPMatrix;
+import org.junit.Test;
 
 public class MMultSpeed {
 
-    @Test
-    public void speed() {
+	@Test
+	public void speed() {
 
-        SimpleMatrix s;
-        OjAlgoMatrix o;
-        UJMPMatrix u;
+		SimpleMatrix s;
+		OjAlgoMatrix o;
+		UJMPMatrix u;
 
-    }
+	}
 
 }

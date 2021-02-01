@@ -37,7 +37,7 @@ public class MSETest {
 			new OjAlgoMatrix(new double[][]{{0.25}, {0.2}, {0.2}, {0.2}}),
 			new OjAlgoMatrix(new double[][]{{1}, {0}, {0}, {0}}));
 
-		double[][] d = {{1 - 0.25}, {-0.2}, {-0.2}, {-0.2}};
+		double[][] d = {{0.25 - 1}, {0.2}, {0.2}, {0.2}};
 
 		assertEquals(new OjAlgoMatrix(d).multiply(2),
 			mse.applyCostFunctionGradient(o.getData(), o.getLabel()));
