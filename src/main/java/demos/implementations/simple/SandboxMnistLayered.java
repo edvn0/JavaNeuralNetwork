@@ -44,7 +44,7 @@ public class SandboxMnistLayered extends AbstractDemo<SMatrix> {
 
 	@Override
 	protected TrainingMethod networkTrainingMethod() {
-		return TrainingMethod.METRICS;
+		return TrainingMethod.NORMAL;
 	}
 
 	@Override
@@ -113,6 +113,6 @@ public class SandboxMnistLayered extends AbstractDemo<SMatrix> {
 			values[i] = Double.parseDouble(rest[i]) / 255;
 		}
 
-		return new NetworkInput<SMatrix>(new SimpleMatrix(values), new SimpleMatrix(labels));
+		return new NetworkInput<>(new SimpleMatrix(values), new SimpleMatrix(labels));
 	}
 }

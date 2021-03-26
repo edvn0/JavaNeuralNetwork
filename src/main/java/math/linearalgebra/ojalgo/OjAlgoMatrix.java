@@ -125,8 +125,8 @@ public class OjAlgoMatrix implements Matrix<Primitive64Matrix> {
 	@Override
 	public double max() {
 		double[] array = this.delegate.toRawCopy1D();
-		double best = Double.MIN_VALUE;
-		for (int i = 0; i < array.length; i++) {
+		double best = array[0];
+		for (int i = 1; i < array.length; i++) {
 			if (array[i] > best) {
 				best = array[i];
 			}

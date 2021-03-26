@@ -16,7 +16,6 @@ import neuralnetwork.NetworkMetrics;
 import neuralnetwork.initialiser.ParameterInitializer;
 import neuralnetwork.inputs.NetworkInput;
 import org.jetbrains.annotations.NotNull;
-import utilities.NetworkUtilities;
 import utilities.types.Pair;
 
 @Slf4j
@@ -111,22 +110,23 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		return new LayeredNeuralNetwork<>(inputNeurons, b);
 	}
 
+	@Override
+	public void train(List<NetworkInput<M>> training, final int epochs, int batchSize) {
+		int batches = training.size() / batchSize;
+
+		for (int i = 0; i < epochs; i++) {
+			for (int j = 0; j <= batches; j++) {
+				getBatch(j, batchSize, training).parallelStream()
+					.forEach(e -> this.evaluate(e.getData(), e.getLabel()));
+				this.fit();
+			}
+		}
+	}
+
 	private static <U> List<U> getBatch(final int i, final int batchSize, final List<U> data) {
 		int fromIx = i * batchSize;
 		int toIx = Math.min(data.size(), (i + 1) * batchSize);
 		return Collections.unmodifiableList(data.subList(fromIx, toIx));
-	}
-
-	@Override
-	public void train(List<NetworkInput<M>> training, final int epochs, int batchSize) {
-		final List<List<NetworkInput<M>>> split = NetworkUtilities
-			.batchSplitData(training, batchSize);
-		for (int i = 0; i < epochs; i++) {
-			for (var s : split) {
-				s.forEach(e -> this.evaluate(e.getData(), e.getLabel()));
-				this.fit();
-			}
-		}
 	}
 
 	public void train(List<NetworkInput<M>> training, List<NetworkInput<M>> validation,
@@ -213,7 +213,6 @@ public class LayeredNeuralNetwork<M> implements DeepLearnable<M> {
 		}
 		log.info("Charts outputted.");
 	}
-
 
 	@Override
 	public double testEvaluation(final List<NetworkInput<M>> right, final int i) {

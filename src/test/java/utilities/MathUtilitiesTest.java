@@ -15,5 +15,6 @@ public class MathUtilitiesTest {
 		double[] vals = {0.1, 0.2, -1000, 1000,
 			0}; // test big negatives, small positives and big positives
 		assertEquals(3, MathUtilities.argMax(vals));
+		assertEquals(1000, MathUtilities.max(vals), 1e-9);
 	}
 }
