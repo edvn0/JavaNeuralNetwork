@@ -16,4 +16,12 @@ public class EnvInfo {
 	public void addInfo(String info) {
 		this.info.put(mapIndex++, info);
 	}
+
+	public String getInfo() {
+		StringBuilder builder = new StringBuilder();
+		for (var a : info.values()) {
+			builder.append(a);
+		}
+		return builder.toString();
+	}
 }

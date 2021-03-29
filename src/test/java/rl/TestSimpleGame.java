@@ -20,11 +20,15 @@ public class TestSimpleGame {
 		assertEquals(pos, 2);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void testShouldThrowActionsOOR() {
 		SimpleGame g = new SimpleGame();
 		g.reset();
-		g.step(10);
+		var out = g.step(10);
+
+		var s = out.getInfo().getInfo();
+
+		assertEquals(s, "Invalid action.");
 	}
 
 	@Test
