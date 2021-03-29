@@ -8,11 +8,18 @@ public class CartPole {
 	public static void main(String[] args) {
 
 		reinforcement.games.CartPole game = new reinforcement.games.CartPole();
-		DQNAgent<Double> agent = new DQNAgent<>(game, 0.00115, 0.95, 200);
+		DQNAgent<Double> agent = new DQNAgent<>(game, 1, 0.95, 70);
 
 		var learnable = LearnableEnvironment.of(game, agent, null);
 
-		learnable.fit(1000);
+		learnable.fit(35000);
+
+		var initial = game.reset();
+		while (!initial.isDone()) {
+			var act = agent.act(initial.getObservation());
+			initial = game.step(act);
+			System.out.println(initial.getReward());
+		}
 
 	}
 

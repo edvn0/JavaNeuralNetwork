@@ -5,8 +5,9 @@ import static java.util.stream.Collectors.toList;
 import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
-import math.activations.LeakyReluFunction;
+import lombok.Getter;
 import math.activations.LinearFunction;
+import math.activations.ReluFunction;
 import math.costfunctions.MeanSquaredCostFunction;
 import math.evaluation.ArgMaxEvaluationFunction;
 import math.linearalgebra.ojalgo.OjAlgoMatrix;
@@ -33,7 +34,10 @@ public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 	private double gamma = 0.99;
 	private LayeredNeuralNetwork<Primitive64Matrix> policy;
 	private LayeredNeuralNetwork<Primitive64Matrix> target;
+
+	@Getter
 	private double epsilon;
+
 	private int learningSteps;
 
 	public DQNAgent(final BaseEnvironment<Integer, ObsT> env, double lR, double gamma,
@@ -47,9 +51,9 @@ public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 			.costFunction(new MeanSquaredCostFunction<>())
 			.evaluationFunction(new ArgMaxEvaluationFunction<>())
 			.initializer(new OjAlgoInitializer(MethodConstants.XAVIER, MethodConstants.XAVIER))
-			.layer(new NetworkLayer<>(new LeakyReluFunction<>(0.01), inputs))
-			.layer(new NetworkLayer<>(new LeakyReluFunction<>(0.01), hiddenNodes))
-			.layer(new NetworkLayer<>(new LeakyReluFunction<>(0.01), hiddenNodes))
+			.layer(new NetworkLayer<>(new ReluFunction<>(), inputs))
+			.layer(new NetworkLayer<>(new ReluFunction<>(), hiddenNodes))
+			.layer(new NetworkLayer<>(new ReluFunction<>(), hiddenNodes))
 			.layer(new NetworkLayer<>(new LinearFunction<>(1), outputs));
 
 		this.policy = builder.create();
@@ -72,10 +76,6 @@ public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 		actionSize = env.getActionSpace().shape().getX();
 	}
 
-	public double getEpsilon() {
-		return this.epsilon;
-	}
-
 	@Override
 	public void updateParameters() {
 		var params = this.policy.getParameters();
@@ -91,10 +91,10 @@ public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 
 	@Override
 	public Integer act(final EnvObservation observation) {
-		if (this.env.getRandom().nextDouble() < this.epsilon) {
+		if (this.getRandom().nextDouble() < this.epsilon) {
 			this.epsilon *= EPSILON_DECREMENT_FACTOR;
 			this.epsilon = Math.max(this.epsilon, EPSILON_MINIMUM);
-			int randomMove = this.env.getRandom().nextInt(actionSize);
+			int randomMove = this.getRandom().nextInt(actionSize);
 			return randomMove;
 		} else {
 			var state = new OjAlgoMatrix(observation.getObservations());
@@ -129,14 +129,14 @@ public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 			var reward = transition.getReward();
 			var action = transition.getAction();
 
-			var oldQ = this.policy.predict(oldState).rawCopy();
+			var oldQ = this.policy.predict(oldState.copy()).rawCopy();
 			var newQ = this.target.predict(newState);
 
 			var max = newQ.max();
 
 			oldQ[action][0] = max * gamma * done + reward;
 
-			return new NetworkInput<>(oldState.copy(), new OjAlgoMatrix(oldQ));
+			return new NetworkInput<>(oldStateCopy, new OjAlgoMatrix(oldQ));
 		}).collect(Collectors.toList());
 	}
 
