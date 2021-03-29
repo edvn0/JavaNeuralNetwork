@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import reinforcement.env.BaseEnvironment;
 import reinforcement.learning.agent.LearningAgent;
+import reinforcement.learning.dqn.DQNAgent;
 import reinforcement.learning.er.ExperienceReplay;
 
 public abstract class LearnableEnvironment<ObsT> {
@@ -55,7 +56,6 @@ public abstract class LearnableEnvironment<ObsT> {
 			boolean isDone = initialSars.isDone();
 
 			double averageReward = 0d;
-			int steps = 1;
 			while (!isDone) {
 				int action = this.agent.act(observation);
 				var newState = this.env.step(action);
@@ -65,17 +65,12 @@ public abstract class LearnableEnvironment<ObsT> {
 				var done = newState.isDone();
 				isDone = done;
 
-				if (isDone) {
-					break;
-				}
-
 				if (isAgentTraining) {
 					this.replay.store(observation, action, reward, newObservation, done);
 					this.agent.learn(this.replay.sample());
 				}
 
 				averageReward += reward;
-				steps++;
 			}
 
 			if (i != 0 && i % INFO_INTERVAL == 0) {
@@ -87,12 +82,18 @@ public abstract class LearnableEnvironment<ObsT> {
 					.subList(Math.max(0, won.size() - INFO_INTERVAL), won.size()).stream()
 					.mapToDouble(e -> e ? 1d : 0d).average().orElseThrow();
 
+				var epsilon = 0.0d;
+				if (agent instanceof DQNAgent) {
+					DQNAgent<Double> test = (DQNAgent<Double>) agent;
+					epsilon = test.getEpsilon();
+				}
+
 				System.out.printf(
-					"Episode: %d, Average Score: %f, Won Percentage: %f\n", i,
-					mean, fGoldAvg * 100);
+					"Episode: %d, Average Score: %f, Won Percentage: %f, Epsilon: %f\n", i,
+					mean, fGoldAvg * 100, epsilon);
 			}
 
-			this.rewards.add(averageReward / steps);
+			this.rewards.add(averageReward);
 			this.won.add(this.env.didWin());
 		}
 	}

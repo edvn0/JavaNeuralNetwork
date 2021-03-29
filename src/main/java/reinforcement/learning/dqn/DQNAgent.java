@@ -28,7 +28,7 @@ public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 
 	private static final double EPSILON_DECREMENT_FACTOR = 1 - 1e-4;
 	private static final double EPSILON_MINIMUM = 0.01;
-	private static final int MAX_STEPS = 5;
+	private static final int MAX_STEPS = 50;
 	private final int actionSize;
 	private double gamma = 0.99;
 	private LayeredNeuralNetwork<Primitive64Matrix> policy;
@@ -70,6 +70,10 @@ public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 		final BaseEnvironment<Integer, ObsT> env) {
 		super(serializePath, env);
 		actionSize = env.getActionSpace().shape().getX();
+	}
+
+	public double getEpsilon() {
+		return this.epsilon;
 	}
 
 	@Override
@@ -141,4 +145,6 @@ public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 		super.setIsTraining(isTraining);
 		this.epsilon = EPSILON_MINIMUM;
 	}
+
+
 }
