@@ -4,7 +4,6 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import math.activations.LeakyReluFunction;
 import math.activations.LinearFunction;
@@ -27,9 +26,9 @@ import utilities.types.Pair;
 
 public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 
-	private static final double EPSILON_DECREMENT_FACTOR = 1 - 1e-6;
+	private static final double EPSILON_DECREMENT_FACTOR = 1 - 1e-4;
 	private static final double EPSILON_MINIMUM = 0.01;
-	private static final int MAX_STEPS = 50;
+	private static final int MAX_STEPS = 5;
 	private final int actionSize;
 	private double gamma = 0.99;
 	private LayeredNeuralNetwork<Primitive64Matrix> policy;
@@ -58,6 +57,7 @@ public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 
 		this.learningSteps = 0;
 
+		this.epsilon = 0.99;
 		this.gamma = gamma;
 	}
 
@@ -87,10 +87,10 @@ public class DQNAgent<ObsT> extends LearningAgent<ObsT> {
 
 	@Override
 	public Integer act(final EnvObservation observation) {
-		if (ThreadLocalRandom.current().nextDouble() < this.epsilon) {
+		if (this.env.getRandom().nextDouble() < this.epsilon) {
 			this.epsilon *= EPSILON_DECREMENT_FACTOR;
 			this.epsilon = Math.max(this.epsilon, EPSILON_MINIMUM);
-			int randomMove = ThreadLocalRandom.current().nextInt(actionSize);
+			int randomMove = this.env.getRandom().nextInt(actionSize);
 			return randomMove;
 		} else {
 			var state = new OjAlgoMatrix(observation.getObservations());

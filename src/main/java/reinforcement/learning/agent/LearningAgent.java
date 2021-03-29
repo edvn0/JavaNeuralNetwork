@@ -8,7 +8,7 @@ import reinforcement.utils.EnvObservation;
 
 public abstract class LearningAgent<ObsT> {
 
-	private final BaseEnvironment<Integer, ObsT> env;
+	protected final BaseEnvironment<Integer, ObsT> env;
 	private boolean isTraining;
 
 	public LearningAgent(BaseEnvironment<Integer, ObsT> env) {

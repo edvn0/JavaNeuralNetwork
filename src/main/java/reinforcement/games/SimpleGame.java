@@ -6,6 +6,7 @@ import lombok.Getter;
 import reinforcement.env.BaseEnvironment;
 import reinforcement.env.renderer.EnvRenderer;
 import reinforcement.env.space.Discrete;
+import reinforcement.utils.EnvInfo;
 import reinforcement.utils.EnvObservation;
 import reinforcement.utils.Sars;
 
@@ -20,7 +21,7 @@ public class SimpleGame extends BaseEnvironment<Integer, Integer> {
 
 	public SimpleGame() {
 		this.actionSpace = new Discrete(2);
-		this.observationSpace = new Discrete(1);
+		this.observationSpace = new Discrete(GAME_SIZE);
 		this.position = 0;
 
 		this.renderer = new EnvRenderer<>(this) {
@@ -36,7 +37,6 @@ public class SimpleGame extends BaseEnvironment<Integer, Integer> {
 					}
 				}
 				b.append("\n");
-				clearScreen();
 				System.out.println(b.toString());
 			}
 		};
@@ -46,7 +46,9 @@ public class SimpleGame extends BaseEnvironment<Integer, Integer> {
 	@Override
 	public Sars step(final Integer a) {
 		if (!this.actionSpace.contains(a)) {
-			throw new IllegalArgumentException("Specified action does not exist in this game.");
+			EnvInfo info = new EnvInfo();
+			info.addInfo("Invalid action.");
+			return new Sars(this.observe(), 0, true, info);
 		}
 
 		if (a == 1) {
@@ -55,7 +57,7 @@ public class SimpleGame extends BaseEnvironment<Integer, Integer> {
 			this.position -= 1;
 		}
 
-		var s = new EnvObservation(this.position);
+		var s = this.observe();
 		var r = this.reward.apply(this.position);
 
 		return new Sars(s, r, this.gameOver.apply(this.position), null);
@@ -64,7 +66,7 @@ public class SimpleGame extends BaseEnvironment<Integer, Integer> {
 	@Override
 	public Sars reset() {
 		this.position = 0;
-		return new Sars(new EnvObservation(this.position), 0, false, null);
+		return new Sars(this.observe(), 0, false, null);
 	}
 
 	@Override
@@ -80,16 +82,29 @@ public class SimpleGame extends BaseEnvironment<Integer, Integer> {
 		this.random.setSeed(seed);
 	}
 
+	public boolean didWin() {
+		return this.position >= GAME_SIZE;
+	}
+
 	@Override
 	public void close() throws Exception {
 
 	}
 
-	public boolean isGameOver() {
-		return this.gameOver.apply(this.position);
+	@Override
+	protected EnvObservation observe() {
+		double[] obs = new double[GAME_SIZE];
+		if (this.position < 0) {
+			obs[0] = 1;
+		} else if (this.position >= 50) {
+			obs[obs.length - 1] = 1;
+		} else {
+			obs[this.position] = 1;
+		}
+		return new EnvObservation(obs);
 	}
 
-	public boolean didWin() {
-		return this.position >= GAME_SIZE;
+	public boolean isGameOver() {
+		return this.gameOver.apply(this.position);
 	}
 }

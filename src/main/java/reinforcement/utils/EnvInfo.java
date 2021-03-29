@@ -1,11 +1,19 @@
 package reinforcement.utils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class EnvInfo {
 
-	private String[] info;
+	private Map<Integer, String> info;
+	private int mapIndex;
 
-	public EnvInfo(String... info) {
-		this.info = info;
+	public EnvInfo() {
+		this.info = new HashMap<>();
+		this.mapIndex = 0;
 	}
 
+	public void addInfo(String info) {
+		this.info.put(mapIndex++, info);
+	}
 }

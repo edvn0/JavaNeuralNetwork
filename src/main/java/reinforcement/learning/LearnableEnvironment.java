@@ -13,9 +13,9 @@ public abstract class LearnableEnvironment<ObsT> {
 	private final LearningAgent<ObsT> agent;
 
 	// These are trackers for the agent
-	private List<Double> rewards;
-	private List<Boolean> won;
-	private ExperienceReplay replay;
+	private final List<Double> rewards;
+	private final List<Boolean> won;
+	private final ExperienceReplay replay;
 
 	public LearnableEnvironment(BaseEnvironment<Integer, ObsT> env,
 		LearningAgent<ObsT> agent, final ExperienceReplay replay) {
@@ -25,6 +25,13 @@ public abstract class LearnableEnvironment<ObsT> {
 
 		this.rewards = new ArrayList<>();
 		this.won = new ArrayList<>();
+	}
+
+	public static <T, U> LearnableEnvironment<U> of(BaseEnvironment<Integer, U> env,
+		LearningAgent<U> agent,
+		final ExperienceReplay replay) {
+		return new LearnableEnvironment<U>(env, agent, replay) {
+		};
 	}
 
 	/**
@@ -56,6 +63,12 @@ public abstract class LearnableEnvironment<ObsT> {
 				var newObservation = newState.getObservation();
 				var reward = newState.getReward();
 				var done = newState.isDone();
+				isDone = done;
+
+				if (isDone) {
+					break;
+				}
+
 				if (isAgentTraining) {
 					this.replay.store(observation, action, reward, newObservation, done);
 					this.agent.learn(this.replay.sample());
@@ -63,7 +76,6 @@ public abstract class LearnableEnvironment<ObsT> {
 
 				averageReward += reward;
 				steps++;
-				isDone = done;
 			}
 
 			if (i != 0 && i % INFO_INTERVAL == 0) {

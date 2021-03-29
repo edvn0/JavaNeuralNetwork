@@ -6,6 +6,7 @@ import lombok.Data;
 import reinforcement.env.renderer.EnvRenderer;
 import reinforcement.env.space.RewardRange;
 import reinforcement.env.space.Space;
+import reinforcement.utils.EnvObservation;
 import reinforcement.utils.Sars;
 
 @Data
@@ -38,4 +39,6 @@ public abstract class BaseEnvironment<ActionT, ObsT> implements AutoCloseable {
 	public abstract boolean didWin();
 
 	public abstract void close() throws Exception;
+
+	protected abstract EnvObservation observe();
 }
