@@ -1,6 +1,6 @@
-package demos.implementations.ujmp;
+package demos.nn.implementations.ujmp;
 
-import demos.AbstractDemo;
+import demos.nn.AbstractDemo;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;

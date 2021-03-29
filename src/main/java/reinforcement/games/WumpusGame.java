@@ -1,7 +1,6 @@
 package reinforcement.games;
 
 import java.security.SecureRandom;
-import java.util.Arrays;
 import reinforcement.env.BaseEnvironment;
 import reinforcement.env.renderer.EnvRenderer;
 import reinforcement.env.space.Discrete;
@@ -74,13 +73,10 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 		this.renderer = new EnvRenderer<>(this) {
 			@Override
 			public void render() {
-				for (int i = 0; i < size; i++) {
-					for (int j = 0; j < size; j++) {
-						if (pX == i && pY == j) {
-							System.out.print("P");
-						} else {
-							System.out.println(w[i][j]);
-						}
+				clearScreen();
+				for (String[] x : w) {
+					for (String y : x) {
+						System.out.print(y + " ");
 					}
 					System.out.println();
 				}
@@ -209,7 +205,7 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 * @return True if the square has a breeze
 	 */
 	public boolean hasBreeze(int x, int y) {
-		if (!isValidPosition(x, y)) {
+		if (isInvalidPosition(x, y)) {
 			return false;
 		}
 		if (isUnknown(x, y)) {
@@ -233,7 +229,7 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 * @return True if the square has a stench
 	 */
 	public boolean hasStench(int x, int y) {
-		if (!isValidPosition(x, y)) {
+		if (isInvalidPosition(x, y)) {
 			return false;
 		}
 		if (isUnknown(x, y)) {
@@ -257,7 +253,7 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 * @return True if the square has glitter
 	 */
 	public boolean hasGlitter(int x, int y) {
-		if (!isValidPosition(x, y)) {
+		if (isInvalidPosition(x, y)) {
 			return false;
 		}
 		if (isUnknown(x, y)) {
@@ -281,7 +277,7 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 * @return True if the square has a pit
 	 */
 	public boolean hasPit(int x, int y) {
-		if (!isValidPosition(x, y)) {
+		if (isInvalidPosition(x, y)) {
 			return false;
 		}
 		if (isUnknown(x, y)) {
@@ -305,7 +301,7 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 * @return True if the Wumpus is in the square
 	 */
 	public boolean hasWumpus(int x, int y) {
-		if (!isValidPosition(x, y)) {
+		if (isInvalidPosition(x, y)) {
 			return false;
 		}
 		if (isUnknown(x, y)) {
@@ -343,7 +339,7 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 * @return True if the square is visited
 	 */
 	public boolean isVisited(int x, int y) {
-		if (!isValidPosition(x, y)) {
+		if (isInvalidPosition(x, y)) {
 			return false;
 		}
 
@@ -359,7 +355,7 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 * @return True if the square is unknown
 	 */
 	public boolean isUnknown(int x, int y) {
-		if (!isValidPosition(x, y)) {
+		if (isInvalidPosition(x, y)) {
 			return false;
 		}
 
@@ -378,20 +374,20 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 *
 	 * @return True if the square is valid
 	 */
-	public boolean isValidPosition(int x, int y) {
+	public boolean isInvalidPosition(int x, int y) {
 		if (x < 0) {
-			return false;
+			return true;
 		}
 		if (y < 0) {
-			return false;
+			return true;
 		}
 		if (x >= size) {
-			return false;
+			return true;
 		}
 		if (y >= size) {
-			return false;
+			return true;
 		}
-		return true;
+		return false;
 	}
 
 	/**
@@ -418,35 +414,13 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 * @param s Percept to add (see Percept constants)
 	 */
 	private void append(int x, int y, String s) {
-		if (!isValidPosition(x, y)) {
+		if (isInvalidPosition(x, y)) {
 			return;
 		}
 
 		if (!w[x][y].contains(s)) {
 			w[x][y] += s;
 		}
-	}
-
-	public WumpusGame cloneWumpusGame() {
-		//this.size = size;
-		String[][] w1 = new String[size + 1][size + 1];
-		int px, py, dirr;
-		px = pX;
-		py = pY;
-		dirr = dir;
-		for (int x = 0; x < size; x++) {
-			for (int y = 0; y < size; y++) {
-				w1[x][y] = w[x][y];
-			}
-		}
-		WumpusGame nW = new WumpusGame(w1, size, px, py, dirr);
-		nW.hasArrow = this.hasArrow;
-		nW.dir = this.dir;
-		nW.isInPit = this.isInPit;
-		nW.hasGold = this.hasGold;
-		nW.score = this.score;
-		nW.gameOver = this.gameOver;
-		return nW;
 	}
 
 	/**
@@ -552,28 +526,28 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 */
 	private void shoot() {
 		if (dir == DIR_RIGHT) {
-			for (int x = pX; x <= size; x++) {
+			for (int x = pX; x < size; x++) {
 				if (w[x][pY].contains(WUMPUS)) {
 					removeWumpus();
 				}
 			}
 		}
 		if (dir == DIR_LEFT) {
-			for (int x = pX; x >= 0; x--) {
+			for (int x = pX; x > 0; x--) {
 				if (w[x][pY].contains(WUMPUS)) {
 					removeWumpus();
 				}
 			}
 		}
 		if (dir == DIR_UP) {
-			for (int y = pY; y <= size; y++) {
+			for (int y = pY; y < size; y++) {
 				if (w[pX][y].contains(WUMPUS)) {
 					removeWumpus();
 				}
 			}
 		}
 		if (dir == DIR_DOWN) {
-			for (int y = pY; y >= 0; y--) {
+			for (int y = pY; y > 0; y--) {
 				if (w[pX][y].contains(WUMPUS)) {
 					removeWumpus();
 				}
@@ -586,8 +560,8 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 * by the arrow.
 	 */
 	private void removeWumpus() {
-		for (int x = 1; x <= 4; x++) {
-			for (int y = 1; y <= 4; y++) {
+		for (int x = 0; x < size; x++) {
+			for (int y = 0; y < size; y++) {
 				w[x][y] = w[x][y].replaceAll(WUMPUS, "");
 				w[x][y] = w[x][y].replaceAll(STENCH, "");
 			}
@@ -606,7 +580,7 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	 */
 	private boolean move(int nX, int nY) {
 		//Check if valid
-		if (!isValidPosition(nX, nY)) {
+		if (isInvalidPosition(nX, nY)) {
 			return false;
 		}
 
@@ -637,8 +611,8 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 	}
 
 	@Override
-	public BaseEnvironment<Integer, Integer> reset() {
-		return new WumpusGame(this.size);
+	public Sars reset() {
+		return new Sars(new EnvObservation(this.getPercepts()), 0, false, null);
 	}
 
 	@Override
@@ -647,6 +621,11 @@ public class WumpusGame extends BaseEnvironment<Integer, Integer> {
 			this.random = new SecureRandom();
 		}
 		this.random.setSeed(seed);
+	}
+
+	@Override
+	public boolean didWin() {
+		return this.hasGold;
 	}
 
 	@Override

@@ -1,1 +1,1 @@
-Main-Class: demos.Sandbox
+Main-Class: demos.nn.Sandbox

@@ -1,4 +1,4 @@
-package demos;
+package demos.nn;
 
 import math.linearalgebra.simple.SMatrix;
 import org.ojalgo.matrix.Primitive64Matrix;
@@ -6,14 +6,14 @@ import org.ojalgo.matrix.Primitive64Matrix;
 public class Sandbox {
 
 	public static void main(String[] args) {
-		AbstractDemo<Primitive64Matrix> mnistOjAlgo = new demos.implementations.ojalgo.SandboxMnist();
-		AbstractDemo<Primitive64Matrix> mnistOjAlgoLayered = new demos.implementations.ojalgo.SandboxMnistLayered();
-		AbstractDemo<Primitive64Matrix> xorOjAlgo = new demos.implementations.ojalgo.SandboxXOR();
-		AbstractDemo<org.ujmp.core.Matrix> mnistUJMP = new demos.implementations.ujmp.SandboxMnist();
-		AbstractDemo<org.ujmp.core.Matrix> xorUJMP = new demos.implementations.ujmp.SandboxXOR();
+		AbstractDemo<Primitive64Matrix> mnistOjAlgo = new demos.nn.implementations.ojalgo.SandboxMnist();
+		AbstractDemo<Primitive64Matrix> mnistOjAlgoLayered = new demos.nn.implementations.ojalgo.SandboxMnistLayered();
+		AbstractDemo<Primitive64Matrix> xorOjAlgo = new demos.nn.implementations.ojalgo.SandboxXOR();
+		AbstractDemo<org.ujmp.core.Matrix> mnistUJMP = new demos.nn.implementations.ujmp.SandboxMnist();
+		AbstractDemo<org.ujmp.core.Matrix> xorUJMP = new demos.nn.implementations.ujmp.SandboxXOR();
 
-		AbstractDemo<SMatrix> mnistSimpleLayered = new demos.implementations.simple.SandboxMnistLayered();
-		AbstractDemo<SMatrix> mnistSimplePure = new demos.implementations.simple.SandboxMnistPure();
+		AbstractDemo<SMatrix> mnistSimpleLayered = new demos.nn.implementations.simple.SandboxMnistLayered();
+		AbstractDemo<SMatrix> mnistSimplePure = new demos.nn.implementations.simple.SandboxMnistPure();
 
 		AbstractDemo<?> demo = null;
 

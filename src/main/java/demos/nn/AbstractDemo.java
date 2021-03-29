@@ -1,4 +1,4 @@
-package demos;
+package demos.nn;
 
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;

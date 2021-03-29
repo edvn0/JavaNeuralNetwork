@@ -1,6 +1,5 @@
 package reinforcement.games;
 
-import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.function.Function;
 import lombok.Getter;
@@ -21,7 +20,7 @@ public class SimpleGame extends BaseEnvironment<Integer, Integer> {
 
 	public SimpleGame() {
 		this.actionSpace = new Discrete(2);
-		this.observationSpace = new Discrete(GAME_SIZE);
+		this.observationSpace = new Discrete(1);
 		this.position = 0;
 
 		this.renderer = new EnvRenderer<>(this) {
@@ -40,14 +39,6 @@ public class SimpleGame extends BaseEnvironment<Integer, Integer> {
 				clearScreen();
 				System.out.println(b.toString());
 			}
-
-			private void clearScreen() {
-				try {
-					Runtime.getRuntime().exec("clear");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
 		};
 
 	}
@@ -58,23 +49,22 @@ public class SimpleGame extends BaseEnvironment<Integer, Integer> {
 			throw new IllegalArgumentException("Specified action does not exist in this game.");
 		}
 
-		var s = new EnvObservation(this.position);
-
 		if (a == 1) {
 			this.position += 1;
 		} else {
 			this.position -= 1;
 		}
 
+		var s = new EnvObservation(this.position);
 		var r = this.reward.apply(this.position);
 
 		return new Sars(s, r, this.gameOver.apply(this.position), null);
 	}
 
 	@Override
-	public BaseEnvironment<Integer, Integer> reset() {
+	public Sars reset() {
 		this.position = 0;
-		return this;
+		return new Sars(new EnvObservation(this.position), 0, false, null);
 	}
 
 	@Override

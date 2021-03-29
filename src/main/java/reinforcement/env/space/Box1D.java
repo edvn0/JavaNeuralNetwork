@@ -20,7 +20,7 @@ public class Box1D extends Space<Double> {
 
 	@Override
 	public boolean contains(final Double value) {
-		return value >= low && value <= high;
+		return value >= low && value < high;
 	}
 
 	@Override

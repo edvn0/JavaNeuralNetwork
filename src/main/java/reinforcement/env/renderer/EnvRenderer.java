@@ -11,4 +11,9 @@ public abstract class EnvRenderer<ActionT, ObsT> {
 	}
 
 	public abstract void render();
+
+	protected void clearScreen() {
+		System.out.print("\033[H\033[2J");
+		System.out.flush();
+	}
 }

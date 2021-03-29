@@ -17,7 +17,7 @@ public abstract class BaseWrapper<T, U> extends BaseEnvironment<T, U> {
 
 	public abstract Sars step(EnvironmentAction a);
 
-	public abstract BaseEnvironment<T, U> reset();
+	public abstract Sars reset();
 
 	public abstract void render(EnvRenderer<T, U> renderer);
 

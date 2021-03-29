@@ -1,7 +1,6 @@
-package demos.implementations.simple;
+package demos.nn.implementations.simple;
 
-import demos.AbstractDemo;
-import java.io.File;
+import demos.nn.AbstractDemo;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -16,40 +15,33 @@ import math.linearalgebra.simple.SMatrix;
 import math.linearalgebra.simple.SimpleMatrix;
 import math.optimizers.ADAM;
 import neuralnetwork.DeepLearnable;
+import neuralnetwork.NetworkBuilder;
 import neuralnetwork.initialiser.MethodConstants;
 import neuralnetwork.initialiser.SimpleInitializer;
 import neuralnetwork.inputs.NetworkInput;
-import neuralnetwork.layer.LayeredNetworkBuilder;
-import neuralnetwork.layer.LayeredNeuralNetwork;
-import neuralnetwork.layer.NetworkLayer;
-import utilities.serialise.serialisers.SimpleSerializer;
 import utilities.types.Pair;
 import utilities.types.Triple;
 
-public class SandboxMnistLayered extends AbstractDemo<SMatrix> {
+public class SandboxMnistPure extends AbstractDemo<SMatrix> {
 
 	@Override
 	protected void serialise(DeepLearnable<SMatrix> in) {
-		SimpleSerializer layeredSerializer = new SimpleSerializer();
-		LayeredNeuralNetwork<SMatrix> actual = (LayeredNeuralNetwork<SMatrix>) in;
-		layeredSerializer
-			.serialize(new File(this.outputDirectory() + "/Simple_Layered_MNIST_Network.json"),
-				actual);
+
 	}
 
 	@Override
 	protected String outputDirectory() {
-		return "/Users/edwincarlsson/Documents/Programmering/Java/NeuralNetwork/src/main/resources/mnist";
+		return "E:\\Downloads\\serial_network";
 	}
 
 	@Override
 	protected TrainingMethod networkTrainingMethod() {
-		return TrainingMethod.NORMAL;
+		return TrainingMethod.METRICS;
 	}
 
 	@Override
 	protected Pair<Integer, Integer> epochBatch() {
-		return Pair.of(20, 64);
+		return Pair.of(8, 64);
 	}
 
 	@Override
@@ -84,17 +76,12 @@ public class SandboxMnistLayered extends AbstractDemo<SMatrix> {
 	protected DeepLearnable<SMatrix> createNetwork() {
 		LeakyReluFunction<SMatrix> f = new LeakyReluFunction<>(0.01);
 		var softMax = new SoftmaxFunction<SMatrix>();
-		var b = new LayeredNetworkBuilder<SMatrix>()
-			.layer(new NetworkLayer<>(f, 784))
-			.layer(new NetworkLayer<>(f, 25))
-			.layer(new NetworkLayer<>(f, 25))
-			.layer(new NetworkLayer<>(f, 25))
-			.layer(new NetworkLayer<>(softMax, 10))
-			.costFunction(new CrossEntropyCostFunction<>())
-			.evaluationFunction(new ArgMaxEvaluationFunction<>())
-			.optimizer(new ADAM<>(0.001, 0.9, 0.999))
-			.initializer(new SimpleInitializer(MethodConstants.XAVIER, MethodConstants.SCALAR));
-		return b.create();
+		var b = new NetworkBuilder<SMatrix>(4).setFirstLayer(784).setLayer(30, f).setLayer(30, f)
+			.setLastLayer(10, softMax)
+			.setCostFunction(new CrossEntropyCostFunction<>()).setOptimizer(new ADAM<>())
+			.setInitialiser(new SimpleInitializer(MethodConstants.XAVIER, MethodConstants.XAVIER))
+			.setEvaluationFunction(new ArgMaxEvaluationFunction<>());
+		return b.compile();
 	}
 
 	private NetworkInput<SMatrix> toMnist(String toMnist) {
@@ -113,6 +100,6 @@ public class SandboxMnistLayered extends AbstractDemo<SMatrix> {
 			values[i] = Double.parseDouble(rest[i]) / 255;
 		}
 
-		return new NetworkInput<>(new SimpleMatrix(values), new SimpleMatrix(labels));
+		return new NetworkInput<SMatrix>(new SimpleMatrix(values), new SimpleMatrix(labels));
 	}
 }

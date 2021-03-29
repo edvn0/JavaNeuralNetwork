@@ -27,13 +27,15 @@ public abstract class BaseEnvironment<ActionT, ObsT> implements AutoCloseable {
 
 	public abstract Sars step(ActionT a);
 
-	public abstract BaseEnvironment<ActionT, ObsT> reset();
+	public abstract Sars reset();
 
 	public void render() {
 		this.renderer.render();
 	}
 
 	public abstract void seed(long seed);
+
+	public abstract boolean didWin();
 
 	public abstract void close() throws Exception;
 }

@@ -22,7 +22,7 @@ public class Discrete extends Space<Integer> {
 
 	@Override
 	public boolean contains(final Integer value) {
-		return value <= spaceSize && value >= 0;
+		return value < spaceSize && value >= 0;
 	}
 
 	@Override
